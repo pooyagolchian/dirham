@@ -1,6 +1,6 @@
 {
 	"name": "dirham",
-	"version": "1.0.0",
+	"version": "1.0.1",
 	"description": "UAE Dirham currency symbol (U+20C3) - web font, CSS, and React component",
 	"license": "MIT",
 	"author": "Pooya Golchian <pooya@golchian.com>",
@@ -52,7 +52,11 @@
 		"./font/mono/woff2": "./dist/fonts/mono/dirham-mono.woff2",
 		"./font/arabic/woff2": "./dist/fonts/arabic/dirham-arabic.woff2"
 	},
-	"files": ["dist", "README.md", "LICENSE"],
+	"files": [
+		"dist",
+		"README.md",
+		"LICENSE"
+	],
 	"scripts": {
 		"build": "pnpm build:font && pnpm build:ts",
 		"build:font": "node scripts/build-font.mjs",
