@@ -176,6 +176,27 @@ import {
 } from "dirham";
 ```
 
+## Publishing
+
+> Always publish from the package directory, **not** the monorepo root.
+
+```bash
+# 1. Build
+cd packages/dirham-symbol
+pnpm build
+
+# 2. Login to npm (one-time)
+npm login
+
+# 3. Dry-run to confirm what will be included
+npm pack --dry-run
+
+# 4. Publish
+npm publish --access public
+```
+
+The monorepo root `package.json` is marked `private: true` to prevent accidental publishing.
+
 ## Development
 
 ```bash
