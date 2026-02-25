@@ -7,7 +7,7 @@
 
 UAE Dirham (د.إ) currency symbol as a web font, CSS, and React component.
 
-The glyph is based on the [Wikimedia Commons Dirham sign SVG](https://commons.wikimedia.org/wiki/File:UAE_Dirham_sign.svg) (CC0 Public Domain).
+The glyph is based on the official UAE Dirham symbol as defined by the [Central Bank of UAE](https://www.centralbank.ae/en/our-operations/currency-and-coins/).
 
 ## Installation
 
@@ -221,4 +221,4 @@ Contributions are welcome! Please read the [Contributing Guide](./CONTRIBUTING.m
 
 MIT — see [LICENSE](./LICENSE)
 
-The Dirham symbol SVG is [CC0 Public Domain](https://creativecommons.org/publicdomain/zero/1.0/).
+The Dirham symbol glyph is sourced from the [Central Bank of UAE](https://www.centralbank.ae/en/our-operations/currency-and-coins/).

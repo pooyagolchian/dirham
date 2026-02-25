@@ -27,4 +27,4 @@ formatDirham(100); // => "د.إ 100.00"
 
 ## License
 
-MIT — SVG source is CC0 Public Domain.
+MIT — Dirham symbol glyph sourced from the [Central Bank of UAE](https://www.centralbank.ae/en/our-operations/currency-and-coins/).

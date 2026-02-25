@@ -1136,12 +1136,12 @@ import { DirhamIcon } from "dirham/react";
 							<span className="text-xs text-neutral-600">
 								Unicode U+20C3 ·{" "}
 								<a
-									href="https://commons.wikimedia.org/wiki/File:UAE_Dirham_Symbol.svg"
+									href="https://www.centralbank.ae/en/our-operations/currency-and-coins/"
 									target="_blank"
 									rel="noreferrer"
 									className="text-neutral-500 hover:text-white transition-colors underline underline-offset-2"
 								>
-									SVG source (CC0)
+									Central Bank of UAE
 								</a>
 							</span>
 						</div>
