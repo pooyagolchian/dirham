@@ -185,8 +185,8 @@ import {
 cd packages/dirham-symbol
 pnpm build
 
-# 2. Login to npm (one-time)
-npm login
+# 2. Set your npm auth token (granular token with bypass 2FA)
+npm config set //registry.npmjs.org/:_authToken <your-token>
 
 # 3. Dry-run to confirm what will be included
 npm pack --dry-run
@@ -195,7 +195,7 @@ npm pack --dry-run
 npm publish --access public
 ```
 
-The monorepo root `package.json` is marked `private: true` to prevent accidental publishing.
+The monorepo root `package.json` is marked `private: true` to prevent accidental publishing from the root.
 
 ## Development
 
