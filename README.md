@@ -192,9 +192,9 @@ dirham/
 └── biome.json             # Biome formatter/linter config
 ```
 
-| Workspace | Path | Description |
+| Package | Path | Description |
 | --- | --- | --- |
-| `dirham` | `packages/dirham-symbol` | The npm package — web font, CSS, React components, utilities |
+| [`dirham`](https://www.npmjs.com/package/dirham) | `packages/dirham-symbol` | The npm package — `npm install dirham` |
 | `@dirham/docs` | `apps/docs` | Interactive demo site with live examples |
 | `@dirham/tsconfig` | `packages/tsconfig` | Shared TypeScript base configs |
 
