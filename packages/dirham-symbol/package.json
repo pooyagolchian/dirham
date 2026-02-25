@@ -1,0 +1,80 @@
+{
+	"name": "dirham",
+	"version": "0.1.0",
+	"description": "UAE Dirham currency symbol (U+20C3) - web font, CSS, and React component",
+	"license": "MIT",
+	"author": "",
+	"repository": {
+		"type": "git",
+		"url": ""
+	},
+	"keywords": [
+		"dirham",
+		"aed",
+		"uae",
+		"currency",
+		"symbol",
+		"unicode",
+		"font",
+		"icon",
+		"react",
+		"u20c3",
+		"arabic",
+		"emoji",
+		"payment"
+	],
+	"type": "module",
+	"main": "./dist/index.cjs",
+	"module": "./dist/index.js",
+	"types": "./dist/index.d.ts",
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"import": "./dist/index.js",
+			"require": "./dist/index.cjs"
+		},
+		"./react": {
+			"types": "./dist/react/index.d.ts",
+			"import": "./dist/react/index.js",
+			"require": "./dist/react/index.cjs"
+		},
+		"./css": "./dist/css/dirham.css",
+		"./scss": "./dist/css/dirham.scss",
+		"./font/woff2": "./dist/fonts/dirham.woff2",
+		"./font/woff": "./dist/fonts/dirham.woff",
+		"./font/ttf": "./dist/fonts/dirham.ttf",
+		"./font/sans/woff2": "./dist/fonts/sans/dirham-sans.woff2",
+		"./font/serif/woff2": "./dist/fonts/serif/dirham-serif.woff2",
+		"./font/mono/woff2": "./dist/fonts/mono/dirham-mono.woff2",
+		"./font/arabic/woff2": "./dist/fonts/arabic/dirham-arabic.woff2"
+	},
+	"files": ["dist", "README.md", "LICENSE"],
+	"scripts": {
+		"build": "pnpm build:font && pnpm build:ts",
+		"build:font": "node scripts/build-font.mjs",
+		"build:ts": "tsup",
+		"dev": "tsup --watch",
+		"clean": "rm -rf dist",
+		"lint": "biome check src && tsc --noEmit",
+		"test": "vitest run"
+	},
+	"peerDependencies": {
+		"react": ">=17.0.0"
+	},
+	"peerDependenciesMeta": {
+		"react": {
+			"optional": true
+		}
+	},
+	"devDependencies": {
+		"@dirham/tsconfig": "workspace:*",
+		"@types/react": "^19.0.0",
+		"@types/react-dom": "^19.0.0",
+		"react": "^19.0.0",
+		"react-dom": "^19.0.0",
+		"svgtofont": "^6.0.0",
+		"tsup": "^8.3.0",
+		"typescript": "^5.7.0",
+		"vitest": "^3.0.0"
+	}
+}
