@@ -222,18 +222,16 @@ function SectionHeader({
 	description: string;
 }) {
 	return (
-		<div className="mb-8">
-			<div className="flex items-center gap-3 mb-2">
-				<div className="flex items-center justify-center w-8 h-8 rounded-lg bg-white/5 border border-neutral-800">
-					<Icon size={16} className="text-neutral-400" />
+		<div className="mb-12">
+			<div className="flex items-center gap-3 mb-3">
+				<div className="flex items-center justify-center w-9 h-9 rounded-xl bg-white/[0.04] border border-neutral-800">
+					<Icon size={17} className="text-neutral-400" />
 				</div>
-				<h2 className="text-xl font-semibold tracking-tight text-white">
+				<h2 className="text-2xl font-semibold tracking-tight text-white">
 					{title}
 				</h2>
 			</div>
-			<p className="text-neutral-500 text-sm leading-relaxed ml-11">
-				{description}
-			</p>
+			<p className="text-neutral-500 leading-relaxed ml-12">{description}</p>
 		</div>
 	);
 }
@@ -246,31 +244,31 @@ export function App() {
 	const [amount, setAmount] = useState(1250.0);
 
 	return (
-		<div className="min-h-screen bg-neutral-950">
+		<div className="min-h-screen bg-neutral-950 [background-image:radial-gradient(rgba(255,255,255,0.035)_1px,transparent_1px)] [background-size:28px_28px]">
 			{/* Navigation */}
-			<nav className="sticky top-0 z-50 border-b border-neutral-800/60 bg-neutral-950/80 backdrop-blur-xl">
-				<div className="max-w-5xl mx-auto px-6 h-14 flex items-center justify-between">
+			<nav className="sticky top-0 z-50 border-b border-white/[0.06] bg-neutral-950/90 backdrop-blur-2xl">
+				<div className="max-w-6xl mx-auto px-8 h-16 flex items-center justify-between">
 					<div className="flex items-center gap-3">
-						<DirhamIcon size={20} color="white" />
-						<span className="text-sm font-semibold tracking-tight text-white">
+						<DirhamIcon size={22} color="white" />
+						<span className="font-semibold tracking-tight text-white">
 							dirham
 						</span>
 						<Badge>v1.0</Badge>
 					</div>
-					<div className="flex items-center gap-4">
+					<div className="flex items-center gap-6">
 						<a
 							href="https://www.npmjs.com/package/dirham"
 							target="_blank"
 							rel="noreferrer"
-							className="text-xs text-neutral-500 hover:text-white transition-colors"
+							className="text-sm text-neutral-500 hover:text-white transition-colors"
 						>
 							npm
 						</a>
 						<a
-							href="https://github.com"
+							href="https://github.com/pooyagolchian/dirham"
 							target="_blank"
 							rel="noreferrer"
-							className="text-xs text-neutral-500 hover:text-white transition-colors"
+							className="text-sm text-neutral-500 hover:text-white transition-colors"
 						>
 							GitHub
 						</a>
@@ -280,68 +278,66 @@ export function App() {
 
 			{/* Hero */}
 			<section className="relative overflow-hidden">
-				{/* Radial gradient glow */}
-				<div className="absolute inset-0 bg-[radial-gradient(ellipse_60%_50%_at_50%_-10%,rgba(255,255,255,0.06),transparent)]" />
+				<div className="absolute inset-0 bg-[radial-gradient(ellipse_90%_65%_at_50%_-15%,rgba(255,255,255,0.07),transparent)]" />
 
-				<div className="relative max-w-5xl mx-auto px-6 pt-24 pb-20">
+				<div className="relative max-w-6xl mx-auto px-8 pt-36 pb-32">
 					<div className="flex flex-col items-center text-center">
 						{/* Symbol showcase */}
-						<div className="relative mb-10">
-							<div className="absolute inset-0 blur-3xl bg-white/[0.03] rounded-full scale-150" />
-							<DirhamIcon size={120} color="white" />
+						<div className="relative mb-14">
+							<div className="absolute inset-0 blur-3xl bg-white/[0.05] rounded-full scale-[2]" />
+							<div className="relative flex items-center justify-center w-32 h-32 rounded-[28px] bg-neutral-900/80 border border-neutral-800 shadow-2xl shadow-black/60">
+								<DirhamIcon size={68} color="white" />
+							</div>
 						</div>
 
-						<h1 className="text-5xl sm:text-6xl font-bold tracking-tight text-white mb-4">
+						<div className="mb-5">
+							<Badge variant="green">Unicode 18.0 · U+20C3</Badge>
+						</div>
+
+						<h1 className="text-7xl sm:text-8xl font-bold tracking-[-0.04em] text-white mb-6">
 							dirham
 						</h1>
-						<p className="text-lg text-neutral-500 max-w-lg leading-relaxed mb-8">
-							The UAE Dirham currency symbol at Unicode
-							<span className="text-emerald-400 font-mono font-medium">
-								{" "}
-								U+20C3
-							</span>
-							.
+						<p className="text-xl text-neutral-400 max-w-xl leading-relaxed mb-12">
+							The UAE Dirham currency symbol as a web font, CSS, and React
+							component.
 							<br />
-							Custom web font, CSS, and React — adapts to your typography.
+							Built on the official Unicode 18.0 codepoint — future-proof from
+							day one.
 						</p>
 
 						{/* Install command */}
-						<div className="flex items-center gap-3 bg-neutral-900 border border-neutral-800 rounded-xl px-5 py-3">
-							<Terminal size={15} className="text-neutral-600" />
-							<code className="text-sm font-mono text-neutral-300">
+						<div className="relative flex items-center gap-3 bg-neutral-900/80 border border-neutral-800 rounded-2xl px-6 py-4 mb-14">
+							<Terminal size={16} className="text-neutral-600" />
+							<code className="text-base font-mono text-neutral-200">
 								npm install dirham
 							</code>
 							<CopyButton text="npm install dirham" />
 						</div>
 
 						{/* Quick stats */}
-						<div className="flex items-center gap-8 mt-10 text-xs text-neutral-600">
-							<span className="flex items-center gap-1.5">
-								<span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-								Tree-shakeable
-							</span>
-							<span className="flex items-center gap-1.5">
-								<span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-								SSR Ready
-							</span>
-							<span className="flex items-center gap-1.5">
-								<span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-								Zero Dependencies
-							</span>
-							<span className="flex items-center gap-1.5">
-								<span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-								U+20C3
-							</span>
+						<div className="flex flex-wrap justify-center items-center gap-x-8 gap-y-3 text-sm text-neutral-500">
+							{[
+								"Tree-shakeable",
+								"SSR Ready",
+								"Zero Dependencies",
+								"TypeScript",
+								"9 Weights",
+								"5 Font Variants",
+							].map((stat) => (
+								<span key={stat} className="flex items-center gap-2">
+									<span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
+									{stat}
+								</span>
+							))}
 						</div>
 					</div>
 				</div>
 
-				{/* Divider */}
 				<div className="h-px bg-gradient-to-r from-transparent via-neutral-800 to-transparent" />
 			</section>
 
 			{/* How It Works */}
-			<section className="max-w-5xl mx-auto px-6 py-20">
+			<section className="max-w-6xl mx-auto px-8 py-28">
 				<SectionHeader
 					icon={Layers}
 					title="How It Works"
@@ -412,8 +408,114 @@ export function App() {
 
 			<div className="h-px bg-gradient-to-r from-transparent via-neutral-800 to-transparent" />
 
+			{/* Why dirham */}
+			<section className="max-w-6xl mx-auto px-8 py-28">
+				<SectionHeader
+					icon={Sparkles}
+					title="Why dirham?"
+					description="The only npm package built on the officially assigned Unicode 18.0 codepoint — not a Private Use Area workaround."
+				/>
+
+				<div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-12">
+					{[
+						{
+							icon: Globe,
+							title: "Official U+20C3 — Not a Hack",
+							desc: "Uses the codepoint ratified by the Unicode Technical Committee for Unicode 18.0. Other packages like dirham-symbol use Private Use Area codepoints (U+E900) that will never render natively in any OS font.",
+							color: "text-cyan-400",
+							glow: true,
+						},
+						{
+							icon: Layers,
+							title: "5 Adaptive Font Variants",
+							desc: "Separate fonts for Sans, Serif, Monospace, Arabic, and Default — the Dirham symbol adapts to surrounding typography the same way $, €, and £ look different across typefaces.",
+							color: "text-violet-400",
+							glow: false,
+						},
+						{
+							icon: Shield,
+							title: "Zero Migration in 2026",
+							desc: "When OS fonts ship native U+20C3 support with Unicode 18.0 (Sep 2026), the custom web font silently becomes optional. No find-and-replace, no API changes, no breaking updates.",
+							color: "text-emerald-400",
+							glow: false,
+						},
+						{
+							icon: Zap,
+							title: "SSR-Safe SVG Component",
+							desc: "DirhamSymbol renders as a pure inline SVG — FOIT-free, works in React Server Components, Next.js App Router, and static site generators out of the box.",
+							color: "text-amber-400",
+							glow: false,
+						},
+					].map(({ icon: Icon, title, desc, color, glow }) => (
+						<div
+							key={title}
+							className={clsx(
+								"rounded-2xl p-7 border transition-all",
+								glow
+									? "bg-cyan-500/[0.04] border-cyan-500/20 hover:border-cyan-500/40"
+									: "bg-neutral-900/60 border-neutral-800 hover:border-neutral-700 hover:bg-neutral-900",
+							)}
+						>
+							<div className={clsx("mb-4", color)}>
+								<Icon size={22} />
+							</div>
+							<h3 className="text-base font-semibold text-white mb-2">
+								{title}
+							</h3>
+							<p className="text-sm text-neutral-500 leading-relaxed">{desc}</p>
+						</div>
+					))}
+				</div>
+
+				{/* Comparison table */}
+				<div className="overflow-hidden rounded-2xl border border-neutral-800">
+					<div className="grid grid-cols-3 bg-neutral-900/80 px-6 py-4 text-[10px] font-semibold text-neutral-500 uppercase tracking-widest border-b border-neutral-800">
+						<span>Feature</span>
+						<span className="text-center text-cyan-400">dirham</span>
+						<span className="text-center">dirham&#8209;symbol</span>
+					</div>
+					{[
+						["Unicode codepoint", "U+20C3 (official)", "U+E900 (PUA)"],
+						[
+							"Future-proof",
+							"becomes native in 2026",
+							"PUA never becomes native",
+						],
+						["Font variants", "5 (Sans / Serif / Mono / Arabic)", "1"],
+						[
+							"Adaptive glyph style",
+							"matches surrounding font",
+							"one shape only",
+						],
+						["SVG React component", "✓ FOIT-free", "✗"],
+						["SSR / React Server", "✓ full support", "partial"],
+						["Weight variants", "9 weights", "none"],
+						["TypeScript types", "✓ full types", "partial"],
+					].map(([feature, ours, theirs], i, arr) => (
+						<div
+							key={feature}
+							className={clsx(
+								"grid grid-cols-3 px-6 py-4 items-center",
+								i % 2 === 0 ? "bg-neutral-950/50" : "bg-transparent",
+								i < arr.length - 1 && "border-b border-neutral-800/50",
+							)}
+						>
+							<span className="text-neutral-400 text-xs">{feature}</span>
+							<span className="text-center text-xs font-medium text-cyan-400">
+								{ours}
+							</span>
+							<span className="text-center text-xs text-neutral-600">
+								{theirs}
+							</span>
+						</div>
+					))}
+				</div>
+			</section>
+
+			<div className="h-px bg-gradient-to-r from-transparent via-neutral-800 to-transparent" />
+
 			{/* Unicode Integration */}
-			<section className="max-w-5xl mx-auto px-6 py-20">
+			<section className="max-w-6xl mx-auto px-8 py-28">
 				<SectionHeader
 					icon={Code2}
 					title="Unicode Integration"
@@ -502,7 +604,7 @@ function Price({ amount }: { amount: number }) {
 			<div className="h-px bg-gradient-to-r from-transparent via-neutral-800 to-transparent" />
 
 			{/* Font Playground */}
-			<section className="max-w-5xl mx-auto px-6 py-20">
+			<section className="max-w-6xl mx-auto px-8 py-28">
 				<SectionHeader
 					icon={Type}
 					title="Font Playground"
@@ -675,7 +777,7 @@ function Price({ amount }: { amount: number }) {
 			<div className="h-px bg-gradient-to-r from-transparent via-neutral-800 to-transparent" />
 
 			{/* Unicode Sizes */}
-			<section className="max-w-5xl mx-auto px-6 py-20">
+			<section className="max-w-6xl mx-auto px-8 py-28">
 				<SectionHeader
 					icon={Sparkles}
 					title="Unicode Sizes"
@@ -705,7 +807,7 @@ function Price({ amount }: { amount: number }) {
 			<div className="h-px bg-gradient-to-r from-transparent via-neutral-800 to-transparent" />
 
 			{/* Font Pairing Grid */}
-			<section className="max-w-5xl mx-auto px-6 py-20">
+			<section className="max-w-6xl mx-auto px-8 py-28">
 				<SectionHeader
 					icon={Type}
 					title="Font Pairing"
@@ -754,7 +856,7 @@ function Price({ amount }: { amount: number }) {
 			<div className="h-px bg-gradient-to-r from-transparent via-neutral-800 to-transparent" />
 
 			{/* React Components */}
-			<section className="max-w-5xl mx-auto px-6 py-20">
+			<section className="max-w-6xl mx-auto px-8 py-28">
 				<SectionHeader
 					icon={Code2}
 					title="React Component"
@@ -861,7 +963,7 @@ import { DirhamIcon } from "dirham/react";
 			<div className="h-px bg-gradient-to-r from-transparent via-neutral-800 to-transparent" />
 
 			{/* Formatting & Constants */}
-			<section className="max-w-5xl mx-auto px-6 py-20">
+			<section className="max-w-6xl mx-auto px-8 py-28">
 				<SectionHeader
 					icon={Package}
 					title="Formatting & Constants"
@@ -937,7 +1039,7 @@ import { DirhamIcon } from "dirham/react";
 			<div className="h-px bg-gradient-to-r from-transparent via-neutral-800 to-transparent" />
 
 			{/* RTL Support */}
-			<section className="max-w-5xl mx-auto px-6 py-20">
+			<section className="max-w-6xl mx-auto px-8 py-28">
 				<SectionHeader
 					icon={Globe}
 					title="RTL / LTR"
@@ -976,7 +1078,7 @@ import { DirhamIcon } from "dirham/react";
 			<div className="h-px bg-gradient-to-r from-transparent via-neutral-800 to-transparent" />
 
 			{/* Unicode Status */}
-			<section className="max-w-5xl mx-auto px-6 py-20">
+			<section className="max-w-6xl mx-auto px-8 py-28">
 				<SectionHeader
 					icon={Sparkles}
 					title="Unicode Status"
@@ -1053,7 +1155,7 @@ import { DirhamIcon } from "dirham/react";
 								npm
 							</a>
 							<a
-								href="https://github.com"
+								href="https://github.com/pooyagolchian/dirham"
 								target="_blank"
 								rel="noreferrer"
 								className="hover:text-white transition-colors"

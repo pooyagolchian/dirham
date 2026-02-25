@@ -36,3 +36,12 @@ out/
 
 # Generated font artifacts (intermediate)
 packages/dirham-symbol/src/svg/.hash
+
+# AI assistant files
+COPILOT.md
+.copilot/
+*.prompt.md
+.github/prompts/
+.github/copilot-instructions.md
+**/*.prompt.md
+**/.copilot/

@@ -1,6 +1,6 @@
 {
 	"name": "dirham-monorepo",
-	"private": true,
+    "version": "0.1.0",
 	"scripts": {
 		"build": "turbo run build",
 		"dev": "turbo run dev",

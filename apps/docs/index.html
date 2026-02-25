@@ -14,8 +14,12 @@
     <!-- Geist from Vercel via CDN -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/geist@1.3.1/dist/fonts/geist-sans/style.min.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/geist@1.3.1/dist/fonts/geist-mono/style.min.css" />
+    <style>
+      :root { font-family: 'Geist', 'Inter', system-ui, -apple-system, sans-serif; }
+      * { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+    </style>
   </head>
-  <body class="bg-black text-white antialiased">
+  <body class="bg-black text-white antialiased" style="font-family:'Geist','Inter',system-ui,-apple-system,sans-serif">
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
