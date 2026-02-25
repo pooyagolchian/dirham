@@ -176,6 +176,36 @@ import {
 } from "dirham";
 ```
 
+## Monorepo Structure
+
+This project uses [Turborepo](https://turbo.build/) with pnpm workspaces.
+
+```
+dirham/
+├── apps/
+│   └── docs/              # Demo & documentation site (Vite + React)
+├── packages/
+│   ├── dirham-symbol/     # npm package (published as "dirham")
+│   └── tsconfig/          # Shared TypeScript configuration
+├── turbo.json             # Turborepo configuration
+├── pnpm-workspace.yaml    # pnpm workspace definition
+└── biome.json             # Biome formatter/linter config
+```
+
+| Workspace | Path | Description |
+| --- | --- | --- |
+| `dirham` | `packages/dirham-symbol` | The npm package — web font, CSS, React components, utilities |
+| `@dirham/docs` | `apps/docs` | Interactive demo site with live examples |
+| `@dirham/tsconfig` | `packages/tsconfig` | Shared TypeScript base configs |
+
+### Running the Demo Site
+
+```bash
+pnpm install
+pnpm --filter @dirham/docs dev
+# Opens at http://localhost:5173
+```
+
 ## Publishing
 
 > Always publish from the package directory, **not** the monorepo root.
