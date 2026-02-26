@@ -18,7 +18,7 @@ import { useEffect, useRef, useState } from "react";
 
 import "dirham/css";
 
-import { DirhamIcon } from "dirham/react";
+import { DirhamIcon, DirhamSymbol } from "dirham/react";
 
 import {
 	DIRHAM_CODEPOINT,
@@ -28,6 +28,7 @@ import {
 	DIRHAM_HTML_ENTITY,
 	DIRHAM_UNICODE,
 	formatDirham,
+	parseDirham,
 } from "dirham";
 
 import type { DirhamWeight } from "dirham";
@@ -277,7 +278,7 @@ export function App() {
 						<span className="font-semibold tracking-tight text-white">
 							dirham
 						</span>
-						<Badge>v1.0</Badge>
+						<Badge>v1.1</Badge>
 					</div>
 					<div className="flex items-center gap-6">
 						<a
@@ -323,10 +324,9 @@ export function App() {
 						</h1>
 						<p className="text-xl text-neutral-400 max-w-xl leading-relaxed mb-12">
 							The UAE Dirham currency symbol as a web font, CSS, and React
-							component.
-							<br />
-							Built on the official Unicode 18.0 codepoint — future-proof from
-							day one.
+							component. Built on{" "}
+							<strong className="text-white font-medium">U+20C3</strong>, the
+							official Unicode 18.0 codepoint.
 						</p>
 
 						{/* Install command */}
@@ -595,7 +595,7 @@ function Price({ amount }: { amount: number }) {
 					{/* Controls panel */}
 					<div className="space-y-4">
 						{/* Font selector dropdown */}
-						<div className="relative">
+						<div ref={fontDropdownRef} className="relative">
 							<label className="block text-xs font-medium text-neutral-500 uppercase tracking-wider mb-2">
 								Typeface
 							</label>
@@ -751,7 +751,13 @@ function Price({ amount }: { amount: number }) {
 								className="text-sm text-neutral-400 font-mono"
 								variant={CATEGORY_TO_DIRHAM_FONT[selectedFont.category]}
 							>
-								{formatDirham(amount)}
+								{(() => {
+									try {
+										return formatDirham(amount);
+									} catch {
+										return "—";
+									}
+								})()}
 							</DirhamText>
 						</div>
 					</div>
@@ -843,9 +849,44 @@ function Price({ amount }: { amount: number }) {
 			<section className="max-w-6xl mx-auto px-8 pt-24 pb-16">
 				<SectionHeader
 					icon={Code2}
-					title="React Component"
-					description="Font-based Unicode component — inherits size and color from surrounding styles, works with any typeface."
+					title="React Components"
+					description="Two approaches: an inline SVG component (no font loading, SSR-safe) and a font-based icon that inherits text size and color."
 				/>
+
+				{/* DirhamSymbol — SVG component */}
+				<div className="bg-neutral-900 border border-neutral-800 rounded-2xl overflow-hidden mb-6">
+					<div className="px-6 py-4 border-b border-neutral-800 flex items-center gap-2">
+						<h3 className="text-sm font-medium text-white">DirhamSymbol</h3>
+						<Badge variant="green">SVG · Recommended</Badge>
+					</div>
+					<div className="p-6">
+						<p className="text-[10px] text-neutral-600 uppercase tracking-widest mb-3">
+							Weight variants
+						</p>
+						<div className="flex items-end gap-6 mb-6">
+							{(["light", "regular", "medium", "bold", "extrabold"] as DirhamWeight[]).map((w) => (
+								<div key={w} className="flex flex-col items-center gap-1.5">
+									<DirhamSymbol size={24} weight={w} />
+									<span className="text-[10px] text-neutral-600 font-mono">{w}</span>
+								</div>
+							))}
+						</div>
+						<p className="text-[10px] text-neutral-600 uppercase tracking-widest mb-3">
+							Inline with text
+						</p>
+						<p className="text-lg text-white mb-6">
+							Total: 100{" "}<DirhamSymbol size="1em" weight="medium" />{" "}per unit
+						</p>
+						<CodeBlock
+							code={`import { DirhamSymbol } from "dirham/react";
+
+// Inline SVG — no font loading, SSR-safe
+<DirhamSymbol size={24} />
+<DirhamSymbol size="1em" weight="bold" />
+<DirhamSymbol size={40} color="#10b981" weight="light" />`}
+						/>
+					</div>
+				</div>
 
 				<div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 					{/* DirhamIcon component */}
@@ -1016,6 +1057,37 @@ import { DirhamIcon } from "dirham/react";
 								</div>
 							))}
 						</div>
+					</div>
+				</div>
+
+				{/* parseDirham */}
+				<div className="mt-6 bg-neutral-900 border border-neutral-800 rounded-2xl p-6">
+					<h3 className="text-sm font-medium text-white mb-4 flex items-center gap-2">
+						<code className="text-xs font-mono text-neutral-400 bg-neutral-950 px-2 py-1 rounded-md">
+							parseDirham()
+						</code>
+						<span className="text-xs text-neutral-600">
+							— parse a formatted string back to a number
+						</span>
+					</h3>
+					<div className="space-y-2">
+						{(
+							[
+								{ label: `parseDirham(formatDirham(1234.5))`, value: parseDirham(formatDirham(1234.5)) },
+								{ label: `parseDirham(formatDirham(100, { useCode: true }))`, value: parseDirham(formatDirham(100, { useCode: true })) },
+								{ label: `parseDirham(formatDirham(250, { locale: "ar-AE" }))`, value: parseDirham(formatDirham(250, { locale: "ar-AE" })) },
+							] as { label: string; value: number }[]
+						).map(({ label, value }) => (
+							<div
+								key={label}
+								className="flex items-center justify-between px-3 py-2 rounded-lg bg-neutral-950 gap-4"
+							>
+								<span className="text-xs font-mono text-neutral-500 truncate">
+									{label}
+								</span>
+								<span className="text-sm font-mono text-white shrink-0">{value}</span>
+							</div>
+						))}
 					</div>
 				</div>
 			</section>
