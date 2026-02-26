@@ -14,6 +14,7 @@ concurrency:
 permissions:
     contents: write
     pull-requests: write
+    id-token: write
 
 jobs:
     release:
@@ -23,6 +24,8 @@ jobs:
         steps:
             - name: Checkout
               uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
 
             - name: Install pnpm
               uses: pnpm/action-setup@v4
@@ -48,10 +51,18 @@ jobs:
               if: env.NPM_TOKEN != ''
               uses: changesets/action@v1
               with:
-                  publish: pnpm changeset publish
+                  publish: pnpm release
                   title: "chore: version packages"
                   commit: "chore: version packages"
+                  createGithubReleases: true
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
                   NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
                   NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+            - name: Summary
+              if: steps.changesets.outputs.published == 'true'
+              run: |
+                  echo "### Published packages" >> "$GITHUB_STEP_SUMMARY"
+                  echo '${{ steps.changesets.outputs.publishedPackages }}' | \
+                      python3 -c "import sys,json; [print('- **'+p['name']+'** v'+p['version']) for p in json.load(sys.stdin)]" >> "$GITHUB_STEP_SUMMARY"
