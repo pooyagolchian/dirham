@@ -4,6 +4,9 @@ on:
     push:
         branches: [main]
 
+env:
+    NODE_LTS_VERSION: 22
+
 concurrency:
     group: publish-${{ github.ref }}
     cancel-in-progress: false
@@ -15,6 +18,8 @@ permissions:
 jobs:
     release:
         runs-on: ubuntu-latest
+        env:
+            NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
         steps:
             - name: Checkout
               uses: actions/checkout@v4
@@ -25,7 +30,7 @@ jobs:
             - name: Setup Node.js
               uses: actions/setup-node@v4
               with:
-                  node-version: 22
+                  node-version: ${{ env.NODE_LTS_VERSION }}
                   cache: pnpm
                   registry-url: https://registry.npmjs.org
 
@@ -40,6 +45,7 @@ jobs:
 
             - name: Create Release PR or Publish
               id: changesets
+              if: env.NPM_TOKEN != ''
               uses: changesets/action@v1
               with:
                   publish: pnpm changeset publish
