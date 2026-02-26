@@ -245,12 +245,21 @@ function SectionHeader({
 	);
 }
 
+const PM_COMMANDS = {
+	npm: "npm install dirham",
+	pnpm: "pnpm add dirham",
+	yarn: "yarn add dirham",
+} as const;
+
+type PMType = keyof typeof PM_COMMANDS;
+
 export function App() {
 	const [size, setSize] = useState(64);
 	const [selectedFont, setSelectedFont] = useState(FONT_FAMILIES[0]);
 	const [selectedWeight, setSelectedWeight] = useState<DirhamWeight>("regular");
 	const [fontDropdownOpen, setFontDropdownOpen] = useState(false);
 	const [amount, setAmount] = useState(1250.0);
+	const [selectedPM, setSelectedPM] = useState<PMType>("npm");
 	const fontDropdownRef = useRef<HTMLDivElement>(null);
 
 	// Close font dropdown when clicking outside
@@ -330,12 +339,34 @@ export function App() {
 						</p>
 
 						{/* Install command */}
-						<div className="relative flex items-center gap-3 bg-neutral-900/80 border border-neutral-800 rounded-2xl px-6 py-4 mb-14">
-							<Terminal size={16} className="text-neutral-600" />
-							<code className="text-base font-mono text-neutral-200">
-								npm install dirham
-							</code>
-							<CopyButton text="npm install dirham" />
+						<div className="flex flex-col items-center gap-2 mb-14">
+							{/* Package manager tabs */}
+							<div className="flex items-center gap-1 bg-neutral-900/60 rounded-xl p-1 border border-neutral-800">
+								{(Object.keys(PM_COMMANDS) as PMType[]).map((pm) => (
+									<button
+										key={pm}
+										type="button"
+										onClick={() => setSelectedPM(pm)}
+										className={clsx(
+											"px-3.5 py-1 text-xs rounded-lg font-mono transition-all cursor-pointer",
+											selectedPM === pm
+												? "bg-white text-black font-semibold"
+												: "text-neutral-500 hover:text-neutral-300",
+										)}
+									>
+										{pm}
+									</button>
+								))}
+							</div>
+
+							{/* Command line */}
+							<div className="relative flex items-center gap-3 bg-neutral-900/80 border border-neutral-800 rounded-2xl px-6 py-4 min-w-[360px]">
+								<Terminal size={16} className="text-neutral-600 shrink-0" />
+								<code className="text-base font-mono text-neutral-200 flex-1">
+									{PM_COMMANDS[selectedPM]}
+								</code>
+								<CopyButton text={PM_COMMANDS[selectedPM]} />
+							</div>
 						</div>
 
 						{/* Quick stats */}
@@ -864,10 +895,20 @@ function Price({ amount }: { amount: number }) {
 							Weight variants
 						</p>
 						<div className="flex items-end gap-6 mb-6">
-							{(["light", "regular", "medium", "bold", "extrabold"] as DirhamWeight[]).map((w) => (
+							{(
+								[
+									"light",
+									"regular",
+									"medium",
+									"bold",
+									"extrabold",
+								] as DirhamWeight[]
+							).map((w) => (
 								<div key={w} className="flex flex-col items-center gap-1.5">
 									<DirhamSymbol size={24} weight={w} />
-									<span className="text-[10px] text-neutral-600 font-mono">{w}</span>
+									<span className="text-[10px] text-neutral-600 font-mono">
+										{w}
+									</span>
 								</div>
 							))}
 						</div>
@@ -875,7 +916,7 @@ function Price({ amount }: { amount: number }) {
 							Inline with text
 						</p>
 						<p className="text-lg text-white mb-6">
-							Total: 100{" "}<DirhamSymbol size="1em" weight="medium" />{" "}per unit
+							Total: 100 <DirhamSymbol size="1em" weight="medium" /> per unit
 						</p>
 						<CodeBlock
 							code={`import { DirhamSymbol } from "dirham/react";
@@ -1073,9 +1114,18 @@ import { DirhamIcon } from "dirham/react";
 					<div className="space-y-2">
 						{(
 							[
-								{ label: `parseDirham(formatDirham(1234.5))`, value: parseDirham(formatDirham(1234.5)) },
-								{ label: `parseDirham(formatDirham(100, { useCode: true }))`, value: parseDirham(formatDirham(100, { useCode: true })) },
-								{ label: `parseDirham(formatDirham(250, { locale: "ar-AE" }))`, value: parseDirham(formatDirham(250, { locale: "ar-AE" })) },
+								{
+									label: `parseDirham(formatDirham(1234.5))`,
+									value: parseDirham(formatDirham(1234.5)),
+								},
+								{
+									label: `parseDirham(formatDirham(100, { useCode: true }))`,
+									value: parseDirham(formatDirham(100, { useCode: true })),
+								},
+								{
+									label: `parseDirham(formatDirham(250, { locale: "ar-AE" }))`,
+									value: parseDirham(formatDirham(250, { locale: "ar-AE" })),
+								},
 							] as { label: string; value: number }[]
 						).map(({ label, value }) => (
 							<div
@@ -1085,7 +1135,9 @@ import { DirhamIcon } from "dirham/react";
 								<span className="text-xs font-mono text-neutral-500 truncate">
 									{label}
 								</span>
-								<span className="text-sm font-mono text-white shrink-0">{value}</span>
+								<span className="text-sm font-mono text-white shrink-0">
+									{value}
+								</span>
 							</div>
 						))}
 					</div>
