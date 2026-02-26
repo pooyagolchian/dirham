@@ -6,9 +6,11 @@
 [![Unicode 18.0](https://img.shields.io/badge/Unicode_18.0-U%2B20C3-16a34a)](https://www.unicode.org/charts/PDF/U20A0.pdf)
 [![Demo](https://img.shields.io/badge/Demo-dirham.vercel.app-0ea5e9)](https://dirham.vercel.app)
 
-UAE Dirham (د.إ) currency symbol as a web font, CSS, and React component — built on the official Unicode 18.0 codepoint **U+20C3**.
+The UAE Dirham currency symbol (&#x20C3;) as a web font, CSS utility, and React component.
 
-[Live Demo](https://dirham.vercel.app) · [Documentation](https://github.com/pooyagolchian/dirham#readme) · [GitHub](https://github.com/pooyagolchian/dirham) · [npm](https://www.npmjs.com/package/dirham)
+Built on **U+20C3**, the codepoint assigned to the UAE Dirham Sign in Unicode 18.0. Because the package renders the symbol through a custom web font today, it will continue working without any code changes when operating systems ship native Unicode 18.0 support in September 2026.
+
+[Live Demo](https://dirham.vercel.app) &nbsp;&middot;&nbsp; [GitHub](https://github.com/pooyagolchian/dirham) &nbsp;&middot;&nbsp; [npm](https://www.npmjs.com/package/dirham)
 
 ## Installation
 
@@ -22,9 +24,9 @@ yarn add dirham
 
 ## Usage
 
-### React — SVG Component (Recommended)
+### React — SVG component
 
-Zero-config, SSR-safe, tree-shakeable. No font loading required.
+Renders an inline SVG. No font loading required; works with SSR and React Server Components.
 
 ```tsx
 import { DirhamSymbol } from "dirham/react";
@@ -38,7 +40,9 @@ function Price() {
 }
 ```
 
-**Weight variants:** `thin` · `extralight` · `light` · `regular` · `medium` · `semibold` · `bold` · `extrabold` · `black`
+**Weight variants** match the symbol stroke to surrounding text weight:
+
+`thin` `extralight` `light` `regular` `medium` `semibold` `bold` `extrabold` `black`
 
 ```tsx
 <DirhamSymbol size="1em" weight="bold" />
@@ -60,31 +64,33 @@ import "dirham/css";
 @use "dirham/scss";
 ```
 
-### JavaScript Utilities
+### JavaScript utilities
 
 ```ts
 import { formatDirham, parseDirham, DIRHAM_UNICODE } from "dirham";
 
-formatDirham(1234.5); // "د.إ 1,234.50"
-formatDirham(1234.5, { locale: "ar-AE" }); // "١٬٢٣٤٫٥٠ د.إ"
+formatDirham(1234.5); // "\u20C3 1,234.50"
+formatDirham(1234.5, { locale: "ar-AE" }); // "١٬٢٣٤٫٥٠ \u20C3"
 formatDirham(100, { useCode: true }); // "AED 100.00"
-parseDirham("د.إ 1,234.50"); // 1234.5
+parseDirham("\u20C3 1,234.50"); // 1234.5
 ```
 
-## Package Exports
+## Exports
 
-| Subpath         | Description                       |
-| --------------- | --------------------------------- |
-| `dirham`        | Core JS/TS utilities              |
-| `dirham/react`  | React SVG + icon components       |
-| `dirham/css`    | CSS with `@font-face`             |
-| `dirham/scss`   | SCSS with `@font-face`            |
-| `dirham/font/*` | Raw font files (woff2, woff, ttf) |
+| Import path         | Description                                  |
+| ------------------- | -------------------------------------------- |
+| `dirham`            | Core utilities and constants                 |
+| `dirham/react`      | `DirhamSymbol` (SVG) and `DirhamIcon` (font) |
+| `dirham/css`        | CSS with `@font-face`                        |
+| `dirham/scss`       | SCSS with `@font-face`                       |
+| `dirham/font/woff2` | WOFF2 font file                              |
+| `dirham/font/woff`  | WOFF font file                               |
+| `dirham/font/ttf`   | TTF font file                                |
 
 ## Unicode
 
-This package uses **U+20C3** (UAE DIRHAM SIGN), accepted for Unicode 18.0 (UTC, 2025-Jul-22). When OS/browser fonts adopt Unicode 18.0, the web font gracefully becomes unnecessary with zero migration.
+U+20C3 (UAE DIRHAM SIGN) was accepted by the Unicode Technical Committee on 2025-Jul-22 and is scheduled for Unicode 18.0 (September 2026). This package already uses that codepoint, so when system fonts gain native support the custom web font simply becomes unused — no API or template changes needed.
 
 ## License
 
-MIT — Dirham symbol glyph sourced from the [Central Bank of UAE](https://www.centralbank.ae/en/our-operations/currency-and-coins/).
+MIT. The Dirham symbol glyph is sourced from the [Central Bank of UAE](https://www.centralbank.ae/en/our-operations/currency-and-coins/).
