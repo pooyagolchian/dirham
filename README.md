@@ -9,6 +9,8 @@ UAE Dirham (د.إ) currency symbol as a web font, CSS, and React component.
 
 The glyph is based on the official UAE Dirham symbol as defined by the [Central Bank of UAE](https://www.centralbank.ae/en/our-operations/currency-and-coins/).
 
+[Live Demo](https://dirham.vercel.app) · [GitHub](https://github.com/pooyagolchian/dirham) · [npm](https://www.npmjs.com/package/dirham)
+
 ## Installation
 
 ```bash
@@ -26,10 +28,7 @@ yarn add dirham
 Import the CSS to register the `@font-face` and use the `.dirham-symbol` class:
 
 ```html
-<link
-  rel="stylesheet"
-  href="node_modules/dirham/dist/css/dirham-symbol.css"
-/>
+<link rel="stylesheet" href="node_modules/dirham/dist/css/dirham-symbol.css" />
 
 <i class="dirham-symbol" aria-label="UAE Dirham"></i>
 ```
@@ -54,22 +53,22 @@ Zero-config, SSR-safe, tree-shakeable. No font loading required.
 import { DirhamSymbol } from "dirham/react";
 
 function Price() {
-  return (
-    <span>
-      100 <DirhamSymbol size={16} />
-    </span>
-  );
+	return (
+		<span>
+			100 <DirhamSymbol size={16} />
+		</span>
+	);
 }
 ```
 
 #### Props
 
-| Prop         | Type               | Default          | Description                                         |
-| ------------ | ------------------ | ---------------- | --------------------------------------------------- |
-| `size`       | `number \| string` | `24`             | Width & height (px or CSS)                          |
-| `color`      | `string`           | `"currentColor"` | Fill color                                          |
-| `weight`     | `DirhamWeight`     | `"regular"`      | Visual weight — matches surrounding font weight     |
-| `aria-label` | `string`           | `"UAE Dirham"`   | Accessible label                                    |
+| Prop         | Type               | Default          | Description                                     |
+| ------------ | ------------------ | ---------------- | ----------------------------------------------- |
+| `size`       | `number \| string` | `24`             | Width & height (px or CSS)                      |
+| `color`      | `string`           | `"currentColor"` | Fill color                                      |
+| `weight`     | `DirhamWeight`     | `"regular"`      | Visual weight — matches surrounding font weight |
+| `aria-label` | `string`           | `"UAE Dirham"`   | Accessible label                                |
 
 **Weight values:** `thin`, `extralight`, `light`, `regular`, `medium`, `semibold`, `bold`, `extrabold`, `black`
 
@@ -94,11 +93,11 @@ import "dirham/css";
 import { DirhamIcon } from "dirham/react";
 
 function Price() {
-  return (
-    <span>
-      100 <DirhamIcon size={16} />
-    </span>
-  );
+	return (
+		<span>
+			100 <DirhamIcon size={16} />
+		</span>
+	);
 }
 ```
 
@@ -116,13 +115,13 @@ function Price() {
 
 ```ts
 import {
-  DIRHAM_UNICODE,
-  DIRHAM_SYMBOL_TEXT,
-  DIRHAM_CURRENCY_CODE,
-  DIRHAM_CSS_CONTENT,
-  DIRHAM_HTML_ENTITY,
-  formatDirham,
-  parseDirham,
+	DIRHAM_UNICODE,
+	DIRHAM_SYMBOL_TEXT,
+	DIRHAM_CURRENCY_CODE,
+	DIRHAM_CSS_CONTENT,
+	DIRHAM_HTML_ENTITY,
+	formatDirham,
+	parseDirham,
 } from "dirham";
 
 // Format amounts
@@ -150,8 +149,8 @@ Font files are available at `dirham/font/*`:
 
 ## Package Exports
 
-| Subpath                | Description            |
-| ---------------------- | ---------------------- |
+| Subpath         | Description            |
+| --------------- | ---------------------- |
 | `dirham`        | Core JS/TS utilities   |
 | `dirham/react`  | React components       |
 | `dirham/css`    | CSS with `@font-face`  |
@@ -164,15 +163,15 @@ The UAE Dirham sign has been **accepted for Unicode 18.0** at codepoint **U+20C3
 
 This package **already uses U+20C3** — the glyph is mapped to the official codepoint via a custom web font. When operating systems and fonts adopt Unicode 18.0, the web font gracefully becomes unnecessary with zero migration.
 
-| | Codepoint | Status |
-| --- | --- | --- |
-| **This package** | U+20C3 | Custom web font mapping the glyph to the official codepoint |
-| **Native OS support** | U+20C3 | Expected with Unicode 18.0 (Sept 2026) |
+|                       | Codepoint | Status                                                      |
+| --------------------- | --------- | ----------------------------------------------------------- |
+| **This package**      | U+20C3    | Custom web font mapping the glyph to the official codepoint |
+| **Native OS support** | U+20C3    | Expected with Unicode 18.0 (Sept 2026)                      |
 
 ```ts
 import {
-  DIRHAM_UNICODE,   // "\u20C3"
-  DIRHAM_CODEPOINT, // 0x20C3
+	DIRHAM_UNICODE, // "\u20C3"
+	DIRHAM_CODEPOINT, // 0x20C3
 } from "dirham";
 ```
 
@@ -192,11 +191,11 @@ dirham/
 └── biome.json             # Biome formatter/linter config
 ```
 
-| Package | Path | Description |
-| --- | --- | --- |
-| [`dirham`](https://www.npmjs.com/package/dirham) | `packages/dirham-symbol` | The npm package — `npm install dirham` |
-| `@dirham/docs` | `apps/docs` | Interactive demo site with live examples |
-| `@dirham/tsconfig` | `packages/tsconfig` | Shared TypeScript base configs |
+| Package                                          | Path                     | Description                              |
+| ------------------------------------------------ | ------------------------ | ---------------------------------------- |
+| [`dirham`](https://www.npmjs.com/package/dirham) | `packages/dirham-symbol` | The npm package — `npm install dirham`   |
+| `@dirham/docs`                                   | `apps/docs`              | Interactive demo site with live examples |
+| `@dirham/tsconfig`                               | `packages/tsconfig`      | Shared TypeScript base configs           |
 
 ### Running the Demo Site
 

@@ -1,0 +1,159 @@
+# dirham
+
+> UAE Dirham (د.إ) currency symbol as a web font, CSS, and React component — built on the official Unicode 18.0 codepoint U+20C3.
+
+## Overview
+
+The `dirham` npm package provides the UAE Dirham currency symbol (U+20C3) for use in web applications. It ships a custom web font, CSS, SCSS, React components, and JavaScript/TypeScript utilities for formatting and parsing Dirham amounts.
+
+The glyph is sourced from the Central Bank of UAE and mapped to the official Unicode 18.0 codepoint U+20C3 (UAE DIRHAM SIGN), approved by the Unicode Technical Committee on 2025-Jul-22. When OS/browser fonts adopt Unicode 18.0 (expected September 2026), the web font gracefully becomes unnecessary with zero migration needed.
+
+## Links
+
+- Live Demo: https://dirham.vercel.app
+- npm: https://www.npmjs.com/package/dirham
+- GitHub: https://github.com/pooyagolchian/dirham
+- License: MIT
+
+## Installation
+
+```bash
+npm install dirham
+pnpm add dirham
+yarn add dirham
+```
+
+## Package Exports
+
+| Subpath | Description |
+|---|---|
+| `dirham` | Core JS/TS utilities (formatDirham, parseDirham, constants) |
+| `dirham/react` | React SVG component (DirhamSymbol) and font icon component (DirhamIcon) |
+| `dirham/css` | CSS with @font-face for the Dirham web font |
+| `dirham/scss` | SCSS with @font-face for the Dirham web font |
+| `dirham/font/woff2` | WOFF2 font file |
+| `dirham/font/woff` | WOFF font file |
+| `dirham/font/ttf` | TTF font file |
+| `dirham/font/sans/woff2` | Sans-serif variant WOFF2 |
+| `dirham/font/serif/woff2` | Serif variant WOFF2 |
+| `dirham/font/mono/woff2` | Monospace variant WOFF2 |
+| `dirham/font/arabic/woff2` | Arabic variant WOFF2 |
+
+## React Components
+
+### DirhamSymbol (Recommended)
+
+Zero-config, SSR-safe, tree-shakeable SVG component. No font loading required.
+
+```tsx
+import { DirhamSymbol } from "dirham/react";
+<DirhamSymbol size={16} color="currentColor" weight="regular" />
+```
+
+Props:
+- `size`: number | string (default: 24) — width & height in px or CSS unit
+- `color`: string (default: "currentColor") — fill color
+- `weight`: DirhamWeight (default: "regular") — visual weight
+- `aria-label`: string (default: "UAE Dirham") — accessible label
+
+Weight values: thin, extralight, light, regular, medium, semibold, bold, extrabold, black
+
+### DirhamIcon
+
+Font-based icon component. Requires `dirham/css` to be imported.
+
+```tsx
+import "dirham/css";
+import { DirhamIcon } from "dirham/react";
+<DirhamIcon size={16} />
+```
+
+Props:
+- `size`: number | string (default: "inherit") — font size
+- `color`: string (default: "currentColor") — icon color
+- `as`: "i" | "span" (default: "i") — HTML tag
+- `className`: string — additional CSS classes
+- `aria-label`: string (default: "UAE Dirham") — accessible label
+
+## JavaScript/TypeScript Utilities
+
+### Constants
+
+```ts
+import {
+  DIRHAM_UNICODE,        // "\u20C3" — the Unicode character
+  DIRHAM_CODEPOINT,      // 0x20C3 — numeric codepoint
+  DIRHAM_HTML_ENTITY,    // "&#x20C3;" — HTML entity
+  DIRHAM_CSS_CONTENT,    // "\\20C3" — for CSS pseudo-elements
+  DIRHAM_CURRENCY_CODE,  // "AED" — ISO 4217 code
+  DIRHAM_SYMBOL_TEXT,    // "د.إ" — Arabic text representation
+  DIRHAM_FONT_FAMILY,    // Font family name for the web font
+} from "dirham";
+```
+
+### formatDirham(amount, options?)
+
+Format a number as a Dirham currency string.
+
+```ts
+formatDirham(1234.5);                          // "د.إ 1,234.50"
+formatDirham(1234.5, { locale: "ar-AE" });     // "١٬٢٣٤٫٥٠ د.إ"
+formatDirham(100, { useCode: true });          // "AED 100.00"
+formatDirham(100, { decimals: 0 });            // "د.إ 100"
+formatDirham(100, { symbolFirst: false });     // "100.00 د.إ"
+```
+
+Options:
+- `locale`: string (default: "en-AE") — locale for number formatting
+- `decimals`: number (default: 2) — decimal places
+- `symbolFirst`: boolean — symbol placement (auto-detected from locale if omitted)
+- `useCode`: boolean (default: false) — use "AED" instead of symbol
+- `separator`: string (default: non-breaking space) — between symbol and amount
+
+### parseDirham(formatted)
+
+Parse a formatted Dirham string back to a number.
+
+```ts
+parseDirham("د.إ 1,234.50");  // 1234.5
+parseDirham("AED 100.00");    // 100
+```
+
+## CSS / Web Font Usage
+
+```html
+<!-- Import CSS -->
+<link rel="stylesheet" href="node_modules/dirham/dist/css/dirham.css" />
+
+<!-- Use the icon class -->
+<i class="dirham-symbol" aria-label="UAE Dirham"></i>
+```
+
+Or import in JS:
+```ts
+import "dirham/css";
+```
+
+## Font Variants
+
+The package includes 5 font variants to match different typeface styles:
+- **Default** — balanced design for general use
+- **Sans** — clean sans-serif variant
+- **Serif** — serif variant for editorial contexts
+- **Mono** — monospace variant for code/data
+- **Arabic** — Arabic calligraphic variant
+
+## Unicode
+
+Codepoint: U+20C3 (UAE DIRHAM SIGN)
+Unicode version: 18.0
+Status: Accepted by UTC on 2025-Jul-22, expected to ship September 2026
+Migration: Zero — when native support arrives, the web font becomes optional automatically
+
+## Technical Details
+
+- Tree-shakeable ESM and CJS builds
+- TypeScript types included
+- React 17+ compatible (react is an optional peer dependency)
+- SSR-safe (SVG component requires no font loading)
+- Zero runtime dependencies for the core module

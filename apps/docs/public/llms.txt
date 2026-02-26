@@ -1,0 +1,54 @@
+# Dirham — UAE Dirham Currency Symbol
+
+> Interactive demo and documentation for the `dirham` npm package — UAE Dirham (د.إ) currency symbol as a web font, CSS, and React component.
+
+## About This Site
+
+This is the live demo and documentation site for the `dirham` npm package. It showcases:
+- The Dirham symbol (U+20C3) rendered with a custom web font
+- React SVG component (`DirhamSymbol`) with 9 weight variants
+- Font icon component (`DirhamIcon`) using CSS @font-face
+- JavaScript formatting utilities (`formatDirham`, `parseDirham`)
+- Font pairing previews with popular typefaces (Geist, Inter, Roboto, Cairo, Vazirmatn, etc.)
+- 5 font variants: default, sans, serif, mono, and Arabic
+
+## Links
+
+- This site: https://dirham.vercel.app
+- npm package: https://www.npmjs.com/package/dirham
+- GitHub repository: https://github.com/pooyagolchian/dirham
+- Package llms.txt: https://dirham.vercel.app/llms-package.txt
+
+## Quick Start
+
+```bash
+npm install dirham
+```
+
+### React (Recommended)
+```tsx
+import { DirhamSymbol } from "dirham/react";
+<DirhamSymbol size={16} weight="regular" />
+```
+
+### CSS Web Font
+```ts
+import "dirham/css";
+```
+```html
+<i class="dirham-symbol" aria-label="UAE Dirham"></i>
+```
+
+### JavaScript
+```ts
+import { formatDirham, parseDirham, DIRHAM_UNICODE } from "dirham";
+formatDirham(1234.5); // "د.إ 1,234.50"
+```
+
+## Unicode
+
+The UAE Dirham sign is at codepoint U+20C3, accepted for Unicode 18.0 (expected September 2026). This package maps the glyph to U+20C3 via a custom web font. When OS fonts adopt Unicode 18.0, the web font gracefully becomes unnecessary with zero migration.
+
+## License
+
+MIT — Glyph sourced from the Central Bank of UAE.

@@ -7,7 +7,7 @@
 
 UAE Dirham (د.إ) currency symbol as a web font, CSS, and React component — built on the official Unicode 18.0 codepoint **U+20C3**.
 
-[Documentation](https://github.com/pooyagolchian/dirham#readme) · [GitHub](https://github.com/pooyagolchian/dirham) · [npm](https://www.npmjs.com/package/dirham)
+[Live Demo](https://dirham.vercel.app) · [Documentation](https://github.com/pooyagolchian/dirham#readme) · [GitHub](https://github.com/pooyagolchian/dirham) · [npm](https://www.npmjs.com/package/dirham)
 
 ## Installation
 
@@ -29,11 +29,11 @@ Zero-config, SSR-safe, tree-shakeable. No font loading required.
 import { DirhamSymbol } from "dirham/react";
 
 function Price() {
-  return (
-    <span>
-      100 <DirhamSymbol size={16} />
-    </span>
-  );
+	return (
+		<span>
+			100 <DirhamSymbol size={16} />
+		</span>
+	);
 }
 ```
 
@@ -64,20 +64,20 @@ import "dirham/css";
 ```ts
 import { formatDirham, parseDirham, DIRHAM_UNICODE } from "dirham";
 
-formatDirham(1234.5);              // "د.إ 1,234.50"
+formatDirham(1234.5); // "د.إ 1,234.50"
 formatDirham(1234.5, { locale: "ar-AE" }); // "١٬٢٣٤٫٥٠ د.إ"
 formatDirham(100, { useCode: true }); // "AED 100.00"
-parseDirham("د.إ 1,234.50");      // 1234.5
+parseDirham("د.إ 1,234.50"); // 1234.5
 ```
 
 ## Package Exports
 
-| Subpath | Description |
-| --- | --- |
-| `dirham` | Core JS/TS utilities |
-| `dirham/react` | React SVG + icon components |
-| `dirham/css` | CSS with `@font-face` |
-| `dirham/scss` | SCSS with `@font-face` |
+| Subpath         | Description                       |
+| --------------- | --------------------------------- |
+| `dirham`        | Core JS/TS utilities              |
+| `dirham/react`  | React SVG + icon components       |
+| `dirham/css`    | CSS with `@font-face`             |
+| `dirham/scss`   | SCSS with `@font-face`            |
 | `dirham/font/*` | Raw font files (woff2, woff, ttf) |
 
 ## Unicode

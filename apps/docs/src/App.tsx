@@ -421,7 +421,7 @@ export function App() {
 						{
 							icon: Globe,
 							title: "Official U+20C3 — Not a Hack",
-							desc: "Uses the codepoint ratified by the Unicode Technical Committee for Unicode 18.0. Other packages like dirham-symbol use Private Use Area codepoints (U+E900) that will never render natively in any OS font.",
+							desc: "Uses the codepoint ratified by the Unicode Technical Committee for Unicode 18.0 — not a Private Use Area workaround. When OS fonts ship native support, the web font silently becomes optional.",
 							color: "text-cyan-400",
 							glow: true,
 						},
@@ -467,49 +467,6 @@ export function App() {
 					))}
 				</div>
 
-				{/* Comparison table */}
-				<div className="overflow-hidden rounded-2xl border border-neutral-800">
-					<div className="grid grid-cols-3 bg-neutral-900/80 px-6 py-4 text-[10px] font-semibold text-neutral-500 uppercase tracking-widest border-b border-neutral-800">
-						<span>Feature</span>
-						<span className="text-center text-cyan-400">dirham</span>
-						<span className="text-center">dirham&#8209;symbol</span>
-					</div>
-					{[
-						["Unicode codepoint", "U+20C3 (official)", "U+E900 (PUA)"],
-						[
-							"Future-proof",
-							"becomes native in 2026",
-							"PUA never becomes native",
-						],
-						["Font variants", "5 (Sans / Serif / Mono / Arabic)", "1"],
-						[
-							"Adaptive glyph style",
-							"matches surrounding font",
-							"one shape only",
-						],
-						["SVG React component", "✓ FOIT-free", "✗"],
-						["SSR / React Server", "✓ full support", "partial"],
-						["Weight variants", "9 weights", "none"],
-						["TypeScript types", "✓ full types", "partial"],
-					].map(([feature, ours, theirs], i, arr) => (
-						<div
-							key={feature}
-							className={clsx(
-								"grid grid-cols-3 px-6 py-4 items-center",
-								i % 2 === 0 ? "bg-neutral-950/50" : "bg-transparent",
-								i < arr.length - 1 && "border-b border-neutral-800/50",
-							)}
-						>
-							<span className="text-neutral-400 text-xs">{feature}</span>
-							<span className="text-center text-xs font-medium text-cyan-400">
-								{ours}
-							</span>
-							<span className="text-center text-xs text-neutral-600">
-								{theirs}
-							</span>
-						</div>
-					))}
-				</div>
 			</section>
 
 			<div className="h-px bg-gradient-to-r from-transparent via-neutral-800 to-transparent" />
