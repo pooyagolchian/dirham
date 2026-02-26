@@ -280,7 +280,7 @@ export function App() {
 			<section className="relative overflow-hidden">
 				<div className="absolute inset-0 bg-[radial-gradient(ellipse_90%_65%_at_50%_-15%,rgba(255,255,255,0.07),transparent)]" />
 
-				<div className="relative max-w-6xl mx-auto px-8 pt-36 pb-32">
+				<div className="relative max-w-6xl mx-auto px-8 pt-40 pb-36">
 					<div className="flex flex-col items-center text-center">
 						{/* Symbol showcase */}
 						<div className="relative mb-14">
@@ -337,7 +337,7 @@ export function App() {
 			</section>
 
 			{/* How It Works */}
-			<section className="max-w-6xl mx-auto px-8 py-28">
+			<section className="max-w-6xl mx-auto px-8 pt-28 pb-24">
 				<SectionHeader
 					icon={Layers}
 					title="How It Works"
@@ -409,7 +409,7 @@ export function App() {
 			<div className="h-px bg-gradient-to-r from-transparent via-neutral-800 to-transparent" />
 
 			{/* Why dirham */}
-			<section className="max-w-6xl mx-auto px-8 py-28">
+			<section className="max-w-6xl mx-auto px-8 pt-32 pb-28">
 				<SectionHeader
 					icon={Sparkles}
 					title="Why dirham?"
@@ -466,13 +466,12 @@ export function App() {
 						</div>
 					))}
 				</div>
-
 			</section>
 
 			<div className="h-px bg-gradient-to-r from-transparent via-neutral-800 to-transparent" />
 
 			{/* Unicode Integration */}
-			<section className="max-w-6xl mx-auto px-8 py-28">
+			<section className="max-w-6xl mx-auto px-8 pt-24 pb-20">
 				<SectionHeader
 					icon={Code2}
 					title="Unicode Integration"
@@ -561,7 +560,7 @@ function Price({ amount }: { amount: number }) {
 			<div className="h-px bg-gradient-to-r from-transparent via-neutral-800 to-transparent" />
 
 			{/* Font Playground */}
-			<section className="max-w-6xl mx-auto px-8 py-28">
+			<section className="max-w-6xl mx-auto px-8 pt-32 pb-24">
 				<SectionHeader
 					icon={Type}
 					title="Font Playground"
@@ -734,7 +733,7 @@ function Price({ amount }: { amount: number }) {
 			<div className="h-px bg-gradient-to-r from-transparent via-neutral-800 to-transparent" />
 
 			{/* Unicode Sizes */}
-			<section className="max-w-6xl mx-auto px-8 py-28">
+			<section className="max-w-6xl mx-auto px-8 pt-20 pb-16">
 				<SectionHeader
 					icon={Sparkles}
 					title="Unicode Sizes"
@@ -764,7 +763,7 @@ function Price({ amount }: { amount: number }) {
 			<div className="h-px bg-gradient-to-r from-transparent via-neutral-800 to-transparent" />
 
 			{/* Font Pairing Grid */}
-			<section className="max-w-6xl mx-auto px-8 py-28">
+			<section className="max-w-6xl mx-auto px-8 pt-28 pb-20">
 				<SectionHeader
 					icon={Type}
 					title="Font Pairing"
@@ -813,7 +812,7 @@ function Price({ amount }: { amount: number }) {
 			<div className="h-px bg-gradient-to-r from-transparent via-neutral-800 to-transparent" />
 
 			{/* React Components */}
-			<section className="max-w-6xl mx-auto px-8 py-28">
+			<section className="max-w-6xl mx-auto px-8 pt-24 pb-16">
 				<SectionHeader
 					icon={Code2}
 					title="React Component"
@@ -920,7 +919,7 @@ import { DirhamIcon } from "dirham/react";
 			<div className="h-px bg-gradient-to-r from-transparent via-neutral-800 to-transparent" />
 
 			{/* Formatting & Constants */}
-			<section className="max-w-6xl mx-auto px-8 py-28">
+			<section className="max-w-6xl mx-auto px-8 pt-20 pb-14">
 				<SectionHeader
 					icon={Package}
 					title="Formatting & Constants"
@@ -996,7 +995,7 @@ import { DirhamIcon } from "dirham/react";
 			<div className="h-px bg-gradient-to-r from-transparent via-neutral-800 to-transparent" />
 
 			{/* RTL Support */}
-			<section className="max-w-6xl mx-auto px-8 py-28">
+			<section className="max-w-6xl mx-auto px-8 pt-16 pb-12">
 				<SectionHeader
 					icon={Globe}
 					title="RTL / LTR"
@@ -1035,7 +1034,7 @@ import { DirhamIcon } from "dirham/react";
 			<div className="h-px bg-gradient-to-r from-transparent via-neutral-800 to-transparent" />
 
 			{/* Unicode Status */}
-			<section className="max-w-6xl mx-auto px-8 py-28">
+			<section className="max-w-6xl mx-auto px-8 pt-24 pb-32">
 				<SectionHeader
 					icon={Sparkles}
 					title="Unicode Status"
@@ -1086,7 +1085,7 @@ import { DirhamIcon } from "dirham/react";
 
 			{/* Footer */}
 			<footer className="border-t border-neutral-800/60">
-				<div className="max-w-5xl mx-auto px-6 py-10">
+				<div className="max-w-5xl mx-auto px-6 py-14">
 					<div className="flex flex-col sm:flex-row items-center justify-between gap-4">
 						<div className="flex items-center gap-3">
 							<DirhamIcon size={16} color="#525252" />

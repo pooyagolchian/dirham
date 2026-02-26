@@ -4,6 +4,7 @@
 [![npm downloads](https://img.shields.io/npm/dm/dirham)](https://www.npmjs.com/package/dirham)
 [![license](https://img.shields.io/npm/l/dirham)](https://github.com/pooyagolchian/dirham/blob/main/LICENSE)
 [![Unicode 18.0](https://img.shields.io/badge/Unicode_18.0-U%2B20C3-16a34a)](https://www.unicode.org/charts/PDF/U20A0.pdf)
+[![Demo](https://img.shields.io/badge/Demo-dirham.vercel.app-0ea5e9)](https://dirham.vercel.app)
 
 UAE Dirham (د.إ) currency symbol as a web font, CSS, and React component — built on the official Unicode 18.0 codepoint **U+20C3**.
 
@@ -29,11 +30,11 @@ Zero-config, SSR-safe, tree-shakeable. No font loading required.
 import { DirhamSymbol } from "dirham/react";
 
 function Price() {
-	return (
-		<span>
-			100 <DirhamSymbol size={16} />
-		</span>
-	);
+ return (
+  <span>
+   100 <DirhamSymbol size={16} />
+  </span>
+ );
 }
 ```
 
