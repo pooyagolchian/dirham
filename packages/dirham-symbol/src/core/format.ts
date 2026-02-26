@@ -56,6 +56,12 @@ export function formatDirham(
 	amount: number,
 	options: FormatDirhamOptions = {},
 ): string {
+	if (!Number.isFinite(amount)) {
+		throw new RangeError(
+			`formatDirham: amount must be a finite number, got ${amount}`,
+		);
+	}
+
 	const {
 		locale = "en-AE",
 		decimals = 2,
@@ -97,9 +103,9 @@ export function formatDirham(
  */
 export function parseDirham(value: string): number {
 	const cleaned = value
-		.replace(DIRHAM_UNICODE, "")
-		.replace(DIRHAM_SYMBOL_TEXT, "")
-		.replace(DIRHAM_CURRENCY_CODE, "")
+		.replaceAll(DIRHAM_UNICODE, "")
+		.replaceAll(DIRHAM_SYMBOL_TEXT, "")
+		.replaceAll(DIRHAM_CURRENCY_CODE, "")
 		.replace(/[,\s\u00A0]/g, "")
 		.trim();
 

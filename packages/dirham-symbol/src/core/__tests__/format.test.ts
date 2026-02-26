@@ -46,6 +46,18 @@ describe("formatDirham", () => {
 		});
 		expect(result.startsWith(SYM)).toBe(true);
 	});
+
+	it("should throw on NaN input", () => {
+		expect(() => formatDirham(Number.NaN)).toThrow(RangeError);
+	});
+
+	it("should throw on Infinity input", () => {
+		expect(() => formatDirham(Number.POSITIVE_INFINITY)).toThrow(RangeError);
+	});
+
+	it("should throw on -Infinity input", () => {
+		expect(() => formatDirham(Number.NEGATIVE_INFINITY)).toThrow(RangeError);
+	});
 });
 
 describe("parseDirham", () => {
@@ -63,5 +75,15 @@ describe("parseDirham", () => {
 
 	it("should throw on invalid input", () => {
 		expect(() => parseDirham("invalid")).toThrow();
+	});
+
+	it("should parse string with multiple symbol occurrences", () => {
+		// replaceAll fix: previously only first occurrence was stripped
+		expect(parseDirham(`${SYM}${SYM} 100.00`)).toBe(100);
+	});
+
+	it("should parse string with multiple AED occurrences", () => {
+		// replaceAll fix: previously only first AED was stripped
+		expect(parseDirham("AED AED 100.00")).toBe(100);
 	});
 });

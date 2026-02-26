@@ -13,7 +13,8 @@ import {
 	Type,
 	Zap,
 } from "lucide-react";
-import { useState } from "react";
+import type React from "react";
+import { useEffect, useRef, useState } from "react";
 
 import "dirham/css";
 
@@ -127,9 +128,15 @@ function CopyButton({ text }: { text: string }) {
 		<button
 			type="button"
 			onClick={() => {
-				navigator.clipboard.writeText(text);
-				setCopied(true);
-				setTimeout(() => setCopied(false), 2000);
+				navigator.clipboard
+					.writeText(text)
+					.then(() => {
+						setCopied(true);
+						setTimeout(() => setCopied(false), 2000);
+					})
+					.catch(() => {
+						// Clipboard access denied or unavailable — fail silently
+					});
 			}}
 			className="absolute top-3 right-3 p-1.5 rounded-md bg-white/5 hover:bg-white/10 text-neutral-500 hover:text-neutral-300 transition-colors cursor-pointer"
 			aria-label="Copy code"
@@ -201,7 +208,8 @@ function DirhamText({
 	return (
 		<span className={className} style={style}>
 			{parts.map((part, i) => (
-				<span key={`p${i}`}>
+				// biome-ignore lint/suspicious/noArrayIndexKey: split parts are positionally stable
+				<span key={i}>
 					{part}
 					{i < parts.length - 1 && (
 						<span style={{ fontFamily: dirhamFont }}>{CHAR}</span>
@@ -242,6 +250,22 @@ export function App() {
 	const [selectedWeight, setSelectedWeight] = useState<DirhamWeight>("regular");
 	const [fontDropdownOpen, setFontDropdownOpen] = useState(false);
 	const [amount, setAmount] = useState(1250.0);
+	const fontDropdownRef = useRef<HTMLDivElement>(null);
+
+	// Close font dropdown when clicking outside
+	useEffect(() => {
+		if (!fontDropdownOpen) return;
+		function handleClickOutside(e: MouseEvent) {
+			if (
+				fontDropdownRef.current &&
+				!fontDropdownRef.current.contains(e.target as Node)
+			) {
+				setFontDropdownOpen(false);
+			}
+		}
+		document.addEventListener("mousedown", handleClickOutside);
+		return () => document.removeEventListener("mousedown", handleClickOutside);
+	}, [fontDropdownOpen]);
 
 	return (
 		<div className="min-h-screen bg-neutral-950 [background-image:radial-gradient(rgba(255,255,255,0.035)_1px,transparent_1px)] [background-size:28px_28px]">
@@ -687,8 +711,12 @@ function Price({ amount }: { amount: number }) {
 							<input
 								type="number"
 								value={amount}
+								min="0"
 								step="0.01"
-								onChange={(e) => setAmount(Number(e.target.value))}
+								onChange={(e) => {
+									const v = Number(e.target.value);
+									if (Number.isFinite(v)) setAmount(v);
+								}}
 								className="w-full bg-neutral-900 border border-neutral-800 rounded-xl px-4 py-3 text-sm text-white font-mono focus:outline-none focus:border-neutral-600 transition-colors"
 							/>
 						</div>

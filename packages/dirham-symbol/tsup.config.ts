@@ -5,6 +5,7 @@ export default defineConfig([
 	{
 		entry: { index: "src/index.ts" },
 		format: ["esm", "cjs"],
+		target: "es2021",
 		dts: true,
 		sourcemap: true,
 		clean: false, // Don't clean — font build runs first
@@ -16,6 +17,7 @@ export default defineConfig([
 	{
 		entry: { "react/index": "src/react/index.ts" },
 		format: ["esm", "cjs"],
+		target: "es2021",
 		dts: true,
 		sourcemap: true,
 		clean: false,
