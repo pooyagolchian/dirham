@@ -30,11 +30,11 @@ Zero-config, SSR-safe, tree-shakeable. No font loading required.
 import { DirhamSymbol } from "dirham/react";
 
 function Price() {
- return (
-  <span>
-   100 <DirhamSymbol size={16} />
-  </span>
- );
+	return (
+		<span>
+			100 <DirhamSymbol size={16} />
+		</span>
+	);
 }
 ```
 
