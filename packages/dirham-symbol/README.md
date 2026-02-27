@@ -4,13 +4,13 @@
 [![npm downloads](https://img.shields.io/npm/dm/dirham)](https://www.npmjs.com/package/dirham)
 [![license](https://img.shields.io/npm/l/dirham)](https://github.com/pooyagolchian/dirham/blob/main/LICENSE)
 [![Unicode 18.0](https://img.shields.io/badge/Unicode_18.0-U%2B20C3-16a34a)](https://www.unicode.org/charts/PDF/U20A0.pdf)
-[![Demo](https://img.shields.io/badge/Demo-dirham.vercel.app-0ea5e9)](https://dirham.vercel.app)
+[![Demo](https://img.shields.io/badge/Demo-pooya.blog%2Fdirham-0ea5e9)](https://pooya.blog/dirham/)
 
 The UAE Dirham currency symbol (&#x20C3;) as a web font, CSS utility, and React component.
 
 Built on **U+20C3**, the codepoint assigned to the UAE Dirham Sign in Unicode 18.0. Because the package renders the symbol through a custom web font today, it will continue working without any code changes when operating systems ship native Unicode 18.0 support in September 2026.
 
-[Live Demo](https://dirham.vercel.app) &nbsp;&middot;&nbsp; [GitHub](https://github.com/pooyagolchian/dirham) &nbsp;&middot;&nbsp; [npm](https://www.npmjs.com/package/dirham)
+[Live Demo](https://pooya.blog/dirham/) &nbsp;&middot;&nbsp; [GitHub](https://github.com/pooyagolchian/dirham) &nbsp;&middot;&nbsp; [npm](https://www.npmjs.com/package/dirham)
 
 ## Installation
 
@@ -83,9 +83,13 @@ parseDirham("\u20C3 1,234.50"); // 1234.5
 | `dirham/react`      | `DirhamSymbol` (SVG) and `DirhamIcon` (font) |
 | `dirham/css`        | CSS with `@font-face`                        |
 | `dirham/scss`       | SCSS with `@font-face`                       |
-| `dirham/font/woff2` | WOFF2 font file                              |
-| `dirham/font/woff`  | WOFF font file                               |
-| `dirham/font/ttf`   | TTF font file                                |
+| `dirham/font/woff2`        | WOFF2 font file (default)               |
+| `dirham/font/woff`         | WOFF font file                          |
+| `dirham/font/ttf`          | TTF font file                           |
+| `dirham/font/sans/woff2`   | Sans-serif variant WOFF2                |
+| `dirham/font/serif/woff2`  | Serif variant WOFF2                     |
+| `dirham/font/mono/woff2`   | Monospace variant WOFF2                 |
+| `dirham/font/arabic/woff2` | Arabic variant WOFF2                    |
 
 ## Unicode
 

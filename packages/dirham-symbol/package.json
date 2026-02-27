@@ -4,7 +4,7 @@
 	"description": "UAE Dirham currency symbol (U+20C3). Web font, CSS, and React component",
 	"license": "MIT",
 	"author": "Pooya Golchian <pooya@golchian.com>",
-	"homepage": "https://dirham.vercel.app",
+	"homepage": "https://pooya.blog/dirham/",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/pooyagolchian/dirham.git"
