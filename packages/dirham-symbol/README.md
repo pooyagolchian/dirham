@@ -77,19 +77,19 @@ parseDirham("\u20C3 1,234.50"); // 1234.5
 
 ## Exports
 
-| Import path         | Description                                  |
-| ------------------- | -------------------------------------------- |
-| `dirham`            | Core utilities and constants                 |
-| `dirham/react`      | `DirhamSymbol` (SVG) and `DirhamIcon` (font) |
-| `dirham/css`        | CSS with `@font-face`                        |
-| `dirham/scss`       | SCSS with `@font-face`                       |
-| `dirham/font/woff2`        | WOFF2 font file (default)               |
-| `dirham/font/woff`         | WOFF font file                          |
-| `dirham/font/ttf`          | TTF font file                           |
-| `dirham/font/sans/woff2`   | Sans-serif variant WOFF2                |
-| `dirham/font/serif/woff2`  | Serif variant WOFF2                     |
-| `dirham/font/mono/woff2`   | Monospace variant WOFF2                 |
-| `dirham/font/arabic/woff2` | Arabic variant WOFF2                    |
+| Import path                | Description                                  |
+| -------------------------- | -------------------------------------------- |
+| `dirham`                   | Core utilities and constants                 |
+| `dirham/react`             | `DirhamSymbol` (SVG) and `DirhamIcon` (font) |
+| `dirham/css`               | CSS with `@font-face`                        |
+| `dirham/scss`              | SCSS with `@font-face`                       |
+| `dirham/font/woff2`        | WOFF2 font file (default)                    |
+| `dirham/font/woff`         | WOFF font file                               |
+| `dirham/font/ttf`          | TTF font file                                |
+| `dirham/font/sans/woff2`   | Sans-serif variant WOFF2                     |
+| `dirham/font/serif/woff2`  | Serif variant WOFF2                          |
+| `dirham/font/mono/woff2`   | Monospace variant WOFF2                      |
+| `dirham/font/arabic/woff2` | Arabic variant WOFF2                         |
 
 ## Unicode
 
