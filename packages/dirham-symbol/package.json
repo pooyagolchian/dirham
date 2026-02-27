@@ -1,6 +1,6 @@
 {
 	"name": "dirham",
-	"version": "1.1.0",
+	"version": "1.1.1",
 	"description": "UAE Dirham currency symbol (U+20C3). Web font, CSS, and React component",
 	"license": "MIT",
 	"author": "Pooya Golchian <pooya@golchian.com>",
