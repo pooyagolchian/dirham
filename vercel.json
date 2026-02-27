@@ -1,7 +1,0 @@
-{
-	"$schema": "https://openapi.vercel.sh/vercel.json",
-	"buildCommand": "pnpm turbo run build --filter=@dirham/docs",
-	"outputDirectory": "apps/docs/dist",
-	"installCommand": "pnpm install --frozen-lockfile",
-	"framework": "vite"
-}
