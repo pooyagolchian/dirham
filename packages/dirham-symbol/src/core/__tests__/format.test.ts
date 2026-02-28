@@ -86,4 +86,23 @@ describe("parseDirham", () => {
 		// replaceAll fix: previously only first AED was stripped
 		expect(parseDirham("AED AED 100.00")).toBe(100);
 	});
+
+	it("should parse Arabic-Indic digits (ar-AE round-trip)", () => {
+		// formatDirham with ar-AE locale produces Arabic-Indic digits
+		const formatted = formatDirham(1234.5, { locale: "ar-AE" });
+		expect(parseDirham(formatted)).toBe(1234.5);
+	});
+
+	it("should parse standalone Arabic-Indic digit string", () => {
+		// \u0661\u066C\u0662\u0663\u0664\u066B\u0665\u0660 = ١٬٢٣٤٫٥٠ (1,234.50 in Arabic)
+		const arabicValue = "\u0661\u066C\u0662\u0663\u0664\u066B\u0665\u0660 \u20C3";
+		expect(parseDirham(arabicValue)).toBe(1234.5);
+	});
+
+	it("should throw when normalizeArabicNumerals is false and input has Arabic digits", () => {
+		const arabicValue = "\u0661\u0660\u0660\u066B\u0660\u0660 \u20C3";
+		expect(() =>
+			parseDirham(arabicValue, { normalizeArabicNumerals: false }),
+		).toThrow();
+	});
 });

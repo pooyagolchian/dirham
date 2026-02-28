@@ -14,7 +14,7 @@ import {
 	Zap,
 } from "lucide-react";
 import type React from "react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import "dirham/css";
 
@@ -27,6 +27,7 @@ import {
 	DIRHAM_FONT_FAMILY,
 	DIRHAM_HTML_ENTITY,
 	DIRHAM_UNICODE,
+	DIRHAM_WEIGHT_MAP,
 	formatDirham,
 	parseDirham,
 } from "dirham";
@@ -90,18 +91,6 @@ const FONT_FAMILIES = [
 		category: "System",
 	},
 ];
-
-const WEIGHT_TO_CSS: Record<string, number> = {
-	thin: 100,
-	extralight: 200,
-	light: 300,
-	regular: 400,
-	medium: 500,
-	semibold: 600,
-	bold: 700,
-	extrabold: 800,
-	black: 900,
-};
 
 /**
  * Maps each font category to the matching Dirham variant font.
@@ -198,14 +187,21 @@ function DirhamText({
 }) {
 	const CHAR = "\u20C3";
 	const dirhamFont = variant || '"Dirham"';
-	if (!children.includes(CHAR)) {
+
+	// Memoize the split so this only recomputes when the string content changes,
+	// not on every parent re-render.
+	const parts = useMemo(
+		() => (children.includes(CHAR) ? children.split(CHAR) : null),
+		[children],
+	);
+
+	if (!parts) {
 		return (
 			<span className={className} style={style}>
 				{children}
 			</span>
 		);
 	}
-	const parts = children.split(CHAR);
 	return (
 		<span className={className} style={style}>
 			{parts.map((part, i) => (
@@ -758,7 +754,7 @@ function Price({ amount }: { amount: number }) {
 						<div
 							style={{
 								fontFamily: dirhamFontStack(selectedFont),
-								fontWeight: WEIGHT_TO_CSS[selectedWeight],
+								fontWeight: DIRHAM_WEIGHT_MAP[selectedWeight],
 								fontSize: `${size}px`,
 								lineHeight: 1.2,
 							}}
@@ -854,7 +850,7 @@ function Price({ amount }: { amount: number }) {
 										<div
 											key={w}
 											className="flex items-center justify-between px-3 py-2 rounded-lg bg-neutral-950/60"
-											style={{ fontWeight: WEIGHT_TO_CSS[w] }}
+											style={{ fontWeight: DIRHAM_WEIGHT_MAP[w] }}
 										>
 											<span className="text-white text-base">
 												{DIRHAM_UNICODE} 1,250.00

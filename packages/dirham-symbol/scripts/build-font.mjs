@@ -219,9 +219,9 @@ async function buildFont() {
 	mkdirSync(cssDist, { recursive: true });
 
 	console.log("Building font variants…");
-	for (const variant of VARIANTS) {
-		await buildVariant(svgtofont, variant);
-	}
+	// Build all 5 variants concurrently — each writes to a separate output
+	// directory so there are no race conditions.
+	await Promise.all(VARIANTS.map((variant) => buildVariant(svgtofont, variant)));
 
 	writeFileSync(resolve(cssDist, "dirham.css"), generateCSS(), "utf-8");
 	writeFileSync(resolve(cssDist, "dirham.scss"), generateSCSS(), "utf-8");

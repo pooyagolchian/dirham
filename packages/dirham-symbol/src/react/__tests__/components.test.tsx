@@ -115,3 +115,43 @@ describe("DirhamIcon", () => {
 		expect(html).toContain("font-size:2rem");
 	});
 });
+describe("DirhamSymbol weight prop", () => {
+	it("regular weight renders no stroke attribute", () => {
+		const html = renderToString(
+			React.createElement(DirhamSymbol, { weight: "regular" }),
+		);
+		// DIRHAM_STROKE_MAP.regular === 0, so no stroke props should be applied
+		expect(html).not.toContain("stroke-width");
+		expect(html).not.toContain('stroke="');
+	});
+
+	it("bold weight renders stroke-width", () => {
+		const html = renderToString(
+			React.createElement(DirhamSymbol, { weight: "bold" }),
+		);
+		// DIRHAM_STROKE_MAP.bold > 0
+		expect(html).toContain("stroke-width");
+	});
+
+	it("bold weight renders stroke with paint-order", () => {
+		const html = renderToString(
+			React.createElement(DirhamSymbol, { weight: "bold" }),
+		);
+		expect(html).toContain("paint-order");
+	});
+
+	it("black weight renders larger stroke-width than bold", () => {
+		const boldHtml = renderToString(
+			React.createElement(DirhamSymbol, { weight: "bold" }),
+		);
+		const blackHtml = renderToString(
+			React.createElement(DirhamSymbol, { weight: "black" }),
+		);
+		// Extract stroke-width values and compare numerically
+		const extract = (html: string) => {
+			const m = html.match(/stroke-width="(\d+)"/);
+			return m ? Number(m[1]) : 0;
+		};
+		expect(extract(blackHtml)).toBeGreaterThan(extract(boldHtml));
+	});
+});

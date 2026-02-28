@@ -1,5 +1,5 @@
 import type React from "react";
-import { forwardRef } from "react";
+import { forwardRef, memo } from "react";
 
 export interface DirhamIconProps
 	extends Omit<React.HTMLProps<HTMLElement>, "children" | "size"> {
@@ -43,7 +43,7 @@ export interface DirhamIconProps
  * <DirhamIcon size={32} color="green" />
  * ```
  */
-export const DirhamIcon = forwardRef<HTMLElement, DirhamIconProps>(
+const DirhamIconBase = forwardRef<HTMLElement, DirhamIconProps>(
 	(
 		{
 			size,
@@ -78,4 +78,8 @@ export const DirhamIcon = forwardRef<HTMLElement, DirhamIconProps>(
 	},
 );
 
+DirhamIconBase.displayName = "DirhamIcon";
+
+// Memoize so the component only re-renders when its own props change.
+export const DirhamIcon = memo(DirhamIconBase);
 DirhamIcon.displayName = "DirhamIcon";

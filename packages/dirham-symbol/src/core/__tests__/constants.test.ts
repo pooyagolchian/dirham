@@ -6,8 +6,10 @@ import {
 	DIRHAM_CURRENCY_CODE,
 	DIRHAM_FONT_FAMILY,
 	DIRHAM_HTML_ENTITY,
+	DIRHAM_STROKE_MAP,
 	DIRHAM_SYMBOL_TEXT,
 	DIRHAM_UNICODE,
+	DIRHAM_WEIGHT_MAP,
 } from "../constants";
 
 describe("constants", () => {
@@ -42,4 +44,26 @@ describe("constants", () => {
 	it("should export correct codepoint number", () => {
 		expect(DIRHAM_CODEPOINT).toBe(0x20c3);
 	});
+});
+
+describe("DIRHAM_WEIGHT_MAP", () => {
+	it("maps thin to 100", () => expect(DIRHAM_WEIGHT_MAP.thin).toBe(100));
+	it("maps regular to 400", () => expect(DIRHAM_WEIGHT_MAP.regular).toBe(400));
+	it("maps bold to 700", () => expect(DIRHAM_WEIGHT_MAP.bold).toBe(700));
+	it("maps black to 900", () => expect(DIRHAM_WEIGHT_MAP.black).toBe(900));
+	it("covers all 9 weight steps", () =>
+		expect(Object.keys(DIRHAM_WEIGHT_MAP)).toHaveLength(9));
+});
+
+describe("DIRHAM_STROKE_MAP", () => {
+	it("regular weight has no stroke (strokeWidth 0)", () =>
+		expect(DIRHAM_STROKE_MAP.regular).toBe(0));
+	it("thin weight has no stroke", () =>
+		expect(DIRHAM_STROKE_MAP.thin).toBe(0));
+	it("bold weight has positive stroke", () =>
+		expect(DIRHAM_STROKE_MAP.bold).toBeGreaterThan(0));
+	it("black weight has the largest stroke", () =>
+		expect(DIRHAM_STROKE_MAP.black).toBeGreaterThan(DIRHAM_STROKE_MAP.bold));
+	it("covers all 9 weight steps", () =>
+		expect(Object.keys(DIRHAM_STROKE_MAP)).toHaveLength(9));
 });

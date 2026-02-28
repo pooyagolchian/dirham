@@ -4,6 +4,25 @@ import {
 	DIRHAM_UNICODE,
 } from "./constants";
 
+// ─── Intl.NumberFormat cache ─────────────────────────────────────────────────
+// Constructing Intl.NumberFormat is expensive (~µs). Cache instances keyed on
+// "locale:decimals" so repeated calls (e.g., rendering a price list) reuse
+// the same formatter instead of allocating a new object each time.
+const _fmtCache = new Map<string, Intl.NumberFormat>();
+
+function getFormatter(locale: string, decimals: number): Intl.NumberFormat {
+	const key = `${locale}:${decimals}`;
+	let fmt = _fmtCache.get(key);
+	if (!fmt) {
+		fmt = new Intl.NumberFormat(locale, {
+			minimumFractionDigits: decimals,
+			maximumFractionDigits: decimals,
+		});
+		_fmtCache.set(key, fmt);
+	}
+	return fmt;
+}
+
 /**
  * Options for formatting a Dirham amount.
  */
@@ -80,11 +99,8 @@ export function formatDirham(
 		symbolFirst = !locale.startsWith("ar");
 	}
 
-	// Format the number
-	const formatted = new Intl.NumberFormat(locale, {
-		minimumFractionDigits: decimals,
-		maximumFractionDigits: decimals,
-	}).format(amount);
+	// Format the number (use cached formatter)
+	const formatted = getFormatter(locale, decimals).format(amount);
 
 	return symbolFirst
 		? `${symbol}${separator}${formatted}`
@@ -92,22 +108,54 @@ export function formatDirham(
 }
 
 /**
+ * Options for parsing a Dirham-formatted string.
+ */
+export interface ParseDirhamOptions {
+	/**
+	 * Normalize Arabic-Indic digits (٠١٢٣٤٥٦٧٨٩ / U+0660–U+0669) to ASCII
+	 * digits before parsing. Enables round-tripping strings produced by
+	 * `formatDirham` with Arabic locales (e.g. `"ar-AE"`).
+	 * @default true
+	 */
+	normalizeArabicNumerals?: boolean;
+}
+
+/**
  * Parse a Dirham-formatted string back to a number.
  * Strips currency symbols, codes, and formatting characters.
+ * By default also normalizes Arabic-Indic digits so strings produced by
+ * `formatDirham({ locale: "ar-AE" })` round-trip correctly.
  *
  * @example
  * ```ts
- * parseDirham("\u20C3 1,234.50"); // 1234.5
- * parseDirham("AED 100.00");      // 100
+ * parseDirham("\u20C3 1,234.50");                  // 1234.5
+ * parseDirham("AED 100.00");                        // 100
+ * parseDirham("١٬٢٣٤٫٥٠ \u20C3");                  // 1234.5
+ * parseDirham("١٠٠٫٠٠ \u20C3", { normalizeArabicNumerals: false }); // throws
  * ```
  */
-export function parseDirham(value: string): number {
-	const cleaned = value
+export function parseDirham(
+	value: string,
+	options: ParseDirhamOptions = {},
+): number {
+	const { normalizeArabicNumerals = true } = options;
+
+	let cleaned = value
 		.replaceAll(DIRHAM_UNICODE, "")
 		.replaceAll(DIRHAM_SYMBOL_TEXT, "")
 		.replaceAll(DIRHAM_CURRENCY_CODE, "")
-		.replace(/[,\s\u00A0]/g, "")
+		.replace(/[,\s\u00A0\u066C]/g, "") // ASCII comma, whitespace, NBSP, Arabic thousands sep
 		.trim();
+
+	if (normalizeArabicNumerals) {
+		// Arabic-Indic digits U+0660–U+0669 → ASCII 0–9
+		cleaned = cleaned.replace(
+			/[\u0660-\u0669]/g,
+			(d) => String(d.charCodeAt(0) - 0x0660),
+		);
+		// Arabic decimal separator (U+066B) → '.'
+		cleaned = cleaned.replace(/\u066B/g, ".");
+	}
 
 	const result = Number.parseFloat(cleaned);
 	if (Number.isNaN(result)) {

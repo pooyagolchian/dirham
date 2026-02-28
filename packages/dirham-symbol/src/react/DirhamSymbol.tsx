@@ -1,5 +1,5 @@
 import type React from "react";
-import { forwardRef } from "react";
+import { forwardRef, memo } from "react";
 import { DIRHAM_STROKE_MAP, type DirhamWeight } from "../core/constants";
 
 export interface DirhamSymbolProps
@@ -53,7 +53,7 @@ export interface DirhamSymbolProps
  * <span>100 <DirhamSymbol size="1em" /></span>
  * ```
  */
-export const DirhamSymbol = forwardRef<SVGSVGElement, DirhamSymbolProps>(
+const DirhamSymbolBase = forwardRef<SVGSVGElement, DirhamSymbolProps>(
 	(
 		{
 			size = 24,
@@ -98,4 +98,10 @@ export const DirhamSymbol = forwardRef<SVGSVGElement, DirhamSymbolProps>(
 	},
 );
 
+DirhamSymbolBase.displayName = "DirhamSymbol";
+
+// Memoize so the component only re-renders when its own props change.
+// This is important when DirhamSymbol is used inside list items or tables
+// that re-render frequently due to unrelated parent state changes.
+export const DirhamSymbol = memo(DirhamSymbolBase);
 DirhamSymbol.displayName = "DirhamSymbol";
