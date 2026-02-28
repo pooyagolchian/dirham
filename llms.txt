@@ -14,10 +14,10 @@ This is the live demo and documentation site for the `dirham` npm package. It sh
 
 ## Links
 
-- This site: https://dirham.vercel.app
+- This site: https://pooya.blog/dirham/
 - npm package: https://www.npmjs.com/package/dirham
 - GitHub repository: https://github.com/pooyagolchian/dirham
-- Package llms.txt: https://dirham.vercel.app/llms-package.txt
+- Package llms.txt: https://pooya.blog/dirham/llms-package.txt
 
 ## Quick Start
 

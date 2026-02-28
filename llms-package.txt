@@ -10,7 +10,7 @@ The glyph is sourced from the Central Bank of UAE and mapped to the official Uni
 
 ## Links
 
-- Live Demo: https://dirham.vercel.app
+- Live Demo: https://pooya.blog/dirham/
 - npm: https://www.npmjs.com/package/dirham
 - GitHub: https://github.com/pooyagolchian/dirham
 - License: MIT
