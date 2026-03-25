@@ -73,6 +73,8 @@ Use conventional prefixes: `feat/`, `fix/`, `docs/`, `chore/`, `refactor/`.
 
 - **Core utilities** — `packages/dirham-symbol/src/core/`
 - **React components** — `packages/dirham-symbol/src/react/`
+- **Web Component** — `packages/dirham-symbol/src/web-component/`
+- **CLI** — `packages/dirham-symbol/src/cli.ts`
 - **SVG source** — `packages/dirham-symbol/src/svg/dirham.svg`
 - **Font build** — `packages/dirham-symbol/scripts/build-font.mjs`
 - **Demo site** — `apps/docs/src/`

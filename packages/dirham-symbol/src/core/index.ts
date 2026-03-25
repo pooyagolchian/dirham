@@ -14,3 +14,8 @@ export {
 } from "./constants";
 
 export { formatDirham, parseDirham, type FormatDirhamOptions } from "./format";
+
+export {
+	copyDirhamSymbol,
+	type DirhamCopyFormat,
+} from "./clipboard";

@@ -2,6 +2,7 @@ import React from "react";
 import { renderToString } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { DirhamIcon } from "../DirhamIcon";
+import { DirhamPrice } from "../DirhamPrice";
 import { DirhamSymbol } from "../DirhamSymbol";
 
 describe("DirhamSymbol", () => {
@@ -153,5 +154,73 @@ describe("DirhamSymbol weight prop", () => {
 			return m ? Number(m[1]) : 0;
 		};
 		expect(extract(blackHtml)).toBeGreaterThan(extract(boldHtml));
+	});
+});
+
+describe("DirhamPrice", () => {
+	it("renders a span with formatted amount", () => {
+		const html = renderToString(
+			React.createElement(DirhamPrice, { amount: 100 }),
+		);
+		expect(html).toContain("<span");
+		expect(html).toContain("100");
+	});
+
+	it("renders inline SVG symbol by default", () => {
+		const html = renderToString(
+			React.createElement(DirhamPrice, { amount: 250 }),
+		);
+		expect(html).toContain("<svg");
+		expect(html).toContain("250");
+	});
+
+	it("renders AED code when useCode is true", () => {
+		const html = renderToString(
+			React.createElement(DirhamPrice, { amount: 100, useCode: true }),
+		);
+		expect(html).toContain("AED");
+		expect(html).not.toContain("<svg");
+	});
+
+	it("accepts custom decimals", () => {
+		const html = renderToString(
+			React.createElement(DirhamPrice, { amount: 100, decimals: 0 }),
+		);
+		expect(html).toContain("100");
+		expect(html).not.toContain("100.00");
+	});
+
+	it("renders em dash for non-finite amount", () => {
+		const html = renderToString(
+			React.createElement(DirhamPrice, { amount: Number.NaN }),
+		);
+		expect(html).toContain("—");
+	});
+
+	it("has white-space nowrap by default", () => {
+		const html = renderToString(
+			React.createElement(DirhamPrice, { amount: 100 }),
+		);
+		expect(html).toContain("white-space:nowrap");
+	});
+
+	it("applies custom className", () => {
+		const html = renderToString(
+			React.createElement(DirhamPrice, {
+				amount: 100,
+				className: "text-green-500 font-bold",
+			}),
+		);
+		expect(html).toContain('class="text-green-500 font-bold"');
+	});
+
+	it("renders compact notation", () => {
+		const html = renderToString(
+			React.createElement(DirhamPrice, {
+				amount: 5000000,
+				notation: "compact",
+			}),
+		);
+		expect(html).toContain("5M");
 	});
 });

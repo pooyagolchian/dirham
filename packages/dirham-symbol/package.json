@@ -14,18 +14,34 @@
 	},
 	"keywords": [
 		"dirham",
+		"dirham symbol",
+		"dirham symbol text copy",
+		"dirham sign",
 		"aed",
+		"aed symbol",
 		"uae",
+		"uae dirham sign",
+		"u+20c3",
+		"u20c3",
 		"currency",
+		"currency symbol",
 		"symbol",
 		"unicode",
 		"font",
+		"web font",
 		"icon",
 		"react",
-		"u20c3",
+		"web component",
+		"css",
 		"arabic",
 		"emoji",
-		"payment"
+		"payment",
+		"fintech",
+		"dubai",
+		"middle east",
+		"copy clipboard",
+		"intl",
+		"formatting"
 	],
 	"type": "module",
 	"main": "./dist/index.cjs",
@@ -50,7 +66,15 @@
 		"./font/sans/woff2": "./dist/fonts/sans/dirham-sans.woff2",
 		"./font/serif/woff2": "./dist/fonts/serif/dirham-serif.woff2",
 		"./font/mono/woff2": "./dist/fonts/mono/dirham-mono.woff2",
-		"./font/arabic/woff2": "./dist/fonts/arabic/dirham-arabic.woff2"
+		"./font/arabic/woff2": "./dist/fonts/arabic/dirham-arabic.woff2",
+		"./web-component": {
+			"types": "./dist/web-component/index.d.ts",
+			"import": "./dist/web-component/index.js",
+			"require": "./dist/web-component/index.cjs"
+		}
+	},
+	"bin": {
+		"dirham": "./dist/cli.cjs"
 	},
 	"files": [
 		"dist",

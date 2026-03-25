@@ -27,8 +27,9 @@ yarn add dirham
 
 | Subpath | Description |
 |---|---|
-| `dirham` | Core JS/TS utilities (formatDirham, parseDirham, constants) |
-| `dirham/react` | React SVG component (DirhamSymbol) and font icon component (DirhamIcon) |
+| `dirham` | Core JS/TS utilities (formatDirham, parseDirham, copyDirhamSymbol, constants) |
+| `dirham/react` | React components (DirhamSymbol, DirhamIcon, DirhamPrice) |
+| `dirham/web-component` | Framework-agnostic `<dirham-symbol>` and `<dirham-price>` custom elements |
 | `dirham/css` | CSS with @font-face for the Dirham web font |
 | `dirham/scss` | SCSS with @font-face for the Dirham web font |
 | `dirham/font/woff2` | WOFF2 font file |
@@ -57,6 +58,26 @@ Props:
 - `aria-label`: string (default: "UAE Dirham") — accessible label
 
 Weight values: thin, extralight, light, regular, medium, semibold, bold, extrabold, black
+
+### DirhamPrice
+
+All-in-one price display component. Renders the SVG symbol inline with a formatted amount.
+
+```tsx
+import { DirhamPrice } from "dirham/react";
+<DirhamPrice amount={1234.5} />
+<DirhamPrice amount={5000000} notation="compact" />
+<DirhamPrice amount={99.9} decimals={0} useCode />
+```
+
+Props:
+- `amount`: number (required) — the numeric value to display
+- `locale`: string (default: "en-AE") — locale for number formatting
+- `decimals`: number (default: 2) — decimal places
+- `useCode`: boolean (default: false) — show "AED" text instead of symbol
+- `notation`: "standard" | "compact" (default: "standard") — compact shows K/M/B
+- `symbolSize`: number | string (default: "0.75em") — size of the inline symbol
+- `weight`: DirhamWeight (default: "regular") — symbol weight
 
 ### DirhamIcon
 
@@ -101,6 +122,7 @@ formatDirham(1234.5, { locale: "ar-AE" });     // "١٬٢٣٤٫٥٠ د.إ"
 formatDirham(100, { useCode: true });          // "AED 100.00"
 formatDirham(100, { decimals: 0 });            // "د.إ 100"
 formatDirham(100, { symbolFirst: false });     // "100.00 د.إ"
+formatDirham(5000000, { notation: "compact" }); // "د.إ 5M"
 ```
 
 Options:
@@ -109,6 +131,7 @@ Options:
 - `symbolFirst`: boolean — symbol placement (auto-detected from locale if omitted)
 - `useCode`: boolean (default: false) — use "AED" instead of symbol
 - `separator`: string (default: non-breaking space) — between symbol and amount
+- `notation`: "standard" | "compact" (default: "standard") — compact uses K/M/B abbreviations
 
 ### parseDirham(formatted)
 
@@ -118,6 +141,62 @@ Parse a formatted Dirham string back to a number.
 parseDirham("د.إ 1,234.50");  // 1234.5
 parseDirham("AED 100.00");    // 100
 ```
+
+### copyDirhamSymbol(format?)
+
+Copy the Dirham symbol to the clipboard in various formats.
+
+```ts
+import { copyDirhamSymbol } from "dirham";
+await copyDirhamSymbol();          // copies "\u20C3" (unicode)
+await copyDirhamSymbol("html");    // copies "&#x20C3;"
+await copyDirhamSymbol("css");     // copies "\\20C3"
+await copyDirhamSymbol("arabic");  // copies "د.إ"
+```
+
+Formats: `"unicode"` (default), `"html"`, `"css"`, `"arabic"`
+
+## Web Component
+
+Framework-agnostic custom elements, usable in any HTML page or framework (Vue, Angular, Svelte, etc.).
+
+```html
+<script type="module">
+  import "dirham/web-component";
+</script>
+<dirham-symbol size="24" color="currentColor" weight="regular"></dirham-symbol>
+<dirham-price amount="1250"></dirham-price>
+<dirham-price amount="5000000" notation="compact"></dirham-price>
+<dirham-price amount="500" use-code></dirham-price>
+```
+
+`<dirham-symbol>` attributes: `size`, `color`, `weight`, `aria-label`
+`<dirham-price>` attributes: `amount`, `locale`, `decimals`, `notation`, `use-code`, `symbol-size`, `weight`, `currency`
+
+## CDN Usage (No Install)
+
+Use via jsDelivr or unpkg without npm install:
+
+```html
+<!-- CSS web font -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/dirham/dist/css/dirham.css" />
+<i class="dirham-symbol"></i>
+
+<!-- Web Component -->
+<script type="module" src="https://cdn.jsdelivr.net/npm/dirham/dist/web-component/index.js"></script>
+<dirham-symbol size="20"></dirham-symbol>
+<dirham-price amount="1250"></dirham-price>
+```
+
+## CLI
+
+```bash
+npx dirham          # prints symbol info table
+npx dirham copy     # copies Unicode symbol to clipboard
+npx dirham copy html # copies HTML entity
+```
+
+Formats: `unicode`, `html`, `css`, `js`, `arabic`, `code`
 
 ## CSS / Web Font Usage
 
@@ -157,3 +236,5 @@ Migration: Zero — when native support arrives, the web font becomes optional a
 - React 17+ compatible (react is an optional peer dependency)
 - SSR-safe (SVG component requires no font loading)
 - Zero runtime dependencies for the core module
+- Web Component (custom element) for framework-agnostic usage
+- CLI tool (`npx dirham`) for quick access

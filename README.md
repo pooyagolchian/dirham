@@ -112,6 +112,40 @@ import "dirham/css";
 @use "dirham/scss";
 ```
 
+### React — Price component
+
+Combines formatting + symbol into a single component:
+
+```tsx
+import { DirhamPrice } from "dirham/react";
+
+<DirhamPrice amount={1250} />
+<DirhamPrice amount={5000000} notation="compact" weight="bold" />
+<DirhamPrice amount={100} useCode />
+```
+
+### Web Component
+
+Framework-agnostic — works in Vue, Angular, Svelte, or vanilla HTML:
+
+```html
+<script type="module" src="https://cdn.jsdelivr.net/npm/dirham/dist/web-component/index.js"></script>
+
+<dirham-symbol size="24" weight="bold"></dirham-symbol>
+<dirham-price amount="1250"></dirham-price>
+<dirham-price amount="5000000" notation="compact"></dirham-price>
+```
+
+Or import in a bundler:
+
+```ts
+import "dirham/web-component";
+```
+
+**Vue** — `<dirham-price amount="1250" />` · **Angular** — add `CUSTOM_ELEMENTS_SCHEMA` · **Svelte** — works out of the box.
+
+See the [package README](packages/dirham-symbol/README.md) for full framework examples.
+
 ### JavaScript utilities
 
 ```ts
@@ -129,9 +163,40 @@ import {
 formatDirham(1234.5); // "\u20C3 1,234.50"
 formatDirham(1234.5, { locale: "ar-AE" }); // "١٬٢٣٤٫٥٠ \u20C3"
 formatDirham(100, { useCode: true }); // "AED 100.00"
+formatDirham(5000000, { notation: "compact" }); // "\u20C3 5M"
 
 // Parse a formatted string back to a number
 parseDirham("\u20C3 1,234.50"); // 1234.5
+```
+
+### CDN (no bundler)
+
+```html
+<!-- CSS web font -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/dirham/dist/css/dirham.css" />
+<i class="dirham-symbol" aria-label="UAE Dirham"></i>
+
+<!-- Web Component -->
+<script type="module" src="https://cdn.jsdelivr.net/npm/dirham/dist/web-component/index.js"></script>
+<dirham-symbol size="20"></dirham-symbol>
+```
+
+### Clipboard utility
+
+```ts
+import { copyDirhamSymbol } from "dirham";
+
+await copyDirhamSymbol();          // copies \u20C3 to clipboard
+await copyDirhamSymbol("html");    // copies &#x20C3;
+await copyDirhamSymbol("css");     // copies \20C3
+```
+
+### CLI
+
+```bash
+npx dirham              # Print symbol info
+npx dirham copy         # Copy \u20C3 to clipboard
+npx dirham copy html    # Copy HTML entity
 ```
 
 ### Direct font files
@@ -146,13 +211,14 @@ Font files are available via named subpaths:
 
 ## Package exports
 
-| Import path     | Description                                     |
-| --------------- | ----------------------------------------------- |
-| `dirham`        | Core utilities and constants                    |
-| `dirham/react`  | React components (`DirhamSymbol`, `DirhamIcon`) |
-| `dirham/css`    | CSS with `@font-face`                           |
-| `dirham/scss`   | SCSS with `@font-face`                          |
-| `dirham/font/*` | Raw font files                                  |
+| Import path              | Description                                          |
+| ------------------------ | ---------------------------------------------------- |
+| `dirham`                 | Core utilities, constants, clipboard                 |
+| `dirham/react`           | `DirhamSymbol`, `DirhamIcon`, `DirhamPrice`          |
+| `dirham/web-component`   | `<dirham-symbol>` custom element                     |
+| `dirham/css`             | CSS with `@font-face`                                |
+| `dirham/scss`            | SCSS with `@font-face`                               |
+| `dirham/font/*`          | Raw font files (woff2, woff, ttf, variants)          |
 
 ---
 

@@ -10,13 +10,18 @@ import {
 // the same formatter instead of allocating a new object each time.
 const _fmtCache = new Map<string, Intl.NumberFormat>();
 
-function getFormatter(locale: string, decimals: number): Intl.NumberFormat {
-	const key = `${locale}:${decimals}`;
+function getFormatter(
+	locale: string,
+	decimals: number,
+	notation: "standard" | "compact" = "standard",
+): Intl.NumberFormat {
+	const key = `${locale}:${decimals}:${notation}`;
 	let fmt = _fmtCache.get(key);
 	if (!fmt) {
 		fmt = new Intl.NumberFormat(locale, {
-			minimumFractionDigits: decimals,
+			minimumFractionDigits: notation === "compact" ? 0 : decimals,
 			maximumFractionDigits: decimals,
+			...(notation === "compact" && { notation: "compact", compactDisplay: "short" }),
 		});
 		_fmtCache.set(key, fmt);
 	}
@@ -58,6 +63,14 @@ export interface FormatDirhamOptions {
 	 * @default " " (non-breaking space)
 	 */
 	separator?: string;
+
+	/**
+	 * Number notation style.
+	 * - `"standard"` — full digits (e.g. 1,500,000.00)
+	 * - `"compact"` — abbreviated (e.g. 1.5M)
+	 * @default "standard"
+	 */
+	notation?: "standard" | "compact";
 }
 
 /**
@@ -69,6 +82,7 @@ export interface FormatDirhamOptions {
  * formatDirham(1234.5);       // "\u20C3 1,234.50"
  * formatDirham(100, { locale: "ar-AE" }); // "100.00 \u20C3"
  * formatDirham(100, { useCode: true });   // "AED 100.00"
+ * formatDirham(1500000, { notation: "compact" }); // "\u20C3 1.5M"
  * ```
  */
 export function formatDirham(
@@ -86,6 +100,7 @@ export function formatDirham(
 		decimals = 2,
 		useCode = false,
 		separator = "\u00A0", // non-breaking space
+		notation = "standard",
 	} = options;
 
 	const symbol = useCode ? DIRHAM_CURRENCY_CODE : DIRHAM_UNICODE;
@@ -100,7 +115,7 @@ export function formatDirham(
 	}
 
 	// Format the number (use cached formatter)
-	const formatted = getFormatter(locale, decimals).format(amount);
+	const formatted = getFormatter(locale, decimals, notation).format(amount);
 
 	return symbolFirst
 		? `${symbol}${separator}${formatted}`

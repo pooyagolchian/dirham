@@ -29,4 +29,28 @@ export default defineConfig([
 			options.jsx = "automatic";
 		},
 	},
+	// Web Component entry (framework-agnostic)
+	{
+		entry: { "web-component/index": "src/web-component/index.ts" },
+		format: ["esm", "cjs"],
+		target: "es2021",
+		dts: true,
+		sourcemap: true,
+		clean: false,
+		outDir: "dist",
+		splitting: false,
+		treeshake: true,
+	},
+	// CLI entry
+	{
+		entry: { cli: "src/cli.ts" },
+		format: ["cjs"],
+		target: "node18",
+		dts: false,
+		sourcemap: false,
+		clean: false,
+		outDir: "dist",
+		splitting: false,
+		banner: { js: "#!/usr/bin/env node" },
+	},
 ]);

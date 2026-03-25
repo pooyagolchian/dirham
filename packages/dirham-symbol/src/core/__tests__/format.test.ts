@@ -58,6 +58,25 @@ describe("formatDirham", () => {
 	it("should throw on -Infinity input", () => {
 		expect(() => formatDirham(Number.NEGATIVE_INFINITY)).toThrow(RangeError);
 	});
+
+	it("should format with compact notation", () => {
+		const result = formatDirham(1500000, { notation: "compact" });
+		expect(result).toContain(SYM);
+		// Should contain abbreviated form like 1.5M or 2M
+		expect(result).toMatch(/[MK]/i);
+	});
+
+	it("should format small numbers with compact notation as full digits", () => {
+		const result = formatDirham(100, { notation: "compact" });
+		expect(result).toContain(SYM);
+		expect(result).toContain("100");
+	});
+
+	it("should format compact with useCode", () => {
+		const result = formatDirham(2000000, { notation: "compact", useCode: true });
+		expect(result).toContain("AED");
+		expect(result).toMatch(/[MK]/i);
+	});
 });
 
 describe("parseDirham", () => {
