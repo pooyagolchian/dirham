@@ -349,7 +349,7 @@ export function App() {
 						<span className="font-semibold tracking-tight text-white">
 							dirham
 						</span>
-						<Badge>v1.2</Badge>
+						<Badge>v1.3</Badge>
 					</div>
 					<div className="flex items-center gap-6">
 						<a
@@ -394,8 +394,10 @@ export function App() {
 							dirham
 						</h1>
 						<p className="text-xl text-neutral-400 max-w-xl leading-relaxed mb-12">
-							The UAE Dirham currency symbol as a web font, CSS, and React
-							component. Built on{" "}
+							The UAE Dirham currency symbol as a web font, CSS, React component,
+							and{" "}
+							<strong className="text-white font-medium">Web Component</strong>{" "}
+							for Vue, Angular, Svelte &amp; vanilla JS. Built on{" "}
 							<strong className="text-white font-medium">U+20C3</strong>, the
 							official Unicode 18.0 codepoint.
 						</p>

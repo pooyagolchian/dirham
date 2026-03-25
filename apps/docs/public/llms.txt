@@ -1,6 +1,6 @@
 # Dirham — UAE Dirham Currency Symbol
 
-> Interactive demo and documentation for the `dirham` npm package — UAE Dirham (د.إ) currency symbol as a web font, CSS, and React component.
+> Interactive demo and documentation for the `dirham` npm package — UAE Dirham (د.إ) currency symbol as a web font, CSS, React component, and Web Component for Vue, Angular, Svelte & vanilla JS.
 
 ## About This Site
 
@@ -10,7 +10,7 @@ This is the live demo and documentation site for the `dirham` npm package. It sh
 - React SVG component (`DirhamSymbol`) with 9 weight variants
 - `DirhamPrice` component for formatted price display with compact notation (K/M/B)
 - Font icon component (`DirhamIcon`) using CSS @font-face
-- Framework-agnostic `<dirham-symbol>` Web Component
+- Framework-agnostic `<dirham-symbol>` and `<dirham-price>` Web Components (Vue, Angular, Svelte, vanilla JS)
 - JavaScript formatting utilities (`formatDirham`, `parseDirham`, `copyDirhamSymbol`)
 - CDN usage via jsDelivr (no npm install required)
 - CLI tool (`npx dirham`) for quick info and clipboard copy

@@ -1,5 +1,25 @@
 # dirham
 
+## 1.3.0
+
+### Minor Changes
+
+- **`<dirham-price>` Web Component** — new framework-agnostic custom element for displaying formatted prices. Works in Vue, Angular, Svelte, and vanilla HTML/JS without any wrapper.
+
+  ```html
+  <dirham-price amount="1250"></dirham-price>
+  <dirham-price amount="5000000" notation="compact"></dirham-price>
+  <dirham-price amount="500" use-code></dirham-price>
+  ```
+
+  Attributes: `amount`, `locale`, `decimals`, `notation`, `use-code`, `symbol-size`, `weight`, `currency`
+
+- **Framework integration docs** — added complete Vue, Angular, and Svelte examples for both `<dirham-symbol>` and `<dirham-price>` Web Components
+
+- **`DirhamPrice` className prop** — explicitly documented `className` support for custom styling (Tailwind, CSS modules, etc.)
+
+- **Demo page** — new "Framework Integration" section with code examples for Vue (v2/v3), Angular (v14+), Svelte (v3/v4/v5), and Vanilla JS, plus a `<dirham-price>` attributes reference table
+
 ## 1.2.0
 
 ### Minor Changes

@@ -6,7 +6,7 @@
 [![Unicode 18.0](https://img.shields.io/badge/Unicode_18.0-U%2B20C3-16a34a)](https://www.unicode.org/charts/PDF/U20A0.pdf)
 [![Demo](https://img.shields.io/badge/Demo-pooya.blog%2Fdirham-0ea5e9)](https://pooya.blog/dirham/)
 
-The UAE Dirham currency symbol (&#x20C3;) as a web font, CSS utility, and React component.
+The UAE Dirham currency symbol (&#x20C3;) as a web font, CSS utility, React component, and **Web Component** for Vue, Angular, Svelte & vanilla JS.
 
 Built on **U+20C3**, the codepoint assigned to the UAE Dirham Sign in Unicode 18.0. Because the package renders the symbol through a custom web font today, it will continue working without any code changes when operating systems ship native Unicode 18.0 support in September 2026.
 
@@ -78,7 +78,7 @@ parseDirham("\u20C3 1,234.50"); // 1234.5
 
 ### React — Price component
 
-Combines formatting + symbol into a single component:
+Combines formatting + symbol into a single component. Accepts `className` for custom styling:
 
 ```tsx
 import { DirhamPrice } from "dirham/react";
@@ -86,6 +86,7 @@ import { DirhamPrice } from "dirham/react";
 <DirhamPrice amount={1250} />
 <DirhamPrice amount={1500000} notation="compact" weight="bold" />
 <DirhamPrice amount={100} useCode />
+<DirhamPrice amount={750} className="text-emerald-400 text-2xl" />
 ```
 
 ### Web Component
@@ -196,7 +197,7 @@ npx dirham copy html    # Copy HTML entity
 | -------------------------- | ------------------------------------------------ |
 | `dirham`                   | Core utilities, constants, clipboard             |
 | `dirham/react`             | `DirhamSymbol`, `DirhamIcon`, `DirhamPrice`      |
-| `dirham/web-component`     | `<dirham-symbol>` custom element                 |
+| `dirham/web-component`     | `<dirham-symbol>` and `<dirham-price>` custom elements |
 | `dirham/css`               | CSS with `@font-face`                            |
 | `dirham/scss`              | SCSS with `@font-face`                           |
 | `dirham/font/woff2`        | WOFF2 font file (default)                        |
