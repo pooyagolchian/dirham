@@ -45,3 +45,14 @@ COPILOT.md
 .github/copilot-instructions.md
 **/*.prompt.md
 **/.copilot/
+
+
+.claude/
+.claude.yaml
+.claude.json
+.claude.yml
+.claude/*
+*.claude.md
+.claude-instructions.md
+.github/claude-instructions.md
+.github/prompts/claude/*
