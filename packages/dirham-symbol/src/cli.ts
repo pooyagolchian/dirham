@@ -18,7 +18,7 @@ const HELP = `
 
   Unicode: ${CODEPOINT} (Unicode 18.0 — UAE DIRHAM SIGN)
   npm:     https://www.npmjs.com/package/dirham
-  Docs:    https://pooya.blog/dirham/
+  Docs:    https://dirham.js.org/
 `;
 
 const INFO = `
@@ -35,7 +35,7 @@ const INFO = `
   │  Unicode Ver:  18.0 (Sep 2026)                     │
   ├──────────────────────────────────────────────────┤
   │  npm install dirham                                │
-  │  https://pooya.blog/dirham/                        │
+  │  https://dirham.js.org/                            │
   └──────────────────────────────────────────────────┘
 `;
 
