@@ -6,9 +6,14 @@
 
 This is the live demo and documentation site for the `dirham` npm package. It showcases:
 - The Dirham symbol (U+20C3) rendered with a custom web font
+- Copy dirham symbol in multiple formats (Unicode, HTML entity, CSS, Arabic text)
 - React SVG component (`DirhamSymbol`) with 9 weight variants
+- `DirhamPrice` component for formatted price display with compact notation (K/M/B)
 - Font icon component (`DirhamIcon`) using CSS @font-face
-- JavaScript formatting utilities (`formatDirham`, `parseDirham`)
+- Framework-agnostic `<dirham-symbol>` Web Component
+- JavaScript formatting utilities (`formatDirham`, `parseDirham`, `copyDirhamSymbol`)
+- CDN usage via jsDelivr (no npm install required)
+- CLI tool (`npx dirham`) for quick info and clipboard copy
 - Font pairing previews with popular typefaces (Geist, Inter, Roboto, Cairo, Vazirmatn, etc.)
 - 5 font variants: default, sans, serif, mono, and Arabic
 
