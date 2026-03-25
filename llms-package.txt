@@ -1,10 +1,10 @@
 # dirham
 
-> UAE Dirham (د.إ) currency symbol as a web font, CSS, and React component — built on the official Unicode 18.0 codepoint U+20C3.
+> UAE Dirham (د.إ) currency symbol as a web font, CSS, React component, and Web Component for Vue, Angular, Svelte & vanilla JS — built on the official Unicode 18.0 codepoint U+20C3.
 
 ## Overview
 
-The `dirham` npm package provides the UAE Dirham currency symbol (U+20C3) for use in web applications. It ships a custom web font, CSS, SCSS, React components, and JavaScript/TypeScript utilities for formatting and parsing Dirham amounts.
+The `dirham` npm package provides the UAE Dirham currency symbol (U+20C3) for use in web applications. It ships a custom web font, CSS, SCSS, React components, framework-agnostic Web Components (`<dirham-symbol>` and `<dirham-price>`), and JavaScript/TypeScript utilities for formatting and parsing Dirham amounts. The Web Components work natively in Vue, Angular, Svelte, and any JavaScript framework — no wrappers needed.
 
 The glyph is sourced from the Central Bank of UAE and mapped to the official Unicode 18.0 codepoint U+20C3 (UAE DIRHAM SIGN), approved by the Unicode Technical Committee on 2025-Jul-22. When OS/browser fonts adopt Unicode 18.0 (expected September 2026), the web font gracefully becomes unnecessary with zero migration needed.
 
@@ -132,17 +132,6 @@ Options:
 - `useCode`: boolean (default: false) — use "AED" instead of symbol
 - `separator`: string (default: non-breaking space) — between symbol and amount
 - `notation`: "standard" | "compact" (default: "standard") — compact uses K/M/B abbreviations
-formatDirham(100, { useCode: true });          // "AED 100.00"
-formatDirham(100, { decimals: 0 });            // "د.إ 100"
-formatDirham(100, { symbolFirst: false });     // "100.00 د.إ"
-```
-
-Options:
-- `locale`: string (default: "en-AE") — locale for number formatting
-- `decimals`: number (default: 2) — decimal places
-- `symbolFirst`: boolean — symbol placement (auto-detected from locale if omitted)
-- `useCode`: boolean (default: false) — use "AED" instead of symbol
-- `separator`: string (default: non-breaking space) — between symbol and amount
 
 ### parseDirham(formatted)
 
