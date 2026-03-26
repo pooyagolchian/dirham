@@ -4,13 +4,13 @@
 [![npm downloads](https://img.shields.io/npm/dm/dirham)](https://www.npmjs.com/package/dirham)
 [![license](https://img.shields.io/npm/l/dirham)](https://github.com/pooyagolchian/dirham/blob/main/LICENSE)
 [![Unicode 18.0](https://img.shields.io/badge/Unicode_18.0-U%2B20C3-16a34a)](https://www.unicode.org/charts/PDF/U20A0.pdf)
-[![Demo](https://img.shields.io/badge/Demo-pooya.blog%2Fdirham-0ea5e9)](https://pooya.blog/dirham/)
+[![Demo](https://img.shields.io/badge/Demo-dirham.js.org-0ea5e9)](https://dirham.js.org/)
 
 The UAE Dirham currency symbol (&#x20C3;) as a web font, CSS utility, React component, and **Web Component** for Vue, Angular, Svelte & vanilla JS.
 
 Built on **U+20C3**, the codepoint assigned to the UAE Dirham Sign in Unicode 18.0. Because the package renders the symbol through a custom web font today, it will continue working without any code changes when operating systems ship native Unicode 18.0 support in September 2026.
 
-[Live Demo](https://pooya.blog/dirham/) &nbsp;&middot;&nbsp; [GitHub](https://github.com/pooyagolchian/dirham) &nbsp;&middot;&nbsp; [npm](https://www.npmjs.com/package/dirham)
+[Live Demo](https://dirham.js.org/) &nbsp;&middot;&nbsp; [GitHub](https://github.com/pooyagolchian/dirham) &nbsp;&middot;&nbsp; [npm](https://www.npmjs.com/package/dirham)
 
 ## Installation
 
@@ -94,7 +94,10 @@ import { DirhamPrice } from "dirham/react";
 Framework-agnostic — works in Vue, Angular, Svelte, or vanilla HTML:
 
 ```html
-<script type="module" src="https://cdn.jsdelivr.net/npm/dirham/dist/web-component/index.js"></script>
+<script
+	type="module"
+	src="https://cdn.jsdelivr.net/npm/dirham/dist/web-component/index.js"
+></script>
 
 <!-- Symbol only -->
 <dirham-symbol size="24" weight="bold"></dirham-symbol>
@@ -122,7 +125,7 @@ import "dirham/web-component";
 | `notation`    | `"standard"` | `"standard"` or `"compact"`               |
 | `use-code`    | —            | Boolean attr — show AED instead of symbol |
 | `symbol-size` | `"1em"`      | SVG symbol width/height                   |
-| `weight`      | `"regular"`  | `thin` · `light` · `regular` · `bold` … |
+| `weight`      | `"regular"`  | `thin` · `light` · `regular` · `bold` …   |
 | `currency`    | `"AED"`      | Currency code when `use-code` is set      |
 
 #### Vue
@@ -133,9 +136,9 @@ import "dirham/web-component";
 </script>
 
 <template>
-  <dirham-symbol size="24" weight="bold" />
-  <dirham-price amount="1250" />
-  <dirham-price amount="5000000" notation="compact" />
+	<dirham-symbol size="24" weight="bold" />
+	<dirham-price amount="1250" />
+	<dirham-price amount="5000000" notation="compact" />
 </template>
 ```
 
@@ -146,11 +149,11 @@ import { CUSTOM_ELEMENTS_SCHEMA, Component } from "@angular/core";
 import "dirham/web-component";
 
 @Component({
-  schemas: [CUSTOM_ELEMENTS_SCHEMA],
-  template: `
-    <dirham-symbol size="24" weight="bold"></dirham-symbol>
-    <dirham-price amount="1250"></dirham-price>
-  `
+	schemas: [CUSTOM_ELEMENTS_SCHEMA],
+	template: `
+		<dirham-symbol size="24" weight="bold"></dirham-symbol>
+		<dirham-price amount="1250"></dirham-price>
+	`,
 })
 export class AppComponent {}
 ```
@@ -169,7 +172,10 @@ export class AppComponent {}
 ### CDN (no bundler)
 
 ```html
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/dirham/dist/css/dirham.css" />
+<link
+	rel="stylesheet"
+	href="https://cdn.jsdelivr.net/npm/dirham/dist/css/dirham.css"
+/>
 <i class="dirham-symbol" aria-label="UAE Dirham"></i>
 ```
 
@@ -178,9 +184,9 @@ export class AppComponent {}
 ```ts
 import { copyDirhamSymbol } from "dirham";
 
-await copyDirhamSymbol();          // copies \u20C3 to clipboard
-await copyDirhamSymbol("html");    // copies &#x20C3;
-await copyDirhamSymbol("css");     // copies \20C3
+await copyDirhamSymbol(); // copies \u20C3 to clipboard
+await copyDirhamSymbol("html"); // copies &#x20C3;
+await copyDirhamSymbol("css"); // copies \20C3
 ```
 
 ### CLI
@@ -193,20 +199,20 @@ npx dirham copy html    # Copy HTML entity
 
 ## Exports
 
-| Import path                | Description                                      |
-| -------------------------- | ------------------------------------------------ |
-| `dirham`                   | Core utilities, constants, clipboard             |
-| `dirham/react`             | `DirhamSymbol`, `DirhamIcon`, `DirhamPrice`      |
+| Import path                | Description                                            |
+| -------------------------- | ------------------------------------------------------ |
+| `dirham`                   | Core utilities, constants, clipboard                   |
+| `dirham/react`             | `DirhamSymbol`, `DirhamIcon`, `DirhamPrice`            |
 | `dirham/web-component`     | `<dirham-symbol>` and `<dirham-price>` custom elements |
-| `dirham/css`               | CSS with `@font-face`                            |
-| `dirham/scss`              | SCSS with `@font-face`                           |
-| `dirham/font/woff2`        | WOFF2 font file (default)                        |
-| `dirham/font/woff`         | WOFF font file                                   |
-| `dirham/font/ttf`          | TTF font file                                    |
-| `dirham/font/sans/woff2`   | Sans-serif variant WOFF2                         |
-| `dirham/font/serif/woff2`  | Serif variant WOFF2                              |
-| `dirham/font/mono/woff2`   | Monospace variant WOFF2                          |
-| `dirham/font/arabic/woff2` | Arabic variant WOFF2                             |
+| `dirham/css`               | CSS with `@font-face`                                  |
+| `dirham/scss`              | SCSS with `@font-face`                                 |
+| `dirham/font/woff2`        | WOFF2 font file (default)                              |
+| `dirham/font/woff`         | WOFF font file                                         |
+| `dirham/font/ttf`          | TTF font file                                          |
+| `dirham/font/sans/woff2`   | Sans-serif variant WOFF2                               |
+| `dirham/font/serif/woff2`  | Serif variant WOFF2                                    |
+| `dirham/font/mono/woff2`   | Monospace variant WOFF2                                |
+| `dirham/font/arabic/woff2` | Arabic variant WOFF2                                   |
 
 ## Unicode
 

@@ -4,13 +4,13 @@
 [![npm downloads](https://img.shields.io/npm/dm/dirham)](https://www.npmjs.com/package/dirham)
 [![license](https://img.shields.io/npm/l/dirham)](./LICENSE)
 [![Unicode 18.0](https://img.shields.io/badge/Unicode_18.0-U%2B20C3-16a34a)](https://www.unicode.org/charts/PDF/U20A0.pdf)
-[![Demo](https://img.shields.io/badge/Demo-pooya.blog%2Fdirham-0ea5e9)](https://pooya.blog/dirham/)
+[![Demo](https://img.shields.io/badge/Demo-dirham.js.org-0ea5e9)](https://dirham.js.org/)
 
 The UAE Dirham currency symbol (&#x20C3;) as a web font, CSS utility, and React component.
 
 The glyph uses **U+20C3**, the codepoint assigned to the UAE Dirham Sign in Unicode 18.0, rendered today through a custom web font. When operating systems ship native Unicode 18.0 support (September 2026), the web font is no longer needed and can be dropped without any code changes.
 
-[Live Demo](https://pooya.blog/dirham/) &nbsp;&middot;&nbsp; [npm](https://www.npmjs.com/package/dirham) &nbsp;&middot;&nbsp; [GitHub](https://github.com/pooyagolchian/dirham)
+[Live Demo](https://dirham.js.org/) &nbsp;&middot;&nbsp; [npm](https://www.npmjs.com/package/dirham) &nbsp;&middot;&nbsp; [GitHub](https://github.com/pooyagolchian/dirham)
 
 ---
 
@@ -129,7 +129,10 @@ import { DirhamPrice } from "dirham/react";
 Framework-agnostic — works in Vue, Angular, Svelte, or vanilla HTML:
 
 ```html
-<script type="module" src="https://cdn.jsdelivr.net/npm/dirham/dist/web-component/index.js"></script>
+<script
+	type="module"
+	src="https://cdn.jsdelivr.net/npm/dirham/dist/web-component/index.js"
+></script>
 
 <dirham-symbol size="24" weight="bold"></dirham-symbol>
 <dirham-price amount="1250"></dirham-price>
@@ -173,11 +176,17 @@ parseDirham("\u20C3 1,234.50"); // 1234.5
 
 ```html
 <!-- CSS web font -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/dirham/dist/css/dirham.css" />
+<link
+	rel="stylesheet"
+	href="https://cdn.jsdelivr.net/npm/dirham/dist/css/dirham.css"
+/>
 <i class="dirham-symbol" aria-label="UAE Dirham"></i>
 
 <!-- Web Component -->
-<script type="module" src="https://cdn.jsdelivr.net/npm/dirham/dist/web-component/index.js"></script>
+<script
+	type="module"
+	src="https://cdn.jsdelivr.net/npm/dirham/dist/web-component/index.js"
+></script>
 <dirham-symbol size="20"></dirham-symbol>
 ```
 
@@ -186,9 +195,9 @@ parseDirham("\u20C3 1,234.50"); // 1234.5
 ```ts
 import { copyDirhamSymbol } from "dirham";
 
-await copyDirhamSymbol();          // copies \u20C3 to clipboard
-await copyDirhamSymbol("html");    // copies &#x20C3;
-await copyDirhamSymbol("css");     // copies \20C3
+await copyDirhamSymbol(); // copies \u20C3 to clipboard
+await copyDirhamSymbol("html"); // copies &#x20C3;
+await copyDirhamSymbol("css"); // copies \20C3
 ```
 
 ### CLI
@@ -211,14 +220,14 @@ Font files are available via named subpaths:
 
 ## Package exports
 
-| Import path              | Description                                          |
-| ------------------------ | ---------------------------------------------------- |
-| `dirham`                 | Core utilities, constants, clipboard                 |
-| `dirham/react`           | `DirhamSymbol`, `DirhamIcon`, `DirhamPrice`          |
-| `dirham/web-component`   | `<dirham-symbol>` custom element                     |
-| `dirham/css`             | CSS with `@font-face`                                |
-| `dirham/scss`            | SCSS with `@font-face`                               |
-| `dirham/font/*`          | Raw font files (woff2, woff, ttf, variants)          |
+| Import path            | Description                                 |
+| ---------------------- | ------------------------------------------- |
+| `dirham`               | Core utilities, constants, clipboard        |
+| `dirham/react`         | `DirhamSymbol`, `DirhamIcon`, `DirhamPrice` |
+| `dirham/web-component` | `<dirham-symbol>` custom element            |
+| `dirham/css`           | CSS with `@font-face`                       |
+| `dirham/scss`          | SCSS with `@font-face`                      |
+| `dirham/font/*`        | Raw font files (woff2, woff, ttf, variants) |
 
 ---
 
