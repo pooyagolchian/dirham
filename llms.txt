@@ -19,10 +19,10 @@ This is the live demo and documentation site for the `dirham` npm package. It sh
 
 ## Links
 
-- This site: https://pooya.blog/dirham/
+- This site: https://dirham.js.org/
 - npm package: https://www.npmjs.com/package/dirham
 - GitHub repository: https://github.com/pooyagolchian/dirham
-- Package llms.txt: https://pooya.blog/dirham/llms-package.txt
+- Package llms.txt: https://dirham.js.org/llms-package.txt
 
 ## Quick Start
 
