@@ -6,9 +6,6 @@ on:
     pull_request:
         branches: [main]
 
-env:
-    NODE_LTS_VERSION: 22
-
 concurrency:
     group: ci-${{ github.ref }}
     cancel-in-progress: true
@@ -18,7 +15,7 @@ jobs:
         runs-on: ubuntu-latest
         strategy:
             matrix:
-                node-version: [20, "${{ env.NODE_LTS_VERSION }}"]
+                node-version: [20, 22]
 
         steps:
             - name: Checkout
