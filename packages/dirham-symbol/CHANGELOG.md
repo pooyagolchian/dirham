@@ -1,5 +1,11 @@
 # dirham
 
+## 1.5.2
+
+### Patch Changes
+
+- **DirhamSymbol vertical alignment fix** — Changed `verticalAlign` from `"middle"` to `"-0.125em"` so the SVG symbol aligns properly with surrounding text at any font size. This is the standard approach used by icon libraries (Font Awesome, Heroicons, etc.) and fixes the visible misalignment in `<DirhamPrice>` and inline `<DirhamSymbol>` usage.
+
 ## 1.5.1
 
 ### Patch Changes
