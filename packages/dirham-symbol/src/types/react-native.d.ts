@@ -1,6 +1,4 @@
 declare module "react-native" {
-	import type React from "react";
-
 	export interface ViewStyle {
 		[key: string]: unknown;
 	}

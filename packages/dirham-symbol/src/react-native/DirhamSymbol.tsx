@@ -1,5 +1,5 @@
-import React, { memo } from "react";
-import { Svg, Path } from "react-native-svg";
+import { memo } from "react";
+import { Path, Svg } from "react-native-svg";
 import { DIRHAM_STROKE_MAP, type DirhamWeight } from "../core/constants";
 
 const SVG_PATH =

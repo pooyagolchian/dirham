@@ -21,7 +21,10 @@ function getFormatter(
 		fmt = new Intl.NumberFormat(locale, {
 			minimumFractionDigits: notation === "compact" ? 0 : decimals,
 			maximumFractionDigits: decimals,
-			...(notation === "compact" && { notation: "compact", compactDisplay: "short" }),
+			...(notation === "compact" && {
+				notation: "compact",
+				compactDisplay: "short",
+			}),
 		});
 		_fmtCache.set(key, fmt);
 	}
@@ -164,9 +167,8 @@ export function parseDirham(
 
 	if (normalizeArabicNumerals) {
 		// Arabic-Indic digits U+0660–U+0669 → ASCII 0–9
-		cleaned = cleaned.replace(
-			/[\u0660-\u0669]/g,
-			(d) => String(d.charCodeAt(0) - 0x0660),
+		cleaned = cleaned.replace(/[\u0660-\u0669]/g, (d) =>
+			String(d.charCodeAt(0) - 0x0660),
 		);
 		// Arabic decimal separator (U+066B) → '.'
 		cleaned = cleaned.replace(/\u066B/g, ".");

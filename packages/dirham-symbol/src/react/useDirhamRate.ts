@@ -1,11 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import {
-	type ConvertOptions,
-	clearRateCache,
-	convertFromAED,
-	convertToAED,
-	fetchExchangeRates,
-} from "../core/conversion";
+import { clearRateCache, fetchExchangeRates } from "../core/conversion";
 
 export interface UseDirhamRateResult {
 	/** The exchange rate (AED → target currency). `undefined` while loading. */

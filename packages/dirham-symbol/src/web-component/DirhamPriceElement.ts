@@ -98,7 +98,7 @@ export class DirhamPriceElement extends HTMLElement {
 			const text = symbolFirst
 				? `${code}\u00A0${formatted}`
 				: `${formatted}\u00A0${code}`;
-			const dirAttr = locale.startsWith("ar") ? ' dir="rtl"' : '';
+			const dirAttr = locale.startsWith("ar") ? ' dir="rtl"' : "";
 			this.#shadow.innerHTML = `<span style="white-space:nowrap"${dirAttr}>${this.#escape(text)}</span>`;
 			return;
 		}
@@ -111,7 +111,7 @@ export class DirhamPriceElement extends HTMLElement {
 
 		const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 870" width="${this.#escape(String(symbolSize))}" height="${this.#escape(String(symbolSize))}" fill="currentColor" role="img" aria-label="UAE Dirham" style="display:inline-block;vertical-align:middle"><path d="${SVG_PATH}"${strokeAttrs}/></svg>`;
 
-		const dirAttr = locale.startsWith("ar") ? ' dir="rtl"' : '';
+		const dirAttr = locale.startsWith("ar") ? ' dir="rtl"' : "";
 
 		const parts = symbolFirst
 			? `${svg}\u00A0${this.#escape(formatted)}`

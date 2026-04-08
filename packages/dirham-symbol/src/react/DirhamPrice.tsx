@@ -1,7 +1,7 @@
 import type React from "react";
 import { forwardRef, memo, useMemo } from "react";
-import { formatDirham, type FormatDirhamOptions } from "../core/format";
 import type { DirhamWeight } from "../core/constants";
+import { formatDirham } from "../core/format";
 import { DirhamSymbol } from "./DirhamSymbol";
 
 export interface DirhamPriceProps
@@ -91,7 +91,9 @@ const DirhamPriceBase = forwardRef<HTMLSpanElement, DirhamPriceProps>(
 				decimals,
 				useCode: true, // Always use code so we can strip it and render SVG instead
 				notation,
-			}).replace("AED", "").trim();
+			})
+				.replace("AED", "")
+				.trim();
 		}, [amount, locale, decimals, notation]);
 
 		const symbol = useCode ? (

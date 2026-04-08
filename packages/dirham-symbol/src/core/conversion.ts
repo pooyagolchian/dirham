@@ -41,9 +41,7 @@ export async function fetchExchangeRates(): Promise<Record<string, number>> {
 		return _cache.rates;
 	}
 
-	const res = await fetch(
-		"https://open.er-api.com/v6/latest/AED",
-	);
+	const res = await fetch("https://open.er-api.com/v6/latest/AED");
 
 	if (!res.ok) {
 		throw new Error(

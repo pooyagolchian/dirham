@@ -1,5 +1,5 @@
-import React, { memo, useMemo } from "react";
-import { Text, View, I18nManager } from "react-native";
+import { memo, useMemo } from "react";
+import { Text, View } from "react-native";
 import type { DirhamWeight } from "../core/constants";
 import { formatDirham } from "../core/format";
 import { DirhamSymbol } from "./DirhamSymbol";
@@ -124,11 +124,17 @@ function DirhamPriceBase({
 			{symbolFirst ? (
 				<>
 					{symbol}
-					<Text style={{ color, fontSize }}>{"\u00A0"}{formatted}</Text>
+					<Text style={{ color, fontSize }}>
+						{"\u00A0"}
+						{formatted}
+					</Text>
 				</>
 			) : (
 				<>
-					<Text style={{ color, fontSize }}>{formatted}{"\u00A0"}</Text>
+					<Text style={{ color, fontSize }}>
+						{formatted}
+						{"\u00A0"}
+					</Text>
 					{symbol}
 				</>
 			)}

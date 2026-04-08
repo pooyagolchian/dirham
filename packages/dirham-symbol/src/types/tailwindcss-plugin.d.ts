@@ -10,9 +10,7 @@ declare module "tailwindcss/plugin" {
 		handler: PluginCreator;
 	}
 
-	interface PluginFunction {
-		(handler: PluginCreator): PluginWithHandler;
-	}
+	type PluginFunction = (handler: PluginCreator) => PluginWithHandler;
 
 	const plugin: PluginFunction;
 	export default plugin;

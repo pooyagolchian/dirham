@@ -73,7 +73,10 @@ describe("formatDirham", () => {
 	});
 
 	it("should format compact with useCode", () => {
-		const result = formatDirham(2000000, { notation: "compact", useCode: true });
+		const result = formatDirham(2000000, {
+			notation: "compact",
+			useCode: true,
+		});
 		expect(result).toContain("AED");
 		expect(result).toMatch(/[MK]/i);
 	});
@@ -114,7 +117,8 @@ describe("parseDirham", () => {
 
 	it("should parse standalone Arabic-Indic digit string", () => {
 		// \u0661\u066C\u0662\u0663\u0664\u066B\u0665\u0660 = ١٬٢٣٤٫٥٠ (1,234.50 in Arabic)
-		const arabicValue = "\u0661\u066C\u0662\u0663\u0664\u066B\u0665\u0660 \u20C3";
+		const arabicValue =
+			"\u0661\u066C\u0662\u0663\u0664\u066B\u0665\u0660 \u20C3";
 		expect(parseDirham(arabicValue)).toBe(1234.5);
 	});
 

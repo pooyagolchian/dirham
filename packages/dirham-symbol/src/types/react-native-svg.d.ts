@@ -1,6 +1,4 @@
 declare module "react-native-svg" {
-	import type React from "react";
-
 	export interface SvgProps {
 		width?: number | string;
 		height?: number | string;

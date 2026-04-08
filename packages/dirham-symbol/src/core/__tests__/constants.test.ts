@@ -58,8 +58,7 @@ describe("DIRHAM_WEIGHT_MAP", () => {
 describe("DIRHAM_STROKE_MAP", () => {
 	it("regular weight has no stroke (strokeWidth 0)", () =>
 		expect(DIRHAM_STROKE_MAP.regular).toBe(0));
-	it("thin weight has no stroke", () =>
-		expect(DIRHAM_STROKE_MAP.thin).toBe(0));
+	it("thin weight has no stroke", () => expect(DIRHAM_STROKE_MAP.thin).toBe(0));
 	it("bold weight has positive stroke", () =>
 		expect(DIRHAM_STROKE_MAP.bold).toBeGreaterThan(0));
 	it("black weight has the largest stroke", () =>

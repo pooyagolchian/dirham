@@ -221,7 +221,9 @@ async function buildFont() {
 	console.log("Building font variants…");
 	// Build all 5 variants concurrently — each writes to a separate output
 	// directory so there are no race conditions.
-	await Promise.all(VARIANTS.map((variant) => buildVariant(svgtofont, variant)));
+	await Promise.all(
+		VARIANTS.map((variant) => buildVariant(svgtofont, variant)),
+	);
 
 	writeFileSync(resolve(cssDist, "dirham.css"), generateCSS(), "utf-8");
 	writeFileSync(resolve(cssDist, "dirham.scss"), generateSCSS(), "utf-8");

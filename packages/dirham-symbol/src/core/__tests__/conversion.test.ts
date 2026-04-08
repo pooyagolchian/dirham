@@ -107,9 +107,7 @@ describe("convertFromAED", () => {
 	});
 
 	it("throws on NaN amount", async () => {
-		await expect(convertFromAED(Number.NaN, "USD")).rejects.toThrow(
-			RangeError,
-		);
+		await expect(convertFromAED(Number.NaN, "USD")).rejects.toThrow(RangeError);
 	});
 
 	it("throws on unknown currency code", async () => {
@@ -146,9 +144,7 @@ describe("convertToAED", () => {
 	});
 
 	it("throws when exchange rate is zero", async () => {
-		await expect(
-			convertToAED(100, "XYZ", { rate: 0 }),
-		).rejects.toThrow("zero");
+		await expect(convertToAED(100, "XYZ", { rate: 0 })).rejects.toThrow("zero");
 	});
 });
 

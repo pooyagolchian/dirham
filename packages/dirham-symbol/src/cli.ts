@@ -48,7 +48,7 @@ function main() {
 	}
 
 	if (args[0] === "copy") {
-		const format = args[1] || "unicode";
+		const format = (args[1] || "unicode") as keyof typeof values;
 		const values = {
 			unicode: SYMBOL,
 			html: HTML_ENTITY,

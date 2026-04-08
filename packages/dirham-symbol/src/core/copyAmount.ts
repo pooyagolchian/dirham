@@ -1,4 +1,4 @@
-import { formatDirham, type FormatDirhamOptions } from "./format";
+import { type FormatDirhamOptions, formatDirham } from "./format";
 
 /**
  * Copy a formatted Dirham amount to the clipboard.

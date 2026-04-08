@@ -1,21 +1,16 @@
 import type React from "react";
-import {
-	forwardRef,
-	memo,
-	useCallback,
-	useEffect,
-	useRef,
-	useState,
-} from "react";
+import { forwardRef, memo, useCallback, useRef, useState } from "react";
 import type { DirhamWeight } from "../core/constants";
-import { parseDirham } from "../core/format";
 import { DirhamSymbol } from "./DirhamSymbol";
 
 // ─── Formatting helper (scoped to this module) ──────────────────────────────
 
 const _fmtCache = new Map<string, Intl.NumberFormat>();
 
-function getInputFormatter(locale: string, decimals: number): Intl.NumberFormat {
+function getInputFormatter(
+	locale: string,
+	decimals: number,
+): Intl.NumberFormat {
 	const key = `input:${locale}:${decimals}`;
 	let fmt = _fmtCache.get(key);
 	if (!fmt) {
@@ -39,9 +34,8 @@ function formatInputValue(
 
 function stripFormatting(raw: string): string {
 	// Normalize Arabic-Indic digits to ASCII
-	let cleaned = raw.replace(
-		/[\u0660-\u0669]/g,
-		(d) => String(d.charCodeAt(0) - 0x0660),
+	let cleaned = raw.replace(/[\u0660-\u0669]/g, (d) =>
+		String(d.charCodeAt(0) - 0x0660),
 	);
 	// Arabic decimal separator → dot
 	cleaned = cleaned.replace(/\u066B/g, ".");
@@ -242,7 +236,9 @@ const DirhamInputBase = forwardRef<HTMLInputElement, DirhamInputProps>(
 				(inputRef as React.MutableRefObject<HTMLInputElement | null>).current =
 					node;
 				if (typeof ref === "function") ref(node);
-				else if (ref) (ref as React.MutableRefObject<HTMLInputElement | null>).current = node;
+				else if (ref)
+					(ref as React.MutableRefObject<HTMLInputElement | null>).current =
+						node;
 			},
 			[ref],
 		);
@@ -317,7 +313,7 @@ const DirhamInputBase = forwardRef<HTMLInputElement, DirhamInputProps>(
 		// Handle typing
 		const handleChange = useCallback(
 			(e: React.ChangeEvent<HTMLInputElement>) => {
-				let text = e.target.value;
+				const text = e.target.value;
 
 				// Allow only digits, one decimal point, optional leading minus
 				const cleaned = stripFormatting(text);
@@ -384,13 +380,6 @@ const DirhamInputBase = forwardRef<HTMLInputElement, DirhamInputProps>(
 			},
 			[decimals, clamp, isControlled, onChange],
 		);
-
-		// Sync controlled value when it changes externally
-		useEffect(() => {
-			if (isControlled && !isFocused) {
-				// Value updated from parent while not editing
-			}
-		}, [controlledValue, isControlled, isFocused]);
 
 		const symbolElement = showSymbol ? (
 			useCode ? (
