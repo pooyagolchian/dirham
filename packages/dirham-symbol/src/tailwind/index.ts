@@ -1,4 +1,7 @@
+import type { PluginWithHandler } from "tailwindcss/plugin";
 import plugin from "tailwindcss/plugin";
+
+export type { PluginWithHandler };
 
 /**
  * Tailwind CSS plugin for the UAE Dirham symbol.

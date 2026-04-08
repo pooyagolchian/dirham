@@ -1,5 +1,85 @@
 # dirham
 
+## 1.4.0
+
+### Minor Changes
+
+- **Animated price component** — new `<AnimatedDirhamPrice />` React component and `<dirham-animated-price>` Web Component for count-up/count-down price transitions using `requestAnimationFrame`. Configurable duration, easing (`linear`, `easeIn`, `easeOut`, `easeInOut`), and all standard formatting props.
+
+  ```tsx
+  import { AnimatedDirhamPrice } from "dirham/react";
+  <AnimatedDirhamPrice amount={1250} duration={600} easing="easeOut" />
+  ```
+
+  ```html
+  <dirham-animated-price amount="1250" duration="600" easing="easeOut"></dirham-animated-price>
+  ```
+
+- **React Native support** — new `dirham/react-native` entry with `DirhamSymbol` and `DirhamPrice` components using `react-native-svg`. Same SVG path data as the web version.
+
+  ```tsx
+  import { DirhamSymbol, DirhamPrice } from "dirham/react-native";
+  <DirhamPrice amount={100} />
+  ```
+
+- **Tailwind CSS plugin** — new `dirham/tailwind` entry with utility classes for font weight (`.dirham-thin` … `.dirham-black`), size (`.dirham-xs` … `.dirham-4xl`), pseudo-elements (`.dirham-before`, `.dirham-after`), and a `.dirham-price` component class.
+
+  ```js
+  // tailwind.config.js
+  import dirhamPlugin from "dirham/tailwind";
+  export default { plugins: [dirhamPlugin] };
+  ```
+
+- **Next.js font optimization** — new `dirham/next` entry with `dirhamFont` (pre-configured `next/font/local` instance) and `dirhamFontConfig` for manual setup.
+
+  ```tsx
+  import { dirhamFont } from "dirham/next";
+  <div className={dirhamFont.className}>...</div>
+  ```
+
+- **Currency conversion utilities** — new `convertFromAED()`, `convertToAED()`, and `fetchExchangeRates()` in the core entry, plus `useDirhamRate()` React hook for live exchange rates.
+
+  ```ts
+  import { convertFromAED } from "dirham";
+  const usd = await convertFromAED(100, "USD");
+  ```
+
+  ```tsx
+  import { useDirhamRate } from "dirham/react";
+  const { rate, convert, loading } = useDirhamRate("USD");
+  ```
+
+- **VAT helpers** — `addVAT()`, `removeVAT()`, `getVAT()` with UAE's standard 5% rate and configurable precision.
+
+  ```ts
+  import { addVAT, removeVAT, getVAT } from "dirham";
+  addVAT(100);     // 105
+  removeVAT(105);  // 100
+  getVAT(100);     // 5
+  ```
+
+- **Copy formatted amount** — `copyDirhamAmount()` combines `formatDirham()` with the Clipboard API.
+
+  ```ts
+  import { copyDirhamAmount } from "dirham";
+  await copyDirhamAmount(1234.5); // copies "د.إ 1,234.50"
+  ```
+
+- **`<dirham-input>` Web Component** — masked currency input with auto-formatting, Arabic numeral support, min/max validation.
+
+  ```html
+  <dirham-input value="100" min="0" max="999999" decimals="2"></dirham-input>
+  ```
+
+- **`DirhamInput` React component** — controlled/uncontrolled masked currency input with `inputMode="decimal"`, paste handling, and integrated symbol display.
+
+  ```tsx
+  import { DirhamInput } from "dirham/react";
+  <DirhamInput value={100} onChange={(v) => setAmount(v)} />
+  ```
+
+- **RTL fix** — `<DirhamPrice>` and `<dirham-price>` now set `dir="rtl"` on the wrapper element for Arabic locales, ensuring correct bidirectional layout.
+
 ## 1.3.0
 
 ### Minor Changes

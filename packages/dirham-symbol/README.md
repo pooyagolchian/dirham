@@ -89,6 +89,70 @@ import { DirhamPrice } from "dirham/react";
 <DirhamPrice amount={750} className="text-emerald-400 text-2xl" />
 ```
 
+### React — Animated price
+
+Count-up / count-down transitions using `requestAnimationFrame`. No external deps.
+
+```tsx
+import { AnimatedDirhamPrice } from "dirham/react";
+
+<AnimatedDirhamPrice amount={1250} />
+<AnimatedDirhamPrice amount={5000} duration={800} easing="easeInOut" />
+<AnimatedDirhamPrice amount={99.9} useCode notation="compact" />
+```
+
+| Prop       | Default      | Description                                  |
+| ---------- | ------------ | -------------------------------------------- |
+| `amount`   | —            | Target value to animate to                   |
+| `duration` | `600`        | Animation duration in ms                     |
+| `easing`   | `"easeOut"`  | `linear` · `easeIn` · `easeOut` · `easeInOut` |
+| `locale`   | `"en-AE"`    | Intl locale                                  |
+| `decimals` | `2`          | Decimal places                               |
+| `useCode`  | `false`      | Show AED instead of symbol                   |
+| `notation` | `"standard"` | `"standard"` or `"compact"`                  |
+| `weight`   | `"regular"`  | Symbol weight                                |
+
+### React — Currency input
+
+Masked currency input with auto-formatting, paste handling, and Arabic numeral support:
+
+```tsx
+import { DirhamInput } from "dirham/react";
+
+<DirhamInput defaultValue={100} onChange={(v) => console.log(v)} />
+<DirhamInput value={amount} onChange={setAmount} min={0} max={999999} />
+<DirhamInput locale="ar-AE" useCode />
+```
+
+| Prop             | Default     | Description                          |
+| ---------------- | ----------- | ------------------------------------ |
+| `value`          | —           | Controlled numeric value             |
+| `defaultValue`   | —           | Uncontrolled initial value           |
+| `onChange`        | —           | `(value: number \| null) => void`    |
+| `locale`         | `"en-AE"`   | Intl locale                         |
+| `decimals`       | `2`         | Maximum decimal places               |
+| `min` / `max`    | —           | Clamps value on blur                 |
+| `showSymbol`     | `true`      | Show inline SVG symbol               |
+| `useCode`        | `false`     | Show AED text instead of symbol      |
+| `selectOnFocus`  | `true`      | Select all text on focus             |
+
+### React — Exchange rate hook
+
+Fetch live exchange rates and convert AED amounts:
+
+```tsx
+import { useDirhamRate } from "dirham/react";
+
+function PriceInUSD({ amount }: { amount: number }) {
+  const { rate, convert, loading, error } = useDirhamRate("USD");
+
+  if (loading) return <span>Loading…</span>;
+  if (error) return <span>Error: {error}</span>;
+
+  return <span>${convert(amount)} USD (rate: {rate})</span>;
+}
+```
+
 ### Web Component
 
 Framework-agnostic — works in Vue, Angular, Svelte, or vanilla HTML:
@@ -127,6 +191,29 @@ import "dirham/web-component";
 | `symbol-size` | `"1em"`      | SVG symbol width/height                   |
 | `weight`      | `"regular"`  | `thin` · `light` · `regular` · `bold` …   |
 | `currency`    | `"AED"`      | Currency code when `use-code` is set      |
+
+#### `<dirham-animated-price>`
+
+Animated count-up/count-down price display:
+
+```html
+<dirham-animated-price amount="1250" duration="600" easing="easeOut"></dirham-animated-price>
+```
+
+Attributes: `amount`, `duration`, `easing`, `locale`, `decimals`, `notation`, `use-code`, `symbol-size`, `weight`
+
+#### `<dirham-input>`
+
+Masked currency input with auto-formatting:
+
+```html
+<dirham-input value="100" min="0" max="999999" decimals="2"></dirham-input>
+<dirham-input locale="ar-AE" placeholder="المبلغ"></dirham-input>
+```
+
+Attributes: `value`, `locale`, `decimals`, `min`, `max`, `placeholder`, `disabled`, `readonly`, `show-symbol`, `use-code`, `symbol-size`, `weight`
+
+Fires `dirham-change` event with `{ detail: { value: number | null } }`.
 
 #### Vue
 
@@ -189,6 +276,119 @@ await copyDirhamSymbol("html"); // copies &#x20C3;
 await copyDirhamSymbol("css"); // copies \20C3
 ```
 
+### Copy formatted amount
+
+```ts
+import { copyDirhamAmount } from "dirham";
+
+await copyDirhamAmount(1234.5);                    // copies "د.إ 1,234.50"
+await copyDirhamAmount(1234.5, { useCode: true }); // copies "AED 1,234.50"
+await copyDirhamAmount(500, { locale: "ar-AE" });  // copies "٥٠٠٫٠٠ د.إ"
+```
+
+### VAT helpers
+
+UAE VAT (5%) calculation utilities with configurable rate and precision:
+
+```ts
+import { addVAT, removeVAT, getVAT, UAE_VAT_RATE } from "dirham";
+
+addVAT(100);                        // 105
+removeVAT(105);                     // 100
+getVAT(100);                        // 5
+
+addVAT(100, { rate: 0.1 });         // 110 (custom 10% rate)
+addVAT(99.99, { decimals: 4 });     // 104.9895
+```
+
+### Currency conversion
+
+Convert amounts between AED and other currencies. Rates are fetched from a free exchange rate API and cached for 1 hour:
+
+```ts
+import { convertFromAED, convertToAED, fetchExchangeRates } from "dirham";
+
+const usd = await convertFromAED(100, "USD");           // e.g. 27.23
+const aed = await convertToAED(27.23, "USD");            // e.g. 100
+const manual = await convertFromAED(100, "USD", { rate: 0.2723 }); // skip fetch
+
+const rates = await fetchExchangeRates(); // { USD: 0.2723, EUR: 0.2511, ... }
+```
+
+### React Native
+
+Requires `react-native-svg` as a peer dependency:
+
+```tsx
+import { DirhamSymbol, DirhamPrice } from "dirham/react-native";
+
+<DirhamSymbol size={24} color="#000" weight="bold" />
+<DirhamPrice amount={1250} />
+<DirhamPrice amount={500} locale="ar-AE" useCode />
+```
+
+### Tailwind CSS plugin
+
+Add the Dirham symbol plugin to your Tailwind config:
+
+```js
+// tailwind.config.js
+import dirhamPlugin from "dirham/tailwind";
+
+export default {
+  plugins: [dirhamPlugin],
+};
+```
+
+Available utility classes:
+
+| Class              | Description                                     |
+| ------------------ | ----------------------------------------------- |
+| `.dirham`          | Base — sets font-family to Dirham               |
+| `.dirham-thin`     | Thin weight                                     |
+| `.dirham-light`    | Light weight                                    |
+| `.dirham-regular`  | Regular weight (default)                        |
+| `.dirham-bold`     | Bold weight                                     |
+| `.dirham-black`    | Black weight                                    |
+| `.dirham-xs`       | Extra small size (0.75rem)                      |
+| `.dirham-sm`       | Small size (0.875rem)                           |
+| `.dirham-base`     | Base size (1rem)                                |
+| `.dirham-lg`       | Large size (1.25rem)                            |
+| `.dirham-xl`       | Extra large size (1.5rem)                       |
+| `.dirham-2xl`      | 2× large size (2rem)                            |
+| `.dirham-3xl`      | 3× large size (2.5rem)                          |
+| `.dirham-4xl`      | 4× large size (3rem)                            |
+| `.dirham-before`   | Pseudo-element `::before` with `\20C3` content  |
+| `.dirham-after`    | Pseudo-element `::after` with `\20C3` content   |
+| `.dirham-price`    | Component class (nowrap + tabular-nums)         |
+
+### Next.js font optimization
+
+Pre-configured `next/font/local` instance with the Dirham WOFF2 font:
+
+```tsx
+import { dirhamFont } from "dirham/next";
+
+// In your layout:
+<html className={dirhamFont.className}>
+  {children}
+</html>
+
+// Or use the CSS variable:
+<div style={{ fontFamily: "var(--font-dirham)" }}>
+  &#x20C3;
+</div>
+```
+
+For manual configuration, use the raw config:
+
+```ts
+import { dirhamFontConfig } from "dirham/next";
+import localFont from "next/font/local";
+
+const myDirham = localFont(dirhamFontConfig);
+```
+
 ### CLI
 
 ```bash
@@ -199,20 +399,23 @@ npx dirham copy html    # Copy HTML entity
 
 ## Exports
 
-| Import path                | Description                                            |
-| -------------------------- | ------------------------------------------------------ |
-| `dirham`                   | Core utilities, constants, clipboard                   |
-| `dirham/react`             | `DirhamSymbol`, `DirhamIcon`, `DirhamPrice`            |
-| `dirham/web-component`     | `<dirham-symbol>` and `<dirham-price>` custom elements |
-| `dirham/css`               | CSS with `@font-face`                                  |
-| `dirham/scss`              | SCSS with `@font-face`                                 |
-| `dirham/font/woff2`        | WOFF2 font file (default)                              |
-| `dirham/font/woff`         | WOFF font file                                         |
-| `dirham/font/ttf`          | TTF font file                                          |
-| `dirham/font/sans/woff2`   | Sans-serif variant WOFF2                               |
-| `dirham/font/serif/woff2`  | Serif variant WOFF2                                    |
-| `dirham/font/mono/woff2`   | Monospace variant WOFF2                                |
-| `dirham/font/arabic/woff2` | Arabic variant WOFF2                                   |
+| Import path                | Description                                                                         |
+| -------------------------- | ------------------------------------------------------------------------------------ |
+| `dirham`                   | Core utilities, constants, clipboard, VAT, conversion                               |
+| `dirham/react`             | `DirhamSymbol`, `DirhamIcon`, `DirhamPrice`, `AnimatedDirhamPrice`, `DirhamInput`, `useDirhamRate` |
+| `dirham/react-native`      | `DirhamSymbol`, `DirhamPrice` (requires `react-native-svg`)                         |
+| `dirham/web-component`     | `<dirham-symbol>`, `<dirham-price>`, `<dirham-animated-price>`, `<dirham-input>`    |
+| `dirham/tailwind`          | Tailwind CSS plugin with Dirham utility classes                                     |
+| `dirham/next`              | Next.js `next/font/local` wrapper (`dirhamFont`, `dirhamFontConfig`)                |
+| `dirham/css`               | CSS with `@font-face`                                                               |
+| `dirham/scss`              | SCSS with `@font-face`                                                              |
+| `dirham/font/woff2`        | WOFF2 font file (default)                                                           |
+| `dirham/font/woff`         | WOFF font file                                                                      |
+| `dirham/font/ttf`          | TTF font file                                                                       |
+| `dirham/font/sans/woff2`   | Sans-serif variant WOFF2                                                            |
+| `dirham/font/serif/woff2`  | Serif variant WOFF2                                                                 |
+| `dirham/font/mono/woff2`   | Monospace variant WOFF2                                                             |
+| `dirham/font/arabic/woff2` | Arabic variant WOFF2                                                                |
 
 ## Unicode
 
