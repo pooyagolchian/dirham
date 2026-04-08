@@ -117,6 +117,19 @@ function dirhamFontStack(font: (typeof FONT_FAMILIES)[number]) {
 	return `${font.family}, ${dirham}`;
 }
 
+function ScrollProgress() {
+	const [width, setWidth] = useState(0);
+	useEffect(() => {
+		function onScroll() {
+			const h = document.documentElement.scrollHeight - window.innerHeight;
+			setWidth(h > 0 ? (document.documentElement.scrollTop / h) * 100 : 0);
+		}
+		window.addEventListener("scroll", onScroll, { passive: true });
+		return () => window.removeEventListener("scroll", onScroll);
+	}, []);
+	return <div className="scroll-progress" style={{ width: `${width}%` }} />;
+}
+
 function CopyButton({ text }: { text: string }) {
 	const [copied, setCopied] = useState(false);
 	return (
@@ -144,7 +157,7 @@ function CopyButton({ text }: { text: string }) {
 function CodeBlock({ code, lang = "tsx" }: { code: string; lang?: string }) {
 	return (
 		<div className="relative group">
-			<pre className="bg-neutral-950 border border-neutral-800 rounded-lg px-4 py-3 text-sm font-mono text-neutral-300 overflow-x-auto">
+			<pre className="bg-neutral-950 border border-neutral-800 border-l-2 border-l-emerald-500/20 rounded-xl px-4 py-3 text-sm font-mono text-neutral-300 overflow-x-auto">
 				<code>{code}</code>
 			</pre>
 			<CopyButton text={code} />
@@ -226,22 +239,37 @@ function SectionHeader({
 	icon: Icon,
 	title,
 	description,
+	primary = false,
 }: {
 	icon: React.ElementType;
 	title: string;
 	description: string;
+	primary?: boolean;
 }) {
 	return (
 		<div className="mb-12">
 			<div className="flex items-center gap-3 mb-3">
-				<div className="flex items-center justify-center w-9 h-9 rounded-xl bg-white/[0.04] border border-neutral-800">
-					<Icon size={17} className="text-neutral-400" />
+				<div
+					className={clsx(
+						"flex items-center justify-center rounded-xl border border-neutral-800",
+						primary ? "w-10 h-10 bg-emerald-500/10" : "w-9 h-9 bg-white/[0.04]",
+					)}
+				>
+					<Icon
+						size={primary ? 18 : 17}
+						className={primary ? "text-emerald-400" : "text-neutral-400"}
+					/>
 				</div>
-				<h2 className="text-2xl font-semibold tracking-tight text-white">
+				<h2
+					className={clsx(
+						"font-semibold tracking-tight text-white",
+						primary ? "text-3xl" : "text-2xl",
+					)}
+				>
 					{title}
 				</h2>
 			</div>
-			<p className="text-neutral-500 leading-relaxed ml-12">{description}</p>
+			<p className="text-neutral-400 leading-relaxed ml-12">{description}</p>
 		</div>
 	);
 }
@@ -322,6 +350,18 @@ const OG_PRESETS = [
 	{ label: "Rent", amount: 85000, title: "Monthly Rent", subtitle: "Dubai Marina · Studio", accent: "#3b82f6" },
 	{ label: "Salary", amount: 25000, title: "Salary", subtitle: "April 2026", accent: "#a855f7" },
 	{ label: "Sale", amount: 199.99, title: "Flash Sale", subtitle: "Limited time offer", accent: "#f43f5e" },
+	{ label: "Transfer", amount: 3750, title: "Bank Transfer", subtitle: "To: Ahmed Al Maktoum", accent: "#f59e0b" },
+] as const;
+
+const OG_SIZES = [
+	{ label: "OG / Facebook", w: 1200, h: 630 },
+	{ label: "Twitter", w: 1200, h: 675 },
+	{ label: "Square", w: 1080, h: 1080 },
+	{ label: "Story", w: 1080, h: 1920 },
+] as const;
+
+const OG_ACCENT_SWATCHES = [
+	"#22c55e", "#3b82f6", "#a855f7", "#f43f5e", "#f59e0b", "#06b6d4", "#ec4899", "#84cc16",
 ] as const;
 
 function OGPriceCardSection() {
@@ -330,7 +370,14 @@ function OGPriceCardSection() {
 	const [ogSubtitle, setOgSubtitle] = useState("Due: April 30, 2026");
 	const [ogAccent, setOgAccent] = useState("#22c55e");
 	const [ogBg, setOgBg] = useState("#0a0a0a");
+	const [ogLocale, setOgLocale] = useState("en-AE");
+	const [ogNotation, setOgNotation] = useState<"standard" | "compact">("standard");
+	const [ogSizeIdx, setOgSizeIdx] = useState(0);
 	const [copiedSvg, setCopiedSvg] = useState(false);
+	const [copiedMeta, setCopiedMeta] = useState(false);
+
+	const ogW = OG_SIZES[ogSizeIdx].w;
+	const ogH = OG_SIZES[ogSizeIdx].h;
 
 	const svg = useMemo(
 		() =>
@@ -340,8 +387,12 @@ function OGPriceCardSection() {
 				subtitle: ogSubtitle || undefined,
 				accentColor: ogAccent,
 				background: ogBg,
+				locale: ogLocale,
+				notation: ogNotation,
+				width: ogW,
+				height: ogH,
 			}),
-		[ogAmount, ogTitle, ogSubtitle, ogAccent, ogBg],
+		[ogAmount, ogTitle, ogSubtitle, ogAccent, ogBg, ogLocale, ogNotation, ogW, ogH],
 	);
 
 	const dataUri = useMemo(
@@ -349,47 +400,82 @@ function OGPriceCardSection() {
 		[svg],
 	);
 
+	const metaSnippet = `<meta property="og:image" content="/api/og?amount=${ogAmount}" />
+<meta property="og:image:width" content="${ogW}" />
+<meta property="og:image:height" content="${ogH}" />
+<meta name="twitter:card" content="summary_large_image" />`;
+
 	return (
-		<section className="max-w-6xl mx-auto px-8 pt-16 pb-12">
+		<section className="max-w-6xl mx-auto px-8 pt-24 pb-20">
 			<SectionHeader
 				icon={Image}
 				title="OG / Social Media Cards"
 				description="Generate shareable price cards for Open Graph images, Twitter Cards, and social media. Use the SVG directly or render via @vercel/og in Next.js."
+				primary
 			/>
 
-			{/* Preset buttons */}
-			<div className="flex flex-wrap gap-2 mb-8">
-				{OG_PRESETS.map((p) => (
-					<button
-						key={p.label}
-						type="button"
-						onClick={() => {
-							setOgAmount(p.amount);
-							setOgTitle(p.title);
-							setOgSubtitle(p.subtitle);
-							setOgAccent(p.accent);
-						}}
-						className={clsx(
-							"px-3 py-1.5 rounded-lg text-xs font-medium transition-colors border",
-							ogTitle === p.title && ogAmount === p.amount
-								? "bg-white/10 text-white border-neutral-600"
-								: "bg-neutral-900 text-neutral-400 border-neutral-800 hover:border-neutral-700",
-						)}
-					>
-						{p.label}
-					</button>
-				))}
+			{/* Top bar: Presets + Size selector */}
+			<div className="flex flex-wrap items-center gap-3 mb-8">
+				{/* Presets */}
+				<div className="flex flex-wrap gap-1.5">
+					{OG_PRESETS.map((p) => (
+						<button
+							key={p.label}
+							type="button"
+							onClick={() => {
+								setOgAmount(p.amount);
+								setOgTitle(p.title);
+								setOgSubtitle(p.subtitle);
+								setOgAccent(p.accent);
+							}}
+							className={clsx(
+								"px-3 py-1.5 rounded-lg text-xs font-medium transition-all border",
+								ogTitle === p.title && ogAmount === p.amount
+									? "bg-white/10 text-white border-neutral-600 shadow-sm"
+									: "bg-neutral-900 text-neutral-500 border-neutral-800 hover:border-neutral-700 hover:text-neutral-300",
+							)}
+						>
+							{p.label}
+						</button>
+					))}
+				</div>
+
+				<div className="w-px h-6 bg-neutral-800 hidden sm:block" />
+
+				{/* Size selector */}
+				<div className="flex gap-1.5">
+					{OG_SIZES.map((s, i) => (
+						<button
+							key={s.label}
+							type="button"
+							onClick={() => setOgSizeIdx(i)}
+							className={clsx(
+								"px-2.5 py-1.5 rounded-lg text-[10px] font-mono transition-all border",
+								ogSizeIdx === i
+									? "bg-white/10 text-white border-neutral-600"
+									: "bg-neutral-900 text-neutral-500 border-neutral-800 hover:border-neutral-700",
+							)}
+						>
+							{s.w}×{s.h}
+						</button>
+					))}
+				</div>
 			</div>
 
-			<div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-				{/* Preview */}
-				<div className="space-y-4">
-					<p className="text-[10px] text-neutral-600 uppercase tracking-widest">
-						Live Preview
-					</p>
+			<div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
+				{/* Preview — takes 3 cols */}
+				<div className="lg:col-span-3 space-y-4">
+					<div className="flex items-center justify-between">
+						<p className="text-[10px] text-neutral-600 uppercase tracking-widest">
+							Live Preview — {OG_SIZES[ogSizeIdx].label}
+						</p>
+						<p className="text-[10px] text-neutral-600 font-mono">
+							{ogW}×{ogH}
+						</p>
+					</div>
 					<div
-						className="rounded-xl overflow-hidden border border-neutral-800 shadow-2xl"
-						style={{ aspectRatio: "1200 / 630" }}
+						className="rounded-xl overflow-hidden border border-neutral-800 shadow-2xl shadow-black/50 bg-neutral-900"
+						style={{ aspectRatio: `${ogW} / ${ogH}` }}
 					>
 						<img
 							src={dataUri}
@@ -397,7 +483,7 @@ function OGPriceCardSection() {
 							className="w-full h-full object-cover"
 						/>
 					</div>
-					<div className="flex gap-2">
+					<div className="flex flex-wrap gap-2">
 						<button
 							type="button"
 							onClick={() => {
@@ -416,99 +502,196 @@ function OGPriceCardSection() {
 						</button>
 						<a
 							href={dataUri}
-							download="dirham-price-card.svg"
+							download={`dirham-${ogW}x${ogH}.svg`}
 							className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-neutral-900 text-neutral-400 border border-neutral-800 hover:border-neutral-700 transition-colors"
 						>
 							Download SVG
 						</a>
+						<button
+							type="button"
+							onClick={() => {
+								navigator.clipboard.writeText(metaSnippet);
+								setCopiedMeta(true);
+								setTimeout(() => setCopiedMeta(false), 2000);
+							}}
+							className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-neutral-900 text-neutral-400 border border-neutral-800 hover:border-neutral-700 transition-colors"
+						>
+							{copiedMeta ? (
+								<Check size={12} className="text-emerald-400" />
+							) : (
+								<Code2 size={12} />
+							)}
+							{copiedMeta ? "Copied!" : "Copy Meta Tags"}
+						</button>
 					</div>
 				</div>
 
-				{/* Controls */}
-				<div className="space-y-5">
+				{/* Controls — takes 2 cols */}
+				<div className="lg:col-span-2 space-y-4">
 					<p className="text-[10px] text-neutral-600 uppercase tracking-widest">
 						Customize
 					</p>
 
-					{/* Amount */}
-					<div>
-						<label className="block text-xs text-neutral-500 mb-1.5">
-							Amount
-						</label>
-						<input
-							type="number"
-							value={ogAmount}
-							onChange={(e) => setOgAmount(Number(e.target.value))}
-							className="w-full bg-neutral-900 border border-neutral-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-neutral-600 tabular-nums"
-						/>
-					</div>
+					<div className="bg-neutral-900 border border-neutral-800 rounded-xl p-4 space-y-4">
+						{/* Amount + Notation */}
+						<div className="grid grid-cols-3 gap-3">
+							<div className="col-span-2">
+								<label className="block text-[10px] text-neutral-600 uppercase tracking-wider mb-1.5">
+									Amount
+								</label>
+								<input
+									type="number"
+									value={ogAmount}
+									onChange={(e) => setOgAmount(Number(e.target.value))}
+									className="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-3 py-2 text-sm text-white font-mono focus:outline-none focus:border-neutral-600 transition-colors tabular-nums"
+								/>
+							</div>
+							<div>
+								<label className="block text-[10px] text-neutral-600 uppercase tracking-wider mb-1.5">
+									Notation
+								</label>
+								<div className="flex h-[38px]">
+									{(["standard", "compact"] as const).map((n) => (
+										<button
+											key={n}
+											type="button"
+											onClick={() => setOgNotation(n)}
+											className={clsx(
+												"flex-1 text-[10px] font-medium border transition-colors",
+												n === "standard" ? "rounded-l-lg" : "rounded-r-lg border-l-0",
+												ogNotation === n
+													? "bg-white/10 text-white border-neutral-600"
+													: "bg-neutral-950 text-neutral-500 border-neutral-800",
+											)}
+										>
+											{n === "standard" ? "Std" : "5M"}
+										</button>
+									))}
+								</div>
+							</div>
+						</div>
 
-					{/* Title */}
-					<div>
-						<label className="block text-xs text-neutral-500 mb-1.5">
-							Title
-						</label>
-						<input
-							type="text"
-							value={ogTitle}
-							onChange={(e) => setOgTitle(e.target.value)}
-							placeholder="e.g. Invoice Total"
-							className="w-full bg-neutral-900 border border-neutral-800 rounded-lg px-3 py-2 text-sm text-white placeholder:text-neutral-700 focus:outline-none focus:border-neutral-600"
-						/>
-					</div>
-
-					{/* Subtitle */}
-					<div>
-						<label className="block text-xs text-neutral-500 mb-1.5">
-							Subtitle
-						</label>
-						<input
-							type="text"
-							value={ogSubtitle}
-							onChange={(e) => setOgSubtitle(e.target.value)}
-							placeholder="e.g. Due: April 30"
-							className="w-full bg-neutral-900 border border-neutral-800 rounded-lg px-3 py-2 text-sm text-white placeholder:text-neutral-700 focus:outline-none focus:border-neutral-600"
-						/>
-					</div>
-
-					{/* Colors */}
-					<div className="grid grid-cols-2 gap-4">
+						{/* Title */}
 						<div>
-							<label className="block text-xs text-neutral-500 mb-1.5">
+							<label className="block text-[10px] text-neutral-600 uppercase tracking-wider mb-1.5">
+								Title
+							</label>
+							<input
+								type="text"
+								value={ogTitle}
+								onChange={(e) => setOgTitle(e.target.value)}
+								placeholder="e.g. Invoice Total"
+								className="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-3 py-2 text-sm text-white placeholder:text-neutral-700 focus:outline-none focus:border-neutral-600 transition-colors"
+							/>
+						</div>
+
+						{/* Subtitle */}
+						<div>
+							<label className="block text-[10px] text-neutral-600 uppercase tracking-wider mb-1.5">
+								Subtitle
+							</label>
+							<input
+								type="text"
+								value={ogSubtitle}
+								onChange={(e) => setOgSubtitle(e.target.value)}
+								placeholder="e.g. Due: April 30"
+								className="w-full bg-neutral-950 border border-neutral-800 rounded-lg px-3 py-2 text-sm text-white placeholder:text-neutral-700 focus:outline-none focus:border-neutral-600 transition-colors"
+							/>
+						</div>
+
+						{/* Locale toggle */}
+						<div>
+							<label className="block text-[10px] text-neutral-600 uppercase tracking-wider mb-1.5">
+								Direction
+							</label>
+							<div className="flex h-[34px]">
+								{([
+									{ value: "en-AE", label: "LTR · English" },
+									{ value: "ar-AE", label: "RTL · العربية" },
+								] as const).map((l, i) => (
+									<button
+										key={l.value}
+										type="button"
+										onClick={() => setOgLocale(l.value)}
+										className={clsx(
+											"flex-1 text-[10px] font-medium border transition-colors",
+											i === 0 ? "rounded-l-lg" : "rounded-r-lg border-l-0",
+											ogLocale === l.value
+												? "bg-white/10 text-white border-neutral-600"
+												: "bg-neutral-950 text-neutral-500 border-neutral-800",
+										)}
+									>
+										{l.label}
+									</button>
+								))}
+							</div>
+						</div>
+
+						{/* Accent color swatches */}
+						<div>
+							<label className="block text-[10px] text-neutral-600 uppercase tracking-wider mb-1.5">
 								Accent Color
 							</label>
-							<div className="flex items-center gap-2">
+							<div className="flex items-center gap-1.5">
+								{OG_ACCENT_SWATCHES.map((c) => (
+									<button
+										key={c}
+										type="button"
+										onClick={() => setOgAccent(c)}
+										className={clsx(
+											"w-6 h-6 rounded-full transition-all border-2",
+											ogAccent === c
+												? "border-white scale-110"
+												: "border-transparent hover:scale-110",
+										)}
+										style={{ backgroundColor: c }}
+										aria-label={`Accent ${c}`}
+									/>
+								))}
 								<input
 									type="color"
 									value={ogAccent}
 									onChange={(e) => setOgAccent(e.target.value)}
-									className="w-8 h-8 rounded-lg border border-neutral-800 cursor-pointer bg-transparent"
+									className="w-6 h-6 rounded-full cursor-pointer bg-transparent border border-neutral-700"
+									title="Custom color"
 								/>
-								<span className="text-xs text-neutral-500 font-mono">
-									{ogAccent}
-								</span>
 							</div>
 						</div>
+
+						{/* Background color */}
 						<div>
-							<label className="block text-xs text-neutral-500 mb-1.5">
+							<label className="block text-[10px] text-neutral-600 uppercase tracking-wider mb-1.5">
 								Background
 							</label>
 							<div className="flex items-center gap-2">
+								{(["#0a0a0a", "#1a1a2e", "#0f172a", "#18181b", "#ffffff"] as const).map((c) => (
+									<button
+										key={c}
+										type="button"
+										onClick={() => setOgBg(c)}
+										className={clsx(
+											"w-6 h-6 rounded-full transition-all border-2",
+											ogBg === c
+												? "border-white scale-110"
+												: "border-neutral-700 hover:scale-110",
+										)}
+										style={{ backgroundColor: c }}
+										aria-label={`Background ${c}`}
+									/>
+								))}
 								<input
 									type="color"
 									value={ogBg}
 									onChange={(e) => setOgBg(e.target.value)}
-									className="w-8 h-8 rounded-lg border border-neutral-800 cursor-pointer bg-transparent"
+									className="w-6 h-6 rounded-full cursor-pointer bg-transparent border border-neutral-700"
+									title="Custom color"
 								/>
-								<span className="text-xs text-neutral-500 font-mono">
-									{ogBg}
-								</span>
 							</div>
 						</div>
 					</div>
 
 					{/* Code examples */}
-					<div className="space-y-3 pt-2">
+					<div className="space-y-3">
 						<p className="text-[10px] text-neutral-600 uppercase tracking-widest">
 							Usage
 						</p>
@@ -517,8 +700,12 @@ function OGPriceCardSection() {
 							code={`import { generatePriceCardSVG } from "dirham/og";
 
 const svg = generatePriceCardSVG({
-  amount: ${ogAmount},${ogTitle ? `\n  title: "${ogTitle}",` : ""}${ogSubtitle ? `\n  subtitle: "${ogSubtitle}",` : ""}${ogAccent !== "#22c55e" ? `\n  accentColor: "${ogAccent}",` : ""}
+  amount: ${ogAmount},${ogTitle ? `\n  title: "${ogTitle}",` : ""}${ogSubtitle ? `\n  subtitle: "${ogSubtitle}",` : ""}${ogLocale !== "en-AE" ? `\n  locale: "${ogLocale}",` : ""}${ogNotation !== "standard" ? `\n  notation: "${ogNotation}",` : ""}${ogW !== 1200 || ogH !== 630 ? `\n  width: ${ogW},\n  height: ${ogH},` : ""}${ogAccent !== "#22c55e" ? `\n  accentColor: "${ogAccent}",` : ""}
 });`}
+						/>
+						<CodeBlock
+							lang="html"
+							code={metaSnippet}
 						/>
 						<CodeBlock
 							lang="tsx"
@@ -532,7 +719,7 @@ export async function GET(req: Request) {
   );
   return new ImageResponse(
     <DirhamPriceCard amount={amount} />,
-    { width: 1200, height: 630 },
+    { width: ${ogW}, height: ${ogH} },
   );
 }`}
 						/>
@@ -567,8 +754,28 @@ export function App() {
 		return () => document.removeEventListener("mousedown", handleClickOutside);
 	}, [fontDropdownOpen]);
 
+	// Animate sections on scroll
+	useEffect(() => {
+		const observer = new IntersectionObserver(
+			(entries) => {
+				for (const entry of entries) {
+					if (entry.isIntersecting) {
+						entry.target.classList.add("is-visible");
+						observer.unobserve(entry.target);
+					}
+				}
+			},
+			{ threshold: 0.06, rootMargin: "0px 0px -60px 0px" },
+		);
+		const els = document.querySelectorAll(
+			".main-content > section:not([data-hero])",
+		);
+		for (const el of els) observer.observe(el);
+		return () => observer.disconnect();
+	}, []);
+
 	return (
-		<div className="min-h-screen bg-neutral-950 [background-image:radial-gradient(rgba(255,255,255,0.035)_1px,transparent_1px)] [background-size:28px_28px]">
+		<div className="main-content min-h-screen bg-neutral-950 [background-image:radial-gradient(rgba(255,255,255,0.035)_1px,transparent_1px)] [background-size:28px_28px]">
 			{/* Navigation */}
 			<nav className="sticky top-0 z-50 border-b border-white/[0.06] bg-neutral-950/90 backdrop-blur-2xl">
 				<div className="max-w-6xl mx-auto px-8 h-16 flex items-center justify-between">
@@ -600,17 +807,19 @@ export function App() {
 				</div>
 			</nav>
 
+			<ScrollProgress />
+
 			{/* Hero */}
-			<section className="relative overflow-hidden">
+			<section data-hero className="relative overflow-hidden">
 				<div className="absolute inset-0 bg-[radial-gradient(ellipse_90%_65%_at_50%_-15%,rgba(255,255,255,0.07),transparent)]" />
 
-				<div className="relative max-w-6xl mx-auto px-8 pt-40 pb-36">
+				<div className="relative max-w-6xl mx-auto px-8 pt-32 pb-28">
 					<div className="flex flex-col items-center text-center">
 						{/* Symbol showcase */}
-						<div className="relative mb-14">
+						<div className="relative mb-10">
 							<div className="absolute inset-0 blur-3xl bg-white/[0.05] rounded-full scale-[2]" />
-							<div className="relative flex items-center justify-center w-32 h-32 rounded-[28px] bg-neutral-900/80 border border-neutral-800 shadow-2xl shadow-black/60">
-								<DirhamIcon size={68} color="white" />
+							<div className="relative flex items-center justify-center w-36 h-36 rounded-[28px] bg-neutral-900/80 border border-neutral-800 shadow-2xl shadow-black/60 symbol-glow">
+								<DirhamIcon size={80} color="white" />
 							</div>
 						</div>
 
@@ -618,7 +827,7 @@ export function App() {
 							<Badge variant="green">Unicode 18.0 · U+20C3</Badge>
 						</div>
 
-						<h1 className="text-7xl sm:text-8xl font-bold tracking-[-0.04em] text-white mb-6">
+						<h1 className="text-6xl sm:text-7xl font-bold tracking-[-0.04em] text-white mb-6">
 							dirham
 						</h1>
 						<p className="text-xl text-neutral-400 max-w-xl leading-relaxed mb-12">
@@ -686,12 +895,56 @@ export function App() {
 				<div className="h-px bg-gradient-to-r from-transparent via-neutral-800 to-transparent" />
 			</section>
 
+			{/* Unicode Status — Positioned after hero for emphasis */}
+			<section className="max-w-6xl mx-auto px-8 pt-20 pb-16">
+				<div className="bg-linear-to-b from-emerald-500/3 to-transparent rounded-3xl border border-emerald-500/10 p-1">
+					<div className="bg-neutral-950 rounded-[20px] overflow-hidden">
+						<div className="grid grid-cols-1 sm:grid-cols-2">
+							<div className="p-8 border-b sm:border-b-0 sm:border-r border-neutral-800">
+								<Badge variant="green">Active Now</Badge>
+								<p className="text-4xl font-mono font-bold text-emerald-400 mt-4 mb-2">
+									U+20C3
+								</p>
+								<p className="text-sm text-neutral-400 leading-relaxed">
+									UAE DIRHAM SIGN — this package maps the glyph to the official
+									Unicode codepoint via a custom web font
+								</p>
+							</div>
+							<div className="p-8">
+								<Badge variant="amber">Unicode 18.0</Badge>
+								<p className="text-4xl font-mono font-bold text-amber-400 mt-4 mb-2">
+									Sep 2026
+								</p>
+								<p className="text-sm text-neutral-400 leading-relaxed">
+									Native OS &amp; font support expected when Unicode 18.0 ships —
+									then the web font becomes optional
+								</p>
+							</div>
+						</div>
+						<div className="px-8 py-4 bg-neutral-900/50 border-t border-neutral-800">
+							<p className="text-xs text-neutral-500 leading-relaxed">
+								<span className="text-emerald-400 font-medium">
+									Future-proof:
+								</span>{" "}
+								This package already uses U+20C3. When system fonts add native
+								support, the web font gracefully becomes unnecessary — zero
+								migration needed. The Dirham symbol will work natively like $, €,
+								and £.
+							</p>
+						</div>
+					</div>
+				</div>
+			</section>
+
+			<div className="h-px bg-gradient-to-r from-transparent via-neutral-800 to-transparent" />
+
 			{/* Copy Dirham Symbol — SEO target for "dirham symbol text copy" / "u+20c3" */}
-			<section id="copy" className="max-w-6xl mx-auto px-8 pt-28 pb-24">
+			<section id="copy" className="max-w-6xl mx-auto px-8 pt-24 pb-20">
 				<SectionHeader
 					icon={Clipboard}
 					title="Copy Dirham Symbol"
 					description="Click any row to copy the UAE Dirham symbol (℃) in the format you need — Unicode character, HTML entity, CSS, JavaScript, or Arabic text."
+					primary
 				/>
 
 				<div className="bg-neutral-900 border border-neutral-800 rounded-2xl overflow-hidden mb-8">
@@ -775,7 +1028,7 @@ export function App() {
 			<div className="h-px bg-gradient-to-r from-transparent via-neutral-800 to-transparent" />
 
 			{/* How It Works */}
-			<section className="max-w-6xl mx-auto px-8 pt-28 pb-24">
+			<section className="max-w-6xl mx-auto px-8 pt-24 pb-20">
 				<SectionHeader
 					icon={Layers}
 					title="How It Works"
@@ -807,11 +1060,11 @@ export function App() {
 							key={title}
 							className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6 hover:border-neutral-700 transition-colors"
 						>
-							<div className={clsx("mb-3", color)}>
-								<Icon size={20} />
+							<div className="flex items-center justify-center w-9 h-9 rounded-xl bg-white/4 border border-neutral-800 mb-3">
+								<Icon size={17} className={color} />
 							</div>
 							<h3 className="text-sm font-semibold text-white mb-2">{title}</h3>
-							<p className="text-xs text-neutral-500 leading-relaxed">{desc}</p>
+							<p className="text-xs text-neutral-400 leading-relaxed">{desc}</p>
 						</div>
 					))}
 				</div>
@@ -847,7 +1100,7 @@ export function App() {
 			<div className="h-px bg-gradient-to-r from-transparent via-neutral-800 to-transparent" />
 
 			{/* Why dirham */}
-			<section className="max-w-6xl mx-auto px-8 pt-32 pb-28">
+			<section className="max-w-6xl mx-auto px-8 pt-24 pb-20">
 				<SectionHeader
 					icon={Sparkles}
 					title="Why dirham?"
@@ -861,37 +1114,40 @@ export function App() {
 							title: "Official U+20C3 — Not a Hack",
 							desc: "Uses the codepoint ratified by the Unicode Technical Committee for Unicode 18.0 — not a Private Use Area workaround. When OS fonts ship native support, the web font silently becomes optional.",
 							color: "text-cyan-400",
-							glow: true,
+							glowColor: "cyan" as const,
 						},
 						{
 							icon: Layers,
 							title: "5 Adaptive Font Variants",
 							desc: "Separate fonts for Sans, Serif, Monospace, Arabic, and Default — the Dirham symbol adapts to surrounding typography the same way $, €, and £ look different across typefaces.",
 							color: "text-violet-400",
-							glow: false,
+							glowColor: "" as const,
 						},
 						{
 							icon: Shield,
 							title: "Zero Migration in 2026",
 							desc: "When OS fonts ship native U+20C3 support with Unicode 18.0 (Sep 2026), the custom web font silently becomes optional. No find-and-replace, no API changes, no breaking updates.",
 							color: "text-emerald-400",
-							glow: false,
+							glowColor: "" as const,
 						},
 						{
 							icon: Zap,
 							title: "SSR-Safe SVG Component",
 							desc: "DirhamSymbol renders as a pure inline SVG — FOIT-free, works in React Server Components, Next.js App Router, and static site generators out of the box.",
 							color: "text-amber-400",
-							glow: false,
+							glowColor: "amber" as const,
 						},
-					].map(({ icon: Icon, title, desc, color, glow }) => (
+					].map(({ icon: Icon, title, desc, color, glowColor }) => (
 						<div
 							key={title}
 							className={clsx(
 								"rounded-2xl p-7 border transition-all",
-								glow
-									? "bg-cyan-500/[0.04] border-cyan-500/20 hover:border-cyan-500/40"
-									: "bg-neutral-900/60 border-neutral-800 hover:border-neutral-700 hover:bg-neutral-900",
+								glowColor === "cyan" &&
+									"bg-cyan-500/4 border-cyan-500/20 hover:border-cyan-500/40",
+								glowColor === "amber" &&
+									"bg-amber-500/4 border-amber-500/20 hover:border-amber-500/40",
+								!glowColor &&
+									"bg-neutral-900/60 border-neutral-800 hover:border-neutral-700 hover:bg-neutral-900",
 							)}
 						>
 							<div className={clsx("mb-4", color)}>
@@ -900,7 +1156,7 @@ export function App() {
 							<h3 className="text-base font-semibold text-white mb-2">
 								{title}
 							</h3>
-							<p className="text-sm text-neutral-500 leading-relaxed">{desc}</p>
+							<p className="text-sm text-neutral-400 leading-relaxed">{desc}</p>
 						</div>
 					))}
 				</div>
@@ -1208,14 +1464,14 @@ export class AppComponent {}`}
 			</section>
 
 			<div className="h-px bg-gradient-to-r from-transparent via-neutral-800 to-transparent" />
-			<section className="max-w-6xl mx-auto px-8 pt-32 pb-24">
+			<section className="max-w-6xl mx-auto px-8 pt-24 pb-20">
 				<SectionHeader
 					icon={Type}
 					title="Font Playground"
 					description="Explore how the Dirham symbol pairs with different typefaces and weights. Select a font to see it in action."
 				/>
 
-				<div className="grid grid-cols-1 lg:grid-cols-[1fr_1.5fr] gap-6">
+				<div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-6">
 					{/* Controls panel */}
 					<div className="space-y-4">
 						{/* Font selector dropdown */}
@@ -1421,7 +1677,7 @@ export class AppComponent {}`}
 			<div className="h-px bg-gradient-to-r from-transparent via-neutral-800 to-transparent" />
 
 			{/* Font Pairing Grid */}
-			<section className="max-w-6xl mx-auto px-8 pt-28 pb-20">
+			<section className="max-w-6xl mx-auto px-8 pt-24 pb-20">
 				<SectionHeader
 					icon={Type}
 					title="Font Pairing"
@@ -1432,7 +1688,7 @@ export class AppComponent {}`}
 					{FONT_FAMILIES.filter((f) => f.category !== "System").map((font) => (
 						<div
 							key={font.name}
-							className="bg-neutral-900 border border-neutral-800 rounded-xl p-5 hover:border-neutral-700 transition-colors group"
+							className="bg-neutral-900 border border-neutral-800 rounded-2xl p-5 hover:border-neutral-700 transition-colors group"
 						>
 							<div className="flex items-center justify-between mb-4">
 								<h3 className="text-sm font-medium text-white">{font.name}</h3>
@@ -1470,11 +1726,12 @@ export class AppComponent {}`}
 			<div className="h-px bg-gradient-to-r from-transparent via-neutral-800 to-transparent" />
 
 			{/* React Components */}
-			<section className="max-w-6xl mx-auto px-8 pt-24 pb-16">
+			<section className="max-w-6xl mx-auto px-8 pt-24 pb-20">
 				<SectionHeader
 					icon={Code2}
 					title="React Components"
 					description="Three approaches: an inline SVG component (no font loading, SSR-safe), a font-based icon that inherits text size and color, and a price component that combines formatting with the symbol."
+					primary
 				/>
 
 				{/* DirhamSymbol — SVG component */}
@@ -1666,7 +1923,7 @@ import { DirhamIcon } from "dirham/react";
 			<div className="h-px bg-gradient-to-r from-transparent via-neutral-800 to-transparent" />
 
 			{/* Formatting & Constants */}
-			<section className="max-w-6xl mx-auto px-8 pt-20 pb-14">
+			<section className="max-w-6xl mx-auto px-8 pt-20 pb-16">
 				<SectionHeader
 					icon={Package}
 					title="Formatting & Constants"
@@ -1788,7 +2045,7 @@ import { DirhamIcon } from "dirham/react";
 			<div className="h-px bg-gradient-to-r from-transparent via-neutral-800 to-transparent" />
 
 			{/* RTL Support */}
-			<section className="max-w-6xl mx-auto px-8 pt-16 pb-12">
+			<section className="max-w-6xl mx-auto px-8 pt-20 pb-16">
 				<SectionHeader
 					icon={Globe}
 					title="RTL / LTR"
@@ -1829,96 +2086,79 @@ import { DirhamIcon } from "dirham/react";
 			{/* OG / Social Media Price Cards */}
 			<OGPriceCardSection />
 
-			<div className="h-px bg-gradient-to-r from-transparent via-neutral-800 to-transparent" />
-
-			{/* Unicode Status */}
-			<section className="max-w-6xl mx-auto px-8 pt-24 pb-32">
-				<SectionHeader
-					icon={Sparkles}
-					title="Unicode Status"
-					description="U+20C3 is the official UAE Dirham Sign codepoint. This package uses it today via a custom web font — native OS support arrives with Unicode 18.0."
-				/>
-
-				<div className="bg-neutral-900 border border-neutral-800 rounded-2xl overflow-hidden">
-					<div className="grid grid-cols-1 sm:grid-cols-2">
-						{/* This package */}
-						<div className="p-8 border-b sm:border-b-0 sm:border-r border-neutral-800">
-							<Badge variant="green">Active</Badge>
-							<p className="text-4xl font-mono font-bold text-emerald-400 mt-4 mb-2">
-								U+20C3
-							</p>
-							<p className="text-sm text-neutral-500">
-								UAE DIRHAM SIGN — this package maps the glyph to the official
-								Unicode codepoint via a custom web font
-							</p>
-						</div>
-
-						{/* Native support */}
-						<div className="p-8">
-							<Badge variant="amber">Unicode 18.0</Badge>
-							<p className="text-4xl font-mono font-bold text-amber-400 mt-4 mb-2">
-								Sep 2026
-							</p>
-							<p className="text-sm text-neutral-500">
-								Native OS &amp; font support expected when Unicode 18.0 ships —
-								then the web font becomes optional
-							</p>
-						</div>
-					</div>
-
-					{/* Note */}
-					<div className="px-8 py-4 bg-neutral-950 border-t border-neutral-800">
-						<p className="text-xs text-neutral-500 leading-relaxed">
-							<span className="text-emerald-400 font-medium">
-								Future-proof:
-							</span>{" "}
-							This package already uses U+20C3. When system fonts add native
-							support, the web font gracefully becomes unnecessary — zero
-							migration needed. The Dirham symbol will work natively like $, €,
-							and £.
-						</p>
-					</div>
-				</div>
-			</section>
-
 			{/* Footer */}
 			<footer className="border-t border-neutral-800/60">
-				<div className="max-w-5xl mx-auto px-6 py-14">
-					<div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-						<div className="flex items-center gap-3">
-							<DirhamIcon size={16} color="#525252" />
-							<span className="text-xs text-neutral-600">
-								Unicode U+20C3 ·{" "}
+				<div className="max-w-6xl mx-auto px-8 py-16">
+					<div className="grid grid-cols-1 sm:grid-cols-3 gap-8 mb-10">
+						{/* Brand */}
+						<div>
+							<div className="flex items-center gap-2.5 mb-3">
+								<DirhamIcon size={20} color="white" />
+								<span className="font-semibold text-white text-sm">dirham</span>
+							</div>
+							<p className="text-xs text-neutral-500 leading-relaxed">
+								The official UAE Dirham currency symbol for the web. Built on
+								Unicode 18.0 codepoint U+20C3.
+							</p>
+						</div>
+
+						{/* Resources */}
+						<div>
+							<p className="text-[10px] text-neutral-600 uppercase tracking-widest mb-3">
+								Resources
+							</p>
+							<div className="space-y-2">
+								<a
+									href="https://www.npmjs.com/package/dirham"
+									target="_blank"
+									rel="noreferrer noopener"
+									className="block text-sm text-neutral-500 hover:text-white transition-colors"
+								>
+									npm
+								</a>
+								<a
+									href="https://github.com/pooyagolchian/dirham"
+									target="_blank"
+									rel="noreferrer noopener"
+									className="block text-sm text-neutral-500 hover:text-white transition-colors"
+								>
+									GitHub
+								</a>
+								<a
+									href="https://github.com/pooyagolchian/dirham/blob/main/CONTRIBUTING.md"
+									target="_blank"
+									rel="noreferrer noopener"
+									className="block text-sm text-neutral-500 hover:text-white transition-colors"
+								>
+									Contributing
+								</a>
+							</div>
+						</div>
+
+						{/* Project */}
+						<div>
+							<p className="text-[10px] text-neutral-600 uppercase tracking-widest mb-3">
+								Project
+							</p>
+							<div className="space-y-2 text-sm text-neutral-500">
+								<p>MIT License</p>
+								<p>Unicode 18.0 · U+20C3</p>
 								<a
 									href="https://www.centralbank.ae/en/our-operations/currency-and-coins/"
 									target="_blank"
-									rel="noreferrer"
-									className="text-neutral-500 hover:text-white transition-colors underline underline-offset-2"
+									rel="noreferrer noopener"
+									className="block hover:text-white transition-colors"
 								>
 									Central Bank of UAE
 								</a>
-							</span>
+							</div>
 						</div>
-						<div className="flex items-center gap-6 text-xs text-neutral-600">
-							<a
-								href="https://www.npmjs.com/package/dirham"
-								target="_blank"
-								rel="noreferrer"
-								className="hover:text-white transition-colors"
-							>
-								npm
-							</a>
-							<a
-								href="https://github.com/pooyagolchian/dirham"
-								target="_blank"
-								rel="noreferrer"
-								className="hover:text-white transition-colors"
-							>
-								GitHub
-							</a>
-							<span className="text-neutral-700">·</span>
-							<span>MIT License</span>
-						</div>
+					</div>
+
+					<div className="h-px bg-neutral-800/60 mb-6" />
+					<div className="flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-neutral-600">
+						<span>Built for developers in the UAE and beyond</span>
+						<span>dirham · MIT</span>
 					</div>
 				</div>
 			</footer>

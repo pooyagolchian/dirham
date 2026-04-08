@@ -27,10 +27,10 @@ describe("generatePriceCardSVG", () => {
 
 	it("omits title/subtitle elements when not provided", () => {
 		const svg = generatePriceCardSVG({ amount: 100 });
-		// Only the price text, AED badge, and structural elements should be present
+		// Only the price text, AED badge, and branding watermark should be present
 		const textMatches = svg.match(/<text /g);
-		// price text + AED badge = 2 text elements
-		expect(textMatches?.length).toBe(2);
+		// price text + AED badge + branding = 3 text elements
+		expect(textMatches?.length).toBe(3);
 	});
 
 	it("respects custom dimensions", () => {
