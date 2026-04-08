@@ -79,7 +79,7 @@ const DirhamSymbolBase = forwardRef<SVGSVGElement, DirhamSymbolProps>(
 				aria-label={ariaLabel}
 				style={{
 					display: "inline-block",
-					verticalAlign: "middle",
+					verticalAlign: "-0.125em",
 					...style,
 				}}
 				{...props}
