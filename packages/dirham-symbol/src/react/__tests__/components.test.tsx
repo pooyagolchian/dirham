@@ -1,7 +1,9 @@
 import React from "react";
 import { renderToString } from "react-dom/server";
 import { describe, expect, it } from "vitest";
+import { AnimatedDirhamPrice } from "../AnimatedDirhamPrice";
 import { DirhamIcon } from "../DirhamIcon";
+import { DirhamInput } from "../DirhamInput";
 import { DirhamPrice } from "../DirhamPrice";
 import { DirhamSymbol } from "../DirhamSymbol";
 
@@ -222,5 +224,84 @@ describe("DirhamPrice", () => {
 			}),
 		);
 		expect(html).toContain("5M");
+	});
+
+	it("sets dir=rtl for Arabic locale", () => {
+		const html = renderToString(
+			React.createElement(DirhamPrice, { amount: 100, locale: "ar-AE" }),
+		);
+		expect(html).toContain('dir="rtl"');
+	});
+});
+
+describe("DirhamInput", () => {
+	it("renders an input element", () => {
+		const html = renderToString(React.createElement(DirhamInput));
+		expect(html).toContain("<input");
+	});
+
+	it("renders with inputMode=decimal", () => {
+		const html = renderToString(React.createElement(DirhamInput));
+		expect(html).toContain('inputMode="decimal"');
+	});
+
+	it("renders SVG symbol when showSymbol is true (default)", () => {
+		const html = renderToString(React.createElement(DirhamInput));
+		expect(html).toContain("<svg");
+	});
+
+	it("renders without symbol when showSymbol is false", () => {
+		const html = renderToString(
+			React.createElement(DirhamInput, { showSymbol: false }),
+		);
+		expect(html).not.toContain("<svg");
+	});
+
+	it("renders AED code when useCode is true", () => {
+		const html = renderToString(
+			React.createElement(DirhamInput, { useCode: true }),
+		);
+		expect(html).toContain("AED");
+	});
+
+	it("renders with a default value", () => {
+		const html = renderToString(
+			React.createElement(DirhamInput, { defaultValue: 100 }),
+		);
+		expect(html).toContain("100");
+	});
+});
+
+describe("AnimatedDirhamPrice", () => {
+	it("renders a span element", () => {
+		const html = renderToString(
+			React.createElement(AnimatedDirhamPrice, { amount: 100 }),
+		);
+		expect(html).toContain("<span");
+	});
+
+	it("renders with aria-live for accessibility", () => {
+		const html = renderToString(
+			React.createElement(AnimatedDirhamPrice, { amount: 100 }),
+		);
+		expect(html).toContain('aria-live="polite"');
+	});
+
+	it("renders initial amount value", () => {
+		const html = renderToString(
+			React.createElement(AnimatedDirhamPrice, { amount: 0 }),
+		);
+		// Initial SSR render starts at 0, so should contain formatted 0
+		expect(html).toContain("0");
+	});
+
+	it("renders with AED code when useCode is true", () => {
+		const html = renderToString(
+			React.createElement(AnimatedDirhamPrice, {
+				amount: 100,
+				useCode: true,
+			}),
+		);
+		expect(html).toContain("AED");
 	});
 });

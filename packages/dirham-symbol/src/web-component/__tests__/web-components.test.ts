@@ -53,3 +53,60 @@ describe("DirhamSymbolElement", () => {
 		globalThis.HTMLElement = original;
 	});
 });
+
+describe("DirhamInputElement", () => {
+	it("is exported as a class", async () => {
+		const original = globalThis.HTMLElement;
+		// @ts-expect-error minimal mock for testing static properties
+		globalThis.HTMLElement = class {};
+		// @ts-expect-error minimal mock
+		globalThis.customElements = { get: () => undefined, define: () => {} };
+
+		const mod = await import("../DirhamInputElement");
+		expect(mod.DirhamInputElement).toBeDefined();
+		expect(typeof mod.DirhamInputElement).toBe("function");
+		expect(mod.DirhamInputElement.observedAttributes).toEqual([
+			"value",
+			"locale",
+			"decimals",
+			"min",
+			"max",
+			"placeholder",
+			"disabled",
+			"readonly",
+			"show-symbol",
+			"use-code",
+			"symbol-size",
+			"weight",
+		]);
+
+		globalThis.HTMLElement = original;
+	});
+});
+
+describe("AnimatedDirhamPriceElement", () => {
+	it("is exported as a class", async () => {
+		const original = globalThis.HTMLElement;
+		// @ts-expect-error minimal mock for testing static properties
+		globalThis.HTMLElement = class {};
+		// @ts-expect-error minimal mock
+		globalThis.customElements = { get: () => undefined, define: () => {} };
+
+		const mod = await import("../AnimatedDirhamPriceElement");
+		expect(mod.AnimatedDirhamPriceElement).toBeDefined();
+		expect(typeof mod.AnimatedDirhamPriceElement).toBe("function");
+		expect(mod.AnimatedDirhamPriceElement.observedAttributes).toEqual([
+			"amount",
+			"duration",
+			"easing",
+			"locale",
+			"decimals",
+			"notation",
+			"use-code",
+			"symbol-size",
+			"weight",
+		]);
+
+		globalThis.HTMLElement = original;
+	});
+});

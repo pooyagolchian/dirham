@@ -41,6 +41,48 @@ export default defineConfig([
 		splitting: false,
 		treeshake: true,
 	},
+	// React Native entry
+	{
+		entry: { "react-native/index": "src/react-native/index.ts" },
+		format: ["esm", "cjs"],
+		target: "es2021",
+		dts: true,
+		sourcemap: true,
+		clean: false,
+		outDir: "dist",
+		splitting: false,
+		treeshake: true,
+		external: ["react", "react-native", "react-native-svg"],
+		esbuildOptions(options) {
+			options.jsx = "automatic";
+		},
+	},
+	// Tailwind plugin entry
+	{
+		entry: { "tailwind/index": "src/tailwind/index.ts" },
+		format: ["esm", "cjs"],
+		target: "es2021",
+		dts: true,
+		sourcemap: true,
+		clean: false,
+		outDir: "dist",
+		splitting: false,
+		treeshake: true,
+		external: ["tailwindcss", "tailwindcss/plugin"],
+	},
+	// Next.js entry
+	{
+		entry: { "next/index": "src/next/index.ts" },
+		format: ["esm", "cjs"],
+		target: "es2021",
+		dts: true,
+		sourcemap: true,
+		clean: false,
+		outDir: "dist",
+		splitting: false,
+		treeshake: true,
+		external: ["next", "next/font/local"],
+	},
 	// CLI entry
 	{
 		entry: { cli: "src/cli.ts" },

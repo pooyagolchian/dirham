@@ -19,3 +19,21 @@ export {
 	copyDirhamSymbol,
 	type DirhamCopyFormat,
 } from "./clipboard";
+
+export { copyDirhamAmount } from "./copyAmount";
+
+export {
+	addVAT,
+	removeVAT,
+	getVAT,
+	UAE_VAT_RATE,
+	type VATOptions,
+} from "./vat";
+
+export {
+	convertFromAED,
+	convertToAED,
+	fetchExchangeRates,
+	clearRateCache,
+	type ConvertOptions,
+} from "./conversion";

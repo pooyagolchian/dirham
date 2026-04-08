@@ -108,6 +108,7 @@ const DirhamPriceBase = forwardRef<HTMLSpanElement, DirhamPriceProps>(
 			<span
 				ref={ref}
 				className={className}
+				dir={locale.startsWith("ar") ? "rtl" : undefined}
 				style={{ whiteSpace: "nowrap", ...style }}
 				{...props}
 			>
