@@ -1,5 +1,12 @@
 # dirham
 
+## 1.5.3
+
+### Patch Changes
+
+- **Enhanced OG price card visuals** — Added radial gradient glow, vignette overlay, top accent line, proportional scaling for all card dimensions, and "DIRHAM.JS.ORG" branding watermark. Dirham symbol now matches the price text cap-height for consistent sizing, with increased spacing between symbol and number.
+- **Improved OG demo section** — Added dimension presets (OG, Twitter, Square, Story), locale/RTL toggle, notation toggle, accent color swatches, background presets, and Copy Meta Tags button with ready-to-paste `<meta>` snippet.
+
 ## 1.5.2
 
 ### Patch Changes

@@ -784,7 +784,7 @@ export function App() {
 						<span className="font-semibold tracking-tight text-white">
 							dirham
 						</span>
-						<Badge>v1.5.2</Badge>
+						<Badge>v1.5.3</Badge>
 					</div>
 					<div className="flex items-center gap-6">
 						<a
