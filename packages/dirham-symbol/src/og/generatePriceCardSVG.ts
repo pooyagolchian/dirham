@@ -61,15 +61,27 @@ export function generatePriceCardSVG(options: PriceCardSVGOptions): string {
 	const isRTL = locale.startsWith("ar");
 	const cx = width / 2;
 
-	const symbolSize = 64;
-	const symbolY = height * 0.42;
-	const priceY = symbolY + 16;
+	const symbolSize = 52;
+	const fontSize = 80;
 	const titleY = height * 0.22;
 	const subtitleY = height * 0.82;
 
-	const symbolX = isRTL
-		? cx + formatted.length * 16
-		: cx - formatted.length * 16;
+	// Vertical center of the price row
+	const centerY = height * 0.46;
+	// Text baseline so the cap-height is visually centered at centerY
+	const capHeight = fontSize * 0.72;
+	const amountBaseline = centerY + capHeight / 2;
+
+	// Approximate the half-width of the formatted text
+	const avgCharWidth = fontSize * 0.48;
+	const textHalfWidth = (formatted.length * avgCharWidth) / 2;
+
+	// Place symbol to the left (or right for RTL) of the text with a gap
+	const gap = 12;
+	const symbolLeftX = isRTL
+		? cx + textHalfWidth + gap
+		: cx - textHalfWidth - symbolSize - gap;
+	const symbolTopY = centerY - symbolSize / 2;
 
 	const escHtml = (s: string) =>
 		s
@@ -102,18 +114,18 @@ export function generatePriceCardSVG(options: PriceCardSVGOptions): string {
 	const priceGroup = isRTL ? "rtl" : "ltr";
 	svg += `<g direction="${priceGroup}">`;
 
-	// Dirham symbol icon
-	svg += `<svg x="${symbolX - symbolSize / 2}" y="${symbolY - symbolSize / 2}" width="${symbolSize}" height="${symbolSize}" viewBox="0 0 1000 870">`;
+	// Dirham symbol icon — vertically centered with price text
+	svg += `<svg x="${symbolLeftX}" y="${symbolTopY}" width="${symbolSize}" height="${symbolSize}" viewBox="0 0 1000 870">`;
 	svg += `<path d="${DIRHAM_SVG_PATH}" fill="${escHtml(accentColor)}" />`;
 	svg += "</svg>";
 
 	// Price text
-	svg += `<text x="${cx}" y="${priceY + symbolSize / 2 + 8}" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="80" font-weight="700" fill="${escHtml(textColor)}" letter-spacing="-2">${escHtml(formatted)}</text>`;
+	svg += `<text x="${cx}" y="${amountBaseline}" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="${fontSize}" font-weight="700" fill="${escHtml(textColor)}" letter-spacing="-2">${escHtml(formatted)}</text>`;
 
 	svg += "</g>";
 
 	// "AED" badge
-	const badgeY = priceY + symbolSize / 2 + 40;
+	const badgeY = amountBaseline + 24;
 	svg += `<rect x="${cx - 30}" y="${badgeY}" width="60" height="28" rx="14" fill="${escHtml(accentColor)}" opacity="0.15" />`;
 	svg += `<text x="${cx}" y="${badgeY + 19}" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="14" font-weight="600" fill="${escHtml(accentColor)}" letter-spacing="2">AED</text>`;
 

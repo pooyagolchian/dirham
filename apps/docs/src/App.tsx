@@ -8,6 +8,7 @@ import {
 	Copy,
 	Globe,
 	Hash,
+	Image,
 	Layers,
 	Package,
 	Shield,
@@ -22,6 +23,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import "dirham/css";
 
 import { DirhamIcon, DirhamPrice, DirhamSymbol } from "dirham/react";
+import { generatePriceCardSVG } from "dirham/og";
 
 import {
 	DIRHAM_CODEPOINT,
@@ -314,6 +316,232 @@ const PM_COMMANDS = {
 } as const;
 
 type PMType = keyof typeof PM_COMMANDS;
+
+const OG_PRESETS = [
+	{ label: "Invoice", amount: 12500, title: "Invoice Total", subtitle: "Due: April 30, 2026", accent: "#22c55e" },
+	{ label: "Rent", amount: 85000, title: "Monthly Rent", subtitle: "Dubai Marina · Studio", accent: "#3b82f6" },
+	{ label: "Salary", amount: 25000, title: "Salary", subtitle: "April 2026", accent: "#a855f7" },
+	{ label: "Sale", amount: 199.99, title: "Flash Sale", subtitle: "Limited time offer", accent: "#f43f5e" },
+] as const;
+
+function OGPriceCardSection() {
+	const [ogAmount, setOgAmount] = useState(12500);
+	const [ogTitle, setOgTitle] = useState("Invoice Total");
+	const [ogSubtitle, setOgSubtitle] = useState("Due: April 30, 2026");
+	const [ogAccent, setOgAccent] = useState("#22c55e");
+	const [ogBg, setOgBg] = useState("#0a0a0a");
+	const [copiedSvg, setCopiedSvg] = useState(false);
+
+	const svg = useMemo(
+		() =>
+			generatePriceCardSVG({
+				amount: ogAmount,
+				title: ogTitle || undefined,
+				subtitle: ogSubtitle || undefined,
+				accentColor: ogAccent,
+				background: ogBg,
+			}),
+		[ogAmount, ogTitle, ogSubtitle, ogAccent, ogBg],
+	);
+
+	const dataUri = useMemo(
+		() => `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`,
+		[svg],
+	);
+
+	return (
+		<section className="max-w-6xl mx-auto px-8 pt-16 pb-12">
+			<SectionHeader
+				icon={Image}
+				title="OG / Social Media Cards"
+				description="Generate shareable price cards for Open Graph images, Twitter Cards, and social media. Use the SVG directly or render via @vercel/og in Next.js."
+			/>
+
+			{/* Preset buttons */}
+			<div className="flex flex-wrap gap-2 mb-8">
+				{OG_PRESETS.map((p) => (
+					<button
+						key={p.label}
+						type="button"
+						onClick={() => {
+							setOgAmount(p.amount);
+							setOgTitle(p.title);
+							setOgSubtitle(p.subtitle);
+							setOgAccent(p.accent);
+						}}
+						className={clsx(
+							"px-3 py-1.5 rounded-lg text-xs font-medium transition-colors border",
+							ogTitle === p.title && ogAmount === p.amount
+								? "bg-white/10 text-white border-neutral-600"
+								: "bg-neutral-900 text-neutral-400 border-neutral-800 hover:border-neutral-700",
+						)}
+					>
+						{p.label}
+					</button>
+				))}
+			</div>
+
+			<div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+				{/* Preview */}
+				<div className="space-y-4">
+					<p className="text-[10px] text-neutral-600 uppercase tracking-widest">
+						Live Preview
+					</p>
+					<div
+						className="rounded-xl overflow-hidden border border-neutral-800 shadow-2xl"
+						style={{ aspectRatio: "1200 / 630" }}
+					>
+						<img
+							src={dataUri}
+							alt={`OG card: ${ogTitle ?? ""} ${formatDirham(ogAmount)}`}
+							className="w-full h-full object-cover"
+						/>
+					</div>
+					<div className="flex gap-2">
+						<button
+							type="button"
+							onClick={() => {
+								navigator.clipboard.writeText(svg);
+								setCopiedSvg(true);
+								setTimeout(() => setCopiedSvg(false), 2000);
+							}}
+							className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-neutral-900 text-neutral-400 border border-neutral-800 hover:border-neutral-700 transition-colors"
+						>
+							{copiedSvg ? (
+								<Check size={12} className="text-emerald-400" />
+							) : (
+								<Copy size={12} />
+							)}
+							{copiedSvg ? "Copied!" : "Copy SVG"}
+						</button>
+						<a
+							href={dataUri}
+							download="dirham-price-card.svg"
+							className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-neutral-900 text-neutral-400 border border-neutral-800 hover:border-neutral-700 transition-colors"
+						>
+							Download SVG
+						</a>
+					</div>
+				</div>
+
+				{/* Controls */}
+				<div className="space-y-5">
+					<p className="text-[10px] text-neutral-600 uppercase tracking-widest">
+						Customize
+					</p>
+
+					{/* Amount */}
+					<div>
+						<label className="block text-xs text-neutral-500 mb-1.5">
+							Amount
+						</label>
+						<input
+							type="number"
+							value={ogAmount}
+							onChange={(e) => setOgAmount(Number(e.target.value))}
+							className="w-full bg-neutral-900 border border-neutral-800 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-neutral-600 tabular-nums"
+						/>
+					</div>
+
+					{/* Title */}
+					<div>
+						<label className="block text-xs text-neutral-500 mb-1.5">
+							Title
+						</label>
+						<input
+							type="text"
+							value={ogTitle}
+							onChange={(e) => setOgTitle(e.target.value)}
+							placeholder="e.g. Invoice Total"
+							className="w-full bg-neutral-900 border border-neutral-800 rounded-lg px-3 py-2 text-sm text-white placeholder:text-neutral-700 focus:outline-none focus:border-neutral-600"
+						/>
+					</div>
+
+					{/* Subtitle */}
+					<div>
+						<label className="block text-xs text-neutral-500 mb-1.5">
+							Subtitle
+						</label>
+						<input
+							type="text"
+							value={ogSubtitle}
+							onChange={(e) => setOgSubtitle(e.target.value)}
+							placeholder="e.g. Due: April 30"
+							className="w-full bg-neutral-900 border border-neutral-800 rounded-lg px-3 py-2 text-sm text-white placeholder:text-neutral-700 focus:outline-none focus:border-neutral-600"
+						/>
+					</div>
+
+					{/* Colors */}
+					<div className="grid grid-cols-2 gap-4">
+						<div>
+							<label className="block text-xs text-neutral-500 mb-1.5">
+								Accent Color
+							</label>
+							<div className="flex items-center gap-2">
+								<input
+									type="color"
+									value={ogAccent}
+									onChange={(e) => setOgAccent(e.target.value)}
+									className="w-8 h-8 rounded-lg border border-neutral-800 cursor-pointer bg-transparent"
+								/>
+								<span className="text-xs text-neutral-500 font-mono">
+									{ogAccent}
+								</span>
+							</div>
+						</div>
+						<div>
+							<label className="block text-xs text-neutral-500 mb-1.5">
+								Background
+							</label>
+							<div className="flex items-center gap-2">
+								<input
+									type="color"
+									value={ogBg}
+									onChange={(e) => setOgBg(e.target.value)}
+									className="w-8 h-8 rounded-lg border border-neutral-800 cursor-pointer bg-transparent"
+								/>
+								<span className="text-xs text-neutral-500 font-mono">
+									{ogBg}
+								</span>
+							</div>
+						</div>
+					</div>
+
+					{/* Code examples */}
+					<div className="space-y-3 pt-2">
+						<p className="text-[10px] text-neutral-600 uppercase tracking-widest">
+							Usage
+						</p>
+						<CodeBlock
+							lang="ts"
+							code={`import { generatePriceCardSVG } from "dirham/og";
+
+const svg = generatePriceCardSVG({
+  amount: ${ogAmount},${ogTitle ? `\n  title: "${ogTitle}",` : ""}${ogSubtitle ? `\n  subtitle: "${ogSubtitle}",` : ""}${ogAccent !== "#22c55e" ? `\n  accentColor: "${ogAccent}",` : ""}
+});`}
+						/>
+						<CodeBlock
+							lang="tsx"
+							code={`// Next.js OG image route (app/api/og/route.tsx)
+import { ImageResponse } from "next/og";
+import { DirhamPriceCard } from "dirham/og";
+
+export async function GET(req: Request) {
+  const amount = Number(
+    new URL(req.url).searchParams.get("amount") ?? "0"
+  );
+  return new ImageResponse(
+    <DirhamPriceCard amount={amount} />,
+    { width: 1200, height: 630 },
+  );
+}`}
+						/>
+					</div>
+				</div>
+			</div>
+		</section>
+	);
+}
 
 export function App() {
 	const [size, setSize] = useState(64);
@@ -1595,6 +1823,11 @@ import { DirhamIcon } from "dirham/react";
 					</div>
 				</div>
 			</section>
+
+			<div className="h-px bg-gradient-to-r from-transparent via-neutral-800 to-transparent" />
+
+			{/* OG / Social Media Price Cards */}
+			<OGPriceCardSection />
 
 			<div className="h-px bg-gradient-to-r from-transparent via-neutral-800 to-transparent" />
 

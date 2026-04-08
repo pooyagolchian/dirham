@@ -397,6 +397,65 @@ npx dirham copy         # Copy \u20C3 to clipboard
 npx dirham copy html    # Copy HTML entity
 ```
 
+### OG / Social Media Price Cards
+
+Generate shareable price card images for Open Graph and Twitter Cards.
+
+#### Server-side SVG (zero dependencies)
+
+```ts
+import { generatePriceCardSVG } from "dirham/og";
+
+const svg = generatePriceCardSVG({
+  amount: 12500,
+  title: "Monthly Rent",
+  subtitle: "Dubai Marina, Studio",
+  accentColor: "#22c55e",
+});
+// Returns a self-contained <svg> string (1200×630 by default)
+```
+
+#### Next.js OG Image Route (`@vercel/og`)
+
+```tsx
+// app/api/og/route.tsx
+import { ImageResponse } from "next/og";
+import { DirhamPriceCard } from "dirham/og";
+
+export const runtime = "edge";
+
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url);
+  const amount = Number(searchParams.get("amount") ?? "0");
+  const title = searchParams.get("title") ?? undefined;
+
+  return new ImageResponse(
+    <DirhamPriceCard amount={amount} title={title} />,
+    { width: 1200, height: 630 },
+  );
+}
+```
+
+Then in your page `<head>`:
+
+```html
+<meta property="og:image" content="/api/og?amount=12500&title=Monthly+Rent" />
+```
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `amount` | `number` | — | Price amount (required) |
+| `title` | `string` | — | Header text above the price |
+| `subtitle` | `string` | — | Footer text below the price |
+| `locale` | `string` | `"en-AE"` | Intl locale (RTL auto-detected) |
+| `decimals` | `number` | `2` | Decimal places |
+| `notation` | `"standard" \| "compact"` | `"standard"` | Number notation |
+| `width` | `number` | `1200` | Image width in px |
+| `height` | `number` | `630` | Image height in px |
+| `background` | `string` | `"#0a0a0a"` | Background color |
+| `textColor` | `string` | `"#ffffff"` | Text color |
+| `accentColor` | `string` | `"#22c55e"` | Dirham symbol & badge color |
+
 ## Exports
 
 | Import path                | Description                                                                         |
@@ -407,6 +466,7 @@ npx dirham copy html    # Copy HTML entity
 | `dirham/web-component`     | `<dirham-symbol>`, `<dirham-price>`, `<dirham-animated-price>`, `<dirham-input>`    |
 | `dirham/tailwind`          | Tailwind CSS plugin with Dirham utility classes                                     |
 | `dirham/next`              | Next.js `next/font/local` wrapper (`dirhamFont`, `dirhamFontConfig`)                |
+| `dirham/og`                | OG image generation (`DirhamPriceCard`, `generatePriceCardSVG`)                     |
 | `dirham/css`               | CSS with `@font-face`                                                               |
 | `dirham/scss`              | SCSS with `@font-face`                                                              |
 | `dirham/font/woff2`        | WOFF2 font file (default)                                                           |

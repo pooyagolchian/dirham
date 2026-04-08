@@ -1,5 +1,29 @@
 # dirham
 
+## 1.5.0
+
+### Minor Changes
+
+- **OG / Social media price cards** — new `dirham/og` entry point for generating shareable Dirham price card images for social media (Open Graph, Twitter Cards).
+
+  - `generatePriceCardSVG()` — framework-agnostic SVG string generator. Works server-side with zero DOM/React dependencies. Returns a self-contained `<svg>` string suitable for embedding, saving to file, or converting to PNG via sharp/resvg.
+  - `<DirhamPriceCard />` — Satori-compatible React component for use with `@vercel/og` / `next/og` in Next.js API routes and Edge functions.
+  - Both support: custom title, subtitle, locale (LTR/RTL), compact notation, custom colors (background, text, accent), and dimensions (default 1200×630 for OG).
+
+  ```tsx
+  // Server-side SVG
+  import { generatePriceCardSVG } from "dirham/og";
+  const svg = generatePriceCardSVG({ amount: 5000, title: "Monthly Rent" });
+
+  // Next.js OG image route
+  import { ImageResponse } from "next/og";
+  import { DirhamPriceCard } from "dirham/og";
+  export async function GET(req: Request) {
+    const amount = Number(new URL(req.url).searchParams.get("amount") ?? "0");
+    return new ImageResponse(<DirhamPriceCard amount={amount} />, { width: 1200, height: 630 });
+  }
+  ```
+
 ## 1.4.0
 
 ### Minor Changes

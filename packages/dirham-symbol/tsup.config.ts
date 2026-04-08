@@ -83,6 +83,22 @@ export default defineConfig([
 		treeshake: true,
 		external: ["next", "next/font/local"],
 	},
+	// OG / Social image entry
+	{
+		entry: { "og/index": "src/og/index.ts" },
+		format: ["esm", "cjs"],
+		target: "es2021",
+		dts: true,
+		sourcemap: true,
+		clean: false,
+		outDir: "dist",
+		splitting: false,
+		treeshake: true,
+		external: ["react"],
+		esbuildOptions(options) {
+			options.jsx = "automatic";
+		},
+	},
 	// CLI entry
 	{
 		entry: { cli: "src/cli.ts" },
