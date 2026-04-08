@@ -1,5 +1,11 @@
 # dirham
 
+## 1.5.1
+
+### Patch Changes
+
+- **OG price card alignment fix** — Fixed the Dirham symbol alignment in `generatePriceCardSVG()`. The symbol now sits vertically centered alongside the price text instead of floating above it. Also slightly reduced symbol size (64→52px) for better proportion.
+
 ## 1.5.0
 
 ### Minor Changes
