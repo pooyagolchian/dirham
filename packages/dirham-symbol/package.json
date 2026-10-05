@@ -1,6 +1,6 @@
 {
 	"name": "dirham",
-	"version": "1.5.3",
+	"version": "1.5.4",
 	"description": "UAE Dirham (AED) currency symbol, U+20C3 in Unicode 18.0: web font, CSS, React and React Native SVG components, Web Components and AED price formatting.",
 	"license": "MIT",
 	"author": "Pooya Golchian <pooya@golchian.com> (https://pooyagolchian.com/)",
