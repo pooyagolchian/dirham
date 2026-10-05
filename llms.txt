@@ -1,59 +1,58 @@
-# Dirham — UAE Dirham Currency Symbol
+# dirham
 
-> Interactive demo and documentation for the `dirham` npm package — UAE Dirham (د.إ) currency symbol as a web font, CSS, React component, and Web Component for Vue, Angular, Svelte & vanilla JS.
+> dirham is an MIT-licensed npm package for showing and formatting the UAE Dirham sign, U+20C3 UAE DIRHAM SIGN, on the web. Unicode 18.0, released on 16 September 2026, encodes the sign as U+20C3. As of October 2026, mainstream system fonts (Apple's San Francisco, Google's Noto and Roboto) don't include it yet, so the bare character shows as an empty box. The package bundles a small web font mapped to U+20C3, inline SVG components for React and React Native, Web Components, a Tailwind plugin and AED formatting helpers, so the sign renders today while the text stays standard Unicode.
 
-## About This Site
+Last verified: 5 October 2026 (dirham 1.5.3 was the latest npm release on that date). Maintainer: Pooya Golchian (https://pooyagolchian.com/). dirham is an independent open-source project and is not affiliated with the Central Bank of the UAE or the Unicode Consortium.
 
-This is the live demo and documentation site for the `dirham` npm package. It showcases:
-- The Dirham symbol (U+20C3) rendered with a custom web font
-- Copy dirham symbol in multiple formats (Unicode, HTML entity, CSS, Arabic text)
-- React SVG component (`DirhamSymbol`) with 9 weight variants
-- `DirhamPrice` component for formatted price display with compact notation (K/M/B)
-- Font icon component (`DirhamIcon`) using CSS @font-face
-- Framework-agnostic `<dirham-symbol>` and `<dirham-price>` Web Components (Vue, Angular, Svelte, vanilla JS)
-- JavaScript formatting utilities (`formatDirham`, `parseDirham`, `copyDirhamSymbol`)
-- CDN usage via jsDelivr (no npm install required)
-- CLI tool (`npx dirham`) for quick info and clipboard copy
-- Font pairing previews with popular typefaces (Geist, Inter, Roboto, Cairo, Vazirmatn, etc.)
-- 5 font variants: default, sans, serif, mono, and Arabic
+Key facts about the UAE Dirham sign:
 
-## Links
+- Character: U+20C3 UAE DIRHAM SIGN · Currency Symbols block (U+20A0–U+20CF) · General Category Sc (Symbol, Currency) · added in Unicode 18.0 (2026) · UTF-8 E2 83 83 · decimal 8387.
+- Escapes: HTML `&#x20C3;` or `&#8387;` (a numeric character reference; there is no named entity) · CSS `content: "\20C3"` · JavaScript/JSON `"\u20C3"` · URL `%E2%83%83`.
+- Origin: The Central Bank of the UAE (CBUAE) unveiled the Dirham symbol on 27 March 2025: the Latin letter D, from the English name 'Dirham', crossed by two horizontal lines inspired by the UAE flag.
+- Unicode status: Accepted by the Unicode Technical Committee on 22 July 2025 (UTC #184, decision 184-C17) and published in Unicode 18.0 on 16 September 2026. The Central Bank of the UAE submitted the proposal to Unicode itself (L2/25-159, June 2025). It arrived after Unicode 17.0 had entered beta, so the sign was encoded in Unicode 18.0.
+- Native display (October 2026): Apple's system fonts do not include U+20C3 yet (checked on macOS 26.6), though they already include the Saudi riyal sign (U+20C1). Google's Noto and Roboto fonts, the fallback fonts on Android, ChromeOS and most Linux desktops, don't include U+20C3 yet; a Noto maintainer said in September 2026 that the glyph will be commissioned. Windows: not yet announced.
+- Browsers: Browsers don't need an update to show U+20C3; they need a font that has it.
+- Placement: Before the amount, separated by a space, at the same height and weight as the digits (U+20C3 + no-break space + 1,234.50). Use either the symbol or the code AED, never both (CBUAE Dirham Currency Symbol Guidelines).
+- Currency code: ISO 4217 code: AED (numeric 784, 2 decimal places). د.إ is the Arabic abbreviation of درهم إماراتي (Emirati dirham); neither it nor AED is the sign.
+- Not an emoji: U+20C3 is a currency symbol (General Category Sc). The coloured Digital Dirham mark is a logo and has no code point.
+- Formatting: formatDirham(1234.5) returns "\u20C3\u00A01,234.50" (U+20C3 + no-break space). formatDirham(1234.5, { locale: "ar-AE" }) returns "1,234.50\u00A0\u20C3"; pass locale "ar-AE-u-nu-arab" for Arabic-Indic digits. Intl.NumberFormat prints AED or د.إ. for AED and never U+20C3 (checked October 2026), so formatDirham inserts the sign itself.
 
-- This site: https://dirham.js.org/
-- npm package: https://www.npmjs.com/package/dirham
-- GitHub repository: https://github.com/pooyagolchian/dirham
-- Package llms.txt: https://dirham.js.org/llms-package.txt
+## Docs
 
-## Quick Start
+- [Full reference for LLMs](https://dirham.js.org/llms-full.txt): every export, component prop and option of the dirham package, as plain Markdown (a copy of the package's llms.txt, written at build time)
+- [Package README (Markdown)](https://raw.githubusercontent.com/pooyagolchian/dirham/main/packages/dirham-symbol/README.md): install and usage for React, React Native, Web Components (Vue, Angular, Svelte), Tailwind, Next.js, CSS/SCSS, CDN and CLI
+- [npm package](https://www.npmjs.com/package/dirham): `npm install dirham`
+- [Source code on GitHub](https://github.com/pooyagolchian/dirham): MIT license, issues and pull requests
+- [Changelog](https://github.com/pooyagolchian/dirham/blob/main/packages/dirham-symbol/CHANGELOG.md): release history
 
-```bash
-npm install dirham
-```
+## On dirham.js.org
 
-### React (Recommended)
-```tsx
-import { DirhamSymbol } from "dirham/react";
-<DirhamSymbol size={16} weight="regular" />
-```
+- [Key facts](https://dirham.js.org/#facts): the facts above, each with its source and the date it was last verified
+- [Copy the sign](https://dirham.js.org/#copy): the character, its HTML reference, CSS and JavaScript escapes, the Arabic abbreviation and the ISO code
+- [Quick reference](https://dirham.js.org/#quick-reference): code point, block, escapes, URL encoding, UTF-8, Excel and Word input in one table
+- [FAQ](https://dirham.js.org/#faq): 12 questions and answers, also published as FAQPage JSON-LD on the page
+- [Why the dirham symbol shows as a box](https://dirham.js.org/#why-the-dirham-sign-shows-as-a-box)
+- [Typing the dirham symbol on a keyboard](https://dirham.js.org/#how-to-type-the-dirham-sign)
+- [The dirham symbol in Excel and Word](https://dirham.js.org/#dirham-sign-in-excel-and-word)
+- [Before or after the amount](https://dirham.js.org/#dirham-sign-before-or-after-the-amount)
+- [HTML, CSS and JavaScript](https://dirham.js.org/#html-css-js): working samples for each
+- [React components](https://dirham.js.org/#react): DirhamSymbol (inline SVG), DirhamIcon (font) and DirhamPrice
 
-### CSS Web Font
-```ts
-import "dirham/css";
-```
-```html
-<i class="dirham-symbol" aria-label="UAE Dirham"></i>
-```
+## Primary sources
 
-### JavaScript
-```ts
-import { formatDirham, parseDirham, DIRHAM_UNICODE } from "dirham";
-formatDirham(1234.5); // "د.إ 1,234.50"
-```
+- [Unicode 18.0.0](https://www.unicode.org/versions/Unicode18.0.0/): the release of 16 September 2026
+- [Currency Symbols chart U+20A0–U+20CF](https://www.unicode.org/charts/PDF/U20A0.pdf): the code chart that shows U+20C3
+- [The Unicode Standard 18.0, section 22.1 Currency Symbols](https://www.unicode.org/versions/Unicode18.0.0/core-spec/chapter-22/#G80245): how the standard describes the UAE Dirham sign
+- [Announcing Unicode 18.0](https://blog.unicode.org/2026/09/announcing-unicode-standard-version-180.html): the three new currency signs U+20C2, U+20C3 and U+20C4
+- [UTC #184 minutes, decision 184-C17](https://www.unicode.org/L2/L2025/25181.htm#184-C17): acceptance on 22 July 2025
+- [Proposal L2/25-159](https://www.unicode.org/L2/L2025/25159-uae-dirham-symbol.pdf): the Central Bank of the UAE's encoding proposal
+- [CBUAE press release, 27 March 2025](https://centralbank.ae/media/ckkp3s3f/cbuae-unveils-new-dirham-symbol-en.pdf): the unveiling of the symbol
+- [CBUAE Guidelines for the National Currency Symbol "UAE Dirham"](https://centralbank.ae/media/e4ebcgtb/the_guidelines_for_the_national_currency_symbol_uae_dirham_english.pdf): placement, spacing, size and misuse rules
+- [UAE Design System: Currency symbol](https://designsystem.gov.ae/docs/patterns/currency-symbol): the government web pattern for digital interfaces
 
-## Unicode
+## Optional
 
-The UAE Dirham sign is at codepoint U+20C3, accepted for Unicode 18.0 (expected September 2026). This package maps the glyph to U+20C3 via a custom web font. When OS fonts adopt Unicode 18.0, the web font gracefully becomes unnecessary with zero migration.
-
-## License
-
-MIT — Glyph sourced from the Central Bank of UAE.
+- [Package llms.txt on jsDelivr](https://cdn.jsdelivr.net/npm/dirham/llms.txt): the reference as shipped inside the latest npm release
+- [Emirati dirham sign on Wikipedia](https://en.wikipedia.org/wiki/Emirati_dirham_sign)
+- [Wikidata Q133571820](https://www.wikidata.org/wiki/Q133571820): the dirham sign entity
+- [ISO 4217 List One](https://www.six-group.com/dam/download/financial-information/data-center/iso-currrency/lists/list-one.xml): AED, numeric 784, 2 minor units
