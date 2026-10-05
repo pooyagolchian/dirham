@@ -5,10 +5,12 @@
 	"type": "module",
 	"scripts": {
 		"dev": "vite",
-		"build": "tsc -b && vite build",
+		"build": "tsc -b && vite build && vite build --ssr src/entry-server.tsx --outDir dist-ssr && node scripts/prerender.mjs",
 		"preview": "vite preview"
 	},
 	"dependencies": {
+		"@fontsource-variable/geist": "^5.3.0",
+		"@fontsource-variable/geist-mono": "^5.3.0",
 		"@tailwindcss/vite": "^4.2.1",
 		"clsx": "^2.1.1",
 		"dirham": "workspace:*",

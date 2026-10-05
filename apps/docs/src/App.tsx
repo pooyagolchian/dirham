@@ -71,7 +71,7 @@ const WEIGHTS: DirhamWeight[] = [
 ];
 
 const FONT_FAMILIES = [
-	{ name: "Geist", family: "'Geist', sans-serif", category: "Sans" },
+	{ name: "Geist", family: "'Geist Variable', sans-serif", category: "Sans" },
 	{ name: "Inter", family: "'Inter', sans-serif", category: "Sans" },
 	{
 		name: "Space Grotesk",
@@ -108,7 +108,11 @@ const FONT_FAMILIES = [
 		family: "'JetBrains Mono', monospace",
 		category: "Mono",
 	},
-	{ name: "Geist Mono", family: "'Geist Mono', monospace", category: "Mono" },
+	{
+		name: "Geist Mono",
+		family: "'Geist Mono Variable', monospace",
+		category: "Mono",
+	},
 	{
 		name: "System UI",
 		family: "system-ui, -apple-system, sans-serif",
@@ -134,6 +138,31 @@ const CATEGORY_TO_DIRHAM_FONT: Record<string, string> = {
 function dirhamFontStack(font: (typeof FONT_FAMILIES)[number]) {
 	const dirham = CATEGORY_TO_DIRHAM_FONT[font.category] || '"Dirham"';
 	return `${font.family}, ${dirham}`;
+}
+
+/** Demo-only typefaces, fetched when a [data-demo-fonts] section nears the viewport. */
+const DEMO_FONTS_HREF =
+	"https://fonts.googleapis.com/css2?family=Cairo:wght@200..1000&family=DM+Sans:wght@100..1000&family=IBM+Plex+Sans:wght@100..700&family=Inter:wght@100..900&family=JetBrains+Mono:wght@100..800&family=Noto+Sans+Arabic:wght@100..900&family=Outfit:wght@100..900&family=Playfair+Display:wght@400..900&family=Plus+Jakarta+Sans:wght@200..800&family=Roboto:wght@100..900&family=Space+Grotesk:wght@300..700&family=Vazirmatn:wght@100..900&display=swap";
+
+function useDemoFonts() {
+	useEffect(() => {
+		const targets = document.querySelectorAll("[data-demo-fonts]");
+		if (!targets.length || document.getElementById("demo-fonts")) return;
+		const observer = new IntersectionObserver(
+			(entries) => {
+				if (!entries.some((entry) => entry.isIntersecting)) return;
+				observer.disconnect();
+				const link = document.createElement("link");
+				link.id = "demo-fonts";
+				link.rel = "stylesheet";
+				link.href = DEMO_FONTS_HREF;
+				document.head.append(link);
+			},
+			{ rootMargin: "1000px 0px" },
+		);
+		for (const target of targets) observer.observe(target);
+		return () => observer.disconnect();
+	}, []);
 }
 
 function ScrollProgress() {
@@ -395,7 +424,7 @@ function AnimatedPriceDemo() {
 									: "bg-neutral-950 text-neutral-500 border-neutral-800 hover:border-neutral-700",
 							)}
 						>
-							{p.toLocaleString()}
+							{p.toLocaleString("en-US")}
 						</button>
 					))}
 				</div>
@@ -1077,6 +1106,7 @@ export function App() {
 	const [amount, setAmount] = useState(1250.0);
 	const [selectedPM, setSelectedPM] = useState<PMType>("npm");
 	const fontDropdownRef = useRef<HTMLDivElement>(null);
+	useDemoFonts();
 
 	// Close font dropdown when clicking outside
 	useEffect(() => {
@@ -1123,7 +1153,7 @@ export function App() {
 						<span className="font-semibold tracking-tight text-white">
 							dirham
 						</span>
-						<Badge>v1.5.3</Badge>
+						<Badge>v{__DIRHAM_VERSION__}</Badge>
 					</div>
 					<div className="flex items-center gap-6">
 						<a
@@ -1803,7 +1833,7 @@ export class AppComponent {}`}
 			</section>
 
 			<div className="h-px bg-gradient-to-r from-transparent via-neutral-800 to-transparent" />
-			<section className="max-w-6xl mx-auto px-8 pt-24 pb-20">
+			<section data-demo-fonts className="max-w-6xl mx-auto px-8 pt-24 pb-20">
 				<SectionHeader
 					icon={Type}
 					title="Font Playground"
@@ -2022,7 +2052,7 @@ export class AppComponent {}`}
 			<div className="h-px bg-gradient-to-r from-transparent via-neutral-800 to-transparent" />
 
 			{/* Font Pairing Grid */}
-			<section className="max-w-6xl mx-auto px-8 pt-24 pb-20">
+			<section data-demo-fonts className="max-w-6xl mx-auto px-8 pt-24 pb-20">
 				<SectionHeader
 					icon={Type}
 					title="Font Pairing"
@@ -2390,7 +2420,7 @@ import { DirhamIcon } from "dirham/react";
 			<div className="h-px bg-gradient-to-r from-transparent via-neutral-800 to-transparent" />
 
 			{/* RTL Support */}
-			<section className="max-w-6xl mx-auto px-8 pt-20 pb-16">
+			<section data-demo-fonts className="max-w-6xl mx-auto px-8 pt-20 pb-16">
 				<SectionHeader
 					icon={Globe}
 					title="RTL / LTR"
