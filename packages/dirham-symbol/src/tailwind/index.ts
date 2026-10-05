@@ -21,8 +21,8 @@ export type { PluginWithHandler };
  *
  * Then in HTML:
  * ```html
- * <span class="dirham">ৃ</span>
- * <span class="dirham dirham-bold dirham-lg">ৃ</span>
+ * <span class="dirham">&#x20C3;</span>
+ * <span class="dirham dirham-bold dirham-lg">&#x20C3;</span>
  * <span class="dirham-before">1,234.50</span>
  * ```
  */

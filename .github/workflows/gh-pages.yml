@@ -17,6 +17,8 @@ jobs:
     deploy:
         runs-on: ubuntu-latest
         steps:
+            # The build reads the date of the checked-out commit with `git log -1`
+            # (sitemap.xml lastmod and JSON-LD dateModified); a shallow clone is enough.
             - name: Checkout
               uses: actions/checkout@v4
 
@@ -26,7 +28,7 @@ jobs:
             - name: Setup Node.js
               uses: actions/setup-node@v4
               with:
-                  node-version: "20"
+                  node-version: "24"
                   cache: "pnpm"
 
             - name: Install dependencies

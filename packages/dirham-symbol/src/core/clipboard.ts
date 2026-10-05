@@ -11,7 +11,7 @@ import {
  * - `"unicode"` — the character itself (`\u20C3`)
  * - `"html"` — HTML entity (`&#x20C3;`)
  * - `"css"` — CSS content value (`\\20C3`)
- * - `"arabic"` — Arabic text (د.إ)
+ * - `"arabic"` — the Arabic abbreviation د.إ (not the U+20C3 sign)
  */
 export type DirhamCopyFormat = "unicode" | "html" | "css" | "arabic";
 

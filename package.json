@@ -12,7 +12,8 @@
 		"check": "biome check --write .",
 		"changeset": "changeset",
 		"version": "changeset version",
-		"release": "pnpm build && changeset publish"
+		"release": "pnpm build && changeset publish",
+		"readme:sync": "node scripts/sync-readme.mjs"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "^1.9.0",

@@ -1,8 +1,6 @@
 import clsx from "clsx";
 import {
 	AlertTriangle,
-	ArrowLeftRight,
-	BookOpen,
 	Calculator,
 	Check,
 	ChevronDown,
@@ -10,7 +8,6 @@ import {
 	Code2,
 	Copy,
 	Globe,
-	Hash,
 	Image,
 	Layers,
 	Package,
@@ -25,6 +22,13 @@ import {
 } from "lucide-react";
 import type React from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+
+import { Faq } from "./Faq";
+import { KeyFacts } from "./KeyFacts";
+import { QuickReference } from "./QuickReference";
+import { ArabicText } from "./RichText";
+import { SectionHeader } from "./SectionHeader";
+import { LAST_VERIFIED, MAINTAINER, SOURCES } from "./content/facts";
 
 import "dirham/css";
 
@@ -46,7 +50,6 @@ import {
 	DIRHAM_HTML_ENTITY,
 	DIRHAM_UNICODE,
 	DIRHAM_WEIGHT_MAP,
-	UAE_VAT_RATE,
 	addVAT,
 	copyDirhamAmount,
 	copyDirhamSymbol,
@@ -71,7 +74,7 @@ const WEIGHTS: DirhamWeight[] = [
 ];
 
 const FONT_FAMILIES = [
-	{ name: "Geist", family: "'Geist', sans-serif", category: "Sans" },
+	{ name: "Geist", family: "'Geist Variable', sans-serif", category: "Sans" },
 	{ name: "Inter", family: "'Inter', sans-serif", category: "Sans" },
 	{
 		name: "Space Grotesk",
@@ -108,7 +111,11 @@ const FONT_FAMILIES = [
 		family: "'JetBrains Mono', monospace",
 		category: "Mono",
 	},
-	{ name: "Geist Mono", family: "'Geist Mono', monospace", category: "Mono" },
+	{
+		name: "Geist Mono",
+		family: "'Geist Mono Variable', monospace",
+		category: "Mono",
+	},
 	{
 		name: "System UI",
 		family: "system-ui, -apple-system, sans-serif",
@@ -119,8 +126,9 @@ const FONT_FAMILIES = [
 /**
  * Maps each font category to the matching Dirham variant font.
  * The browser tries the main typeface first for U+20C3, can't find it,
- * and falls back to the category-matched Dirham variant, like
- * how $, €, £ look different across Sans, Serif, and Mono fonts.
+ * and falls back to the category-matched Dirham variant. All variants draw
+ * the same outline; Serif, Mono and Arabic only adjust its spacing and
+ * proportions slightly.
  */
 const CATEGORY_TO_DIRHAM_FONT: Record<string, string> = {
 	Sans: '"Dirham-Sans"',
@@ -130,10 +138,41 @@ const CATEGORY_TO_DIRHAM_FONT: Record<string, string> = {
 	System: '"Dirham"',
 };
 
-/** Build a font-family stack: <typeface>, <category-matched Dirham variant> */
+/**
+ * Build a font-family stack: <category-matched Dirham variant>, <typeface>.
+ * The Dirham variant goes first. Its @font-face covers only U+20C3 (unicode-range), so the
+ * typeface still draws every other character. Any family listed before it could claim U+20C3
+ * and draw a box: generic families resolve to a system font's missing glyph, and some
+ * typefaces (JetBrains Mono) map U+20C3 to a placeholder glyph.
+ */
 function dirhamFontStack(font: (typeof FONT_FAMILIES)[number]) {
 	const dirham = CATEGORY_TO_DIRHAM_FONT[font.category] || '"Dirham"';
-	return `${font.family}, ${dirham}`;
+	return `${dirham}, ${font.family}`;
+}
+
+/** Demo-only typefaces, fetched when a [data-demo-fonts] section nears the viewport. */
+const DEMO_FONTS_HREF =
+	"https://fonts.googleapis.com/css2?family=Cairo:wght@200..1000&family=DM+Sans:wght@100..1000&family=IBM+Plex+Sans:wght@100..700&family=Inter:wght@100..900&family=JetBrains+Mono:wght@100..800&family=Noto+Sans+Arabic:wght@100..900&family=Outfit:wght@100..900&family=Playfair+Display:wght@400..900&family=Plus+Jakarta+Sans:wght@200..800&family=Roboto:wght@100..900&family=Space+Grotesk:wght@300..700&family=Vazirmatn:wght@100..900&display=swap";
+
+function useDemoFonts() {
+	useEffect(() => {
+		const targets = document.querySelectorAll("[data-demo-fonts]");
+		if (!targets.length || document.getElementById("demo-fonts")) return;
+		const observer = new IntersectionObserver(
+			(entries) => {
+				if (!entries.some((entry) => entry.isIntersecting)) return;
+				observer.disconnect();
+				const link = document.createElement("link");
+				link.id = "demo-fonts";
+				link.rel = "stylesheet";
+				link.href = DEMO_FONTS_HREF;
+				document.head.append(link);
+			},
+			{ rootMargin: "1000px 0px" },
+		);
+		for (const target of targets) observer.observe(target);
+		return () => observer.disconnect();
+	}, []);
 }
 
 function ScrollProgress() {
@@ -254,57 +293,21 @@ function DirhamText({
 	);
 }
 
-function SectionHeader({
-	icon: Icon,
-	title,
-	description,
-	primary = false,
-}: {
-	icon: React.ElementType;
-	title: string;
-	description: string;
-	primary?: boolean;
-}) {
-	return (
-		<div className="mb-12">
-			<div className="flex items-center gap-3 mb-3">
-				<div
-					className={clsx(
-						"flex items-center justify-center rounded-xl border border-neutral-800",
-						primary ? "w-10 h-10 bg-emerald-500/10" : "w-9 h-9 bg-white/[0.04]",
-					)}
-				>
-					<Icon
-						size={primary ? 18 : 17}
-						className={primary ? "text-emerald-400" : "text-neutral-400"}
-					/>
-				</div>
-				<h2
-					className={clsx(
-						"font-semibold tracking-tight text-white",
-						primary ? "text-3xl" : "text-2xl",
-					)}
-				>
-					{title}
-				</h2>
-			</div>
-			<p className="text-neutral-400 leading-relaxed ml-12">{description}</p>
-		</div>
-	);
-}
-
 function CopyRow({
 	label,
 	value,
 	mono,
 	desc,
 	last,
+	lang,
 }: {
 	label: string;
 	value: string;
 	mono: boolean;
 	desc: string;
 	last: boolean;
+	/** Language of the value, when it differs from the page's (e.g. "ar"). */
+	lang?: string;
 }) {
 	const [copied, setCopied] = useState(false);
 	return (
@@ -329,15 +332,18 @@ function CopyRow({
 					{label}
 				</span>
 				<span
-					className={clsx(
-						"text-lg text-white truncate",
-						mono ? "font-mono" : "font-sans",
-						!mono && "font-[family-name:'Dirham']",
-					)}
+					lang={lang}
+					className={clsx("text-lg text-white truncate", mono && "font-mono")}
+					// Dirham first: it covers only U+20C3, and the sans stack draws the rest.
+					style={
+						mono ? undefined : { fontFamily: '"Dirham", var(--font-sans)' }
+					}
 				>
 					{value}
 				</span>
-				<span className="text-xs text-neutral-600 hidden sm:inline">{desc}</span>
+				<span className="text-xs text-neutral-600 hidden sm:inline">
+					<ArabicText text={desc} />
+				</span>
 			</div>
 			<span className="flex items-center gap-1.5 text-xs shrink-0 ml-4">
 				{copied ? (
@@ -361,6 +367,21 @@ const PM_COMMANDS = {
 	pnpm: "pnpm add dirham",
 	yarn: "yarn add dirham",
 } as const;
+
+/** In-page links under the hero; each href is a section or heading id on this page. */
+const ON_THIS_PAGE = [
+	{ href: "#facts", label: "Key facts" },
+	{ href: "#copy", label: "Copy" },
+	{ href: "#quick-reference", label: "Quick reference" },
+	{ href: "#faq", label: "FAQ" },
+	{ href: "#html-css-js", label: "HTML, CSS & JS" },
+	{ href: "#react", label: "React" },
+	{ href: "#frameworks", label: "Vue, Angular, Svelte" },
+	{ href: "#nextjs", label: "Next.js" },
+	{ href: "#tailwind", label: "Tailwind" },
+	{ href: "#react-native", label: "React Native" },
+	{ href: "#cli", label: "CLI" },
+];
 
 type PMType = keyof typeof PM_COMMANDS;
 
@@ -395,7 +416,7 @@ function AnimatedPriceDemo() {
 									: "bg-neutral-950 text-neutral-500 border-neutral-800 hover:border-neutral-700",
 							)}
 						>
-							{p.toLocaleString()}
+							{p.toLocaleString("en-US")}
 						</button>
 					))}
 				</div>
@@ -476,10 +497,14 @@ function VATDemo() {
 			</div>
 			<div className="p-6">
 				<div className="mb-4">
-					<p className="text-[10px] text-neutral-600 uppercase tracking-widest mb-2">
+					<label
+						htmlFor="vat-amount"
+						className="block text-[10px] text-neutral-600 uppercase tracking-widest mb-2"
+					>
 						Base amount
-					</p>
+					</label>
 					<input
+						id="vat-amount"
 						type="number"
 						value={vatAmount}
 						onChange={(e) => setVatAmount(Number(e.target.value) || 0)}
@@ -625,7 +650,9 @@ function ClipboardDemo() {
 	return (
 		<div className="bg-neutral-900 border border-neutral-800 rounded-2xl overflow-hidden">
 			<div className="px-6 py-4 border-b border-neutral-800 flex items-center gap-2">
-				<h3 className="text-sm font-medium text-white">Clipboard API</h3>
+				<h3 className="text-sm font-medium text-white">
+					copyDirhamSymbol() &amp; copyDirhamAmount()
+				</h3>
 				<Badge>Async</Badge>
 			</div>
 			<div className="p-6">
@@ -670,13 +697,13 @@ function ClipboardDemo() {
 					<CodeBlock
 						code={`import { copyDirhamSymbol, copyDirhamAmount } from "dirham";
 
-await copyDirhamSymbol();          // copies "ৃ"
-await copyDirhamSymbol("html");    // copies "&#x20C3;"
-await copyDirhamSymbol("css");     // copies "\\20C3"
-await copyDirhamSymbol("arabic");  // copies "د.إ"
+await copyDirhamSymbol();          // copies the character U+20C3
+await copyDirhamSymbol("html");    // copies &#x20C3;
+await copyDirhamSymbol("css");     // copies \\20C3
+await copyDirhamSymbol("arabic");  // copies د.إ (the Arabic abbreviation, not the sign)
 
-await copyDirhamAmount(1234.5);                    // copies "ৃ 1,234.50"
-await copyDirhamAmount(1234.5, { useCode: true }); // copies "AED 1,234.50"`}
+await copyDirhamAmount(1234.5);                    // copies "\\u20C3\\u00A01,234.50"
+await copyDirhamAmount(1234.5, { useCode: true }); // copies "AED\\u00A01,234.50"`}
 					/>
 				</div>
 			</div>
@@ -745,7 +772,7 @@ function OGPriceCardSection() {
 <meta name="twitter:card" content="summary_large_image" />`;
 
 	return (
-		<section className="max-w-6xl mx-auto px-8 pt-24 pb-20">
+		<section id="og-cards" className="max-w-6xl mx-auto px-8 pt-24 pb-20">
 			<SectionHeader
 				icon={Image}
 				title="OG / Social Media Cards"
@@ -818,7 +845,7 @@ function OGPriceCardSection() {
 					>
 						<img
 							src={dataUri}
-							alt={`OG card: ${ogTitle ?? ""} ${formatDirham(ogAmount)}`}
+							alt={`OG card: ${ogTitle ?? ""} ${formatDirham(ogAmount, { useCode: true })}`}
 							className="w-full h-full object-cover"
 						/>
 					</div>
@@ -875,10 +902,14 @@ function OGPriceCardSection() {
 						{/* Amount + Notation */}
 						<div className="grid grid-cols-3 gap-3">
 							<div className="col-span-2">
-								<label className="block text-[10px] text-neutral-600 uppercase tracking-wider mb-1.5">
+								<label
+									htmlFor="og-amount"
+									className="block text-[10px] text-neutral-600 uppercase tracking-wider mb-1.5"
+								>
 									Amount
 								</label>
 								<input
+									id="og-amount"
 									type="number"
 									value={ogAmount}
 									onChange={(e) => setOgAmount(Number(e.target.value))}
@@ -912,10 +943,14 @@ function OGPriceCardSection() {
 
 						{/* Title */}
 						<div>
-							<label className="block text-[10px] text-neutral-600 uppercase tracking-wider mb-1.5">
+							<label
+								htmlFor="og-title"
+								className="block text-[10px] text-neutral-600 uppercase tracking-wider mb-1.5"
+							>
 								Title
 							</label>
 							<input
+								id="og-title"
 								type="text"
 								value={ogTitle}
 								onChange={(e) => setOgTitle(e.target.value)}
@@ -926,10 +961,14 @@ function OGPriceCardSection() {
 
 						{/* Subtitle */}
 						<div>
-							<label className="block text-[10px] text-neutral-600 uppercase tracking-wider mb-1.5">
+							<label
+								htmlFor="og-subtitle"
+								className="block text-[10px] text-neutral-600 uppercase tracking-wider mb-1.5"
+							>
 								Subtitle
 							</label>
 							<input
+								id="og-subtitle"
 								type="text"
 								value={ogSubtitle}
 								onChange={(e) => setOgSubtitle(e.target.value)}
@@ -960,7 +999,7 @@ function OGPriceCardSection() {
 												: "bg-neutral-950 text-neutral-500 border-neutral-800",
 										)}
 									>
-										{l.label}
+										<ArabicText text={l.label} />
 									</button>
 								))}
 							</div>
@@ -1077,6 +1116,7 @@ export function App() {
 	const [amount, setAmount] = useState(1250.0);
 	const [selectedPM, setSelectedPM] = useState<PMType>("npm");
 	const fontDropdownRef = useRef<HTMLDivElement>(null);
+	useDemoFonts();
 
 	// Close font dropdown when clicking outside
 	useEffect(() => {
@@ -1114,18 +1154,27 @@ export function App() {
 	}, []);
 
 	return (
-		<div className="main-content min-h-screen bg-neutral-950 [background-image:radial-gradient(rgba(255,255,255,0.035)_1px,transparent_1px)] [background-size:28px_28px]">
+		<div className="min-h-screen bg-neutral-950 [background-image:radial-gradient(rgba(255,255,255,0.035)_1px,transparent_1px)] [background-size:28px_28px]">
 			{/* Navigation */}
-			<nav className="sticky top-0 z-50 border-b border-white/[0.06] bg-neutral-950/90 backdrop-blur-2xl">
+			<nav
+				aria-label="Primary"
+				className="sticky top-0 z-50 border-b border-white/[0.06] bg-neutral-950/90 backdrop-blur-2xl"
+			>
 				<div className="max-w-6xl mx-auto px-8 h-16 flex items-center justify-between">
 					<div className="flex items-center gap-3">
-						<DirhamIcon size={22} color="white" />
+						<DirhamIcon size={22} color="white" aria-hidden="true" />
 						<span className="font-semibold tracking-tight text-white">
 							dirham
 						</span>
-						<Badge>v1.5.3</Badge>
+						<Badge>v{__DIRHAM_VERSION__}</Badge>
 					</div>
-					<div className="flex items-center gap-6">
+					<div className="flex items-center gap-4 sm:gap-6">
+						<a
+							href="#faq"
+							className="text-sm text-neutral-500 hover:text-white transition-colors"
+						>
+							FAQ
+						</a>
 						<a
 							href="https://www.npmjs.com/package/dirham"
 							target="_blank"
@@ -1148,483 +1197,565 @@ export function App() {
 
 			<ScrollProgress />
 
-			{/* Hero */}
-			<section data-hero className="relative overflow-hidden">
-				<div className="absolute inset-0 bg-[radial-gradient(ellipse_90%_65%_at_50%_-15%,rgba(255,255,255,0.07),transparent)]" />
+			{/* .main-content scopes the scroll-reveal styles (styles.css) to the page sections */}
+			<main className="main-content">
+				{/* Hero */}
+				<section data-hero className="relative overflow-hidden">
+					<div className="absolute inset-0 bg-[radial-gradient(ellipse_90%_65%_at_50%_-15%,rgba(255,255,255,0.07),transparent)]" />
 
-				<div className="relative max-w-6xl mx-auto px-8 pt-32 pb-28">
-					<div className="flex flex-col items-center text-center">
-						{/* Symbol showcase */}
-						<div className="relative mb-10">
-							<div className="absolute inset-0 blur-3xl bg-white/[0.05] rounded-full scale-[2]" />
-							<div className="relative flex items-center justify-center w-36 h-36 rounded-[28px] bg-neutral-900/80 border border-neutral-800 shadow-2xl shadow-black/60 symbol-glow">
-								<DirhamIcon size={80} color="white" />
+					<div className="relative max-w-6xl mx-auto px-8 pt-32 pb-28">
+						<div className="flex flex-col items-center text-center">
+							{/* Symbol showcase */}
+							<div className="relative mb-10">
+								<div className="absolute inset-0 blur-3xl bg-white/[0.05] rounded-full scale-[2]" />
+								<div className="relative flex items-center justify-center w-36 h-36 rounded-[28px] bg-neutral-900/80 border border-neutral-800 shadow-2xl shadow-black/60 symbol-glow">
+									<DirhamIcon size={80} color="white" />
+								</div>
 							</div>
-						</div>
 
-						<div className="mb-5">
-							<Badge variant="green">Unicode 18.0 · U+20C3</Badge>
-						</div>
+							<div className="mb-5">
+								<Badge variant="green">Unicode 18.0 · U+20C3</Badge>
+							</div>
 
-						<h1 className="text-6xl sm:text-7xl font-bold tracking-[-0.04em] text-white mb-6">
-							dirham
-						</h1>
-						<p className="text-xl text-neutral-400 max-w-xl leading-relaxed mb-12">
-							The UAE Dirham currency symbol as a web font, CSS, React component,
-							and{" "}
-							<strong className="text-white font-medium">Web Component</strong>{" "}
-							for Vue, Angular, Svelte &amp; vanilla JS. Built on{" "}
-							<strong className="text-white font-medium">U+20C3</strong>, the
-							official Unicode 18.0 codepoint.
-						</p>
+							<h1 className="text-6xl sm:text-7xl font-bold tracking-[-0.04em] text-white mb-6">
+								dirham
+								<span className="sr-only">: </span>
+								<span className="block mt-4 text-2xl sm:text-3xl font-semibold tracking-tight text-neutral-300">
+									The UAE Dirham sign (U+20C3) for the web
+								</span>
+							</h1>
+							<p className="text-lg sm:text-xl text-neutral-400 max-w-2xl leading-relaxed mb-12">
+								The UAE Dirham sign (U+20C3) is the official currency symbol of
+								the UAE dirham (AED): the Latin letter D crossed by two
+								horizontal lines, unveiled by the Central Bank of the UAE on 27
+								March 2025 and encoded in Unicode 18.0, released on 16 September
+								2026. As of October 2026, mainstream system fonts (Apple&apos;s
+								San Francisco, Google&apos;s Noto and Roboto) don&apos;t include
+								it yet, so{" "}
+								<strong className="text-white font-medium">dirham</strong>{" "}
+								renders it today with a 1 KB web font, SVG components for React
+								and React Native, and Web Components.
+							</p>
 
-						{/* Install command */}
-						<div className="flex flex-col items-center gap-2 mb-14">
-							{/* Package manager tabs */}
-							<div className="flex items-center gap-1 bg-neutral-900/60 rounded-xl p-1 border border-neutral-800">
-								{(Object.keys(PM_COMMANDS) as PMType[]).map((pm) => (
-									<button
-										key={pm}
-										type="button"
-										onClick={() => setSelectedPM(pm)}
-										className={clsx(
-											"px-3.5 py-1 text-xs rounded-lg font-mono transition-all cursor-pointer",
-											selectedPM === pm
-												? "bg-white text-black font-semibold"
-												: "text-neutral-500 hover:text-neutral-300",
-										)}
-									>
-										{pm}
-									</button>
+							{/* Install command */}
+							<div className="flex flex-col items-center gap-2 mb-14">
+								{/* Package manager tabs */}
+								<div className="flex items-center gap-1 bg-neutral-900/60 rounded-xl p-1 border border-neutral-800">
+									{(Object.keys(PM_COMMANDS) as PMType[]).map((pm) => (
+										<button
+											key={pm}
+											type="button"
+											onClick={() => setSelectedPM(pm)}
+											className={clsx(
+												"px-3.5 py-1 text-xs rounded-lg font-mono transition-all cursor-pointer",
+												selectedPM === pm
+													? "bg-white text-black font-semibold"
+													: "text-neutral-500 hover:text-neutral-300",
+											)}
+										>
+											{pm}
+										</button>
+									))}
+								</div>
+
+								{/* Command line */}
+								<div className="relative flex items-center gap-3 bg-neutral-900/80 border border-neutral-800 rounded-2xl px-6 py-4 min-w-[360px]">
+									<Terminal size={16} className="text-neutral-600 shrink-0" />
+									<code className="text-base font-mono text-neutral-200 flex-1">
+										{PM_COMMANDS[selectedPM]}
+									</code>
+									<CopyButton text={PM_COMMANDS[selectedPM]} />
+								</div>
+							</div>
+
+							{/* Quick stats */}
+							<div className="flex flex-wrap justify-center items-center gap-x-8 gap-y-3 text-sm text-neutral-500">
+								{[
+									"Tree-shakeable",
+									"SSR Ready",
+									"Zero Dependencies",
+									"TypeScript",
+									"9 Weights",
+									"5 Font Variants",
+									"Web Component",
+									"Vue · Angular · Svelte",
+									"CLI",
+								].map((stat) => (
+									<span key={stat} className="flex items-center gap-2">
+										<span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
+										{stat}
+									</span>
 								))}
 							</div>
 
-							{/* Command line */}
-							<div className="relative flex items-center gap-3 bg-neutral-900/80 border border-neutral-800 rounded-2xl px-6 py-4 min-w-[360px]">
-								<Terminal size={16} className="text-neutral-600 shrink-0" />
-								<code className="text-base font-mono text-neutral-200 flex-1">
-									{PM_COMMANDS[selectedPM]}
-								</code>
-								<CopyButton text={PM_COMMANDS[selectedPM]} />
-							</div>
-						</div>
-
-						{/* Quick stats */}
-						<div className="flex flex-wrap justify-center items-center gap-x-8 gap-y-3 text-sm text-neutral-500">
-							{[
-								"Tree-shakeable",
-								"SSR Ready",
-								"Zero Dependencies",
-								"TypeScript",
-								"9 Weights",
-								"5 Font Variants",
-								"Web Component",
-								"Vue · Angular · Svelte",
-								"CLI",
-							].map((stat) => (
-								<span key={stat} className="flex items-center gap-2">
-									<span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />
-									{stat}
-								</span>
-							))}
+							{/* In-page links */}
+							<nav aria-label="On this page" className="mt-12">
+								<ul className="flex flex-wrap justify-center gap-2 text-sm">
+									{ON_THIS_PAGE.map(({ href, label }) => (
+										<li key={href}>
+											<a
+												href={href}
+												className="inline-block px-3 py-1.5 rounded-lg border border-neutral-800 text-neutral-400 hover:text-white hover:border-neutral-700 transition-colors"
+											>
+												{label}
+											</a>
+										</li>
+									))}
+								</ul>
+							</nav>
 						</div>
 					</div>
-				</div>
+
+					<div className="h-px bg-gradient-to-r from-transparent via-neutral-800 to-transparent" />
+				</section>
+
+				{/* Key facts: dated and sourced, right after the hero */}
+				<KeyFacts />
 
 				<div className="h-px bg-gradient-to-r from-transparent via-neutral-800 to-transparent" />
-			</section>
 
-			{/* Unicode Status — Positioned after hero for emphasis */}
-			<section className="max-w-6xl mx-auto px-8 pt-20 pb-16">
-				<div className="bg-linear-to-b from-emerald-500/3 to-transparent rounded-3xl border border-emerald-500/10 p-1">
-					<div className="bg-neutral-950 rounded-[20px] overflow-hidden">
-						<div className="grid grid-cols-1 sm:grid-cols-2">
-							<div className="p-8 border-b sm:border-b-0 sm:border-r border-neutral-800">
-								<Badge variant="green">Active Now</Badge>
-								<p className="text-4xl font-mono font-bold text-emerald-400 mt-4 mb-2">
-									U+20C3
-								</p>
-								<p className="text-sm text-neutral-400 leading-relaxed">
-									UAE DIRHAM SIGN — this package maps the glyph to the official
-									Unicode codepoint via a custom web font
-								</p>
-							</div>
-							<div className="p-8">
-								<Badge variant="amber">Unicode 18.0</Badge>
-								<p className="text-4xl font-mono font-bold text-amber-400 mt-4 mb-2">
-									Sep 2026
-								</p>
-								<p className="text-sm text-neutral-400 leading-relaxed">
-									Native OS &amp; font support expected when Unicode 18.0 ships —
-									then the web font becomes optional
-								</p>
-							</div>
-						</div>
-						<div className="px-8 py-4 bg-neutral-900/50 border-t border-neutral-800">
-							<p className="text-xs text-neutral-500 leading-relaxed">
-								<span className="text-emerald-400 font-medium">
-									Future-proof:
-								</span>{" "}
-								This package already uses U+20C3. When system fonts add native
-								support, the web font gracefully becomes unnecessary — zero
-								migration needed. The Dirham symbol will work natively like $, €,
-								and £.
-							</p>
-						</div>
+				{/* Copy the Dirham symbol: SEO target for "dirham symbol text copy" / "u+20c3" */}
+				<section id="copy" className="max-w-6xl mx-auto px-8 pt-24 pb-20">
+					<SectionHeader
+						icon={Clipboard}
+						title="Copy the Dirham symbol"
+						description="Click any row to copy the UAE Dirham sign (U+20C3) as the character itself, an HTML reference, a CSS or JavaScript escape, the Arabic abbreviation or the ISO code."
+						primary
+					/>
+
+					<div className="bg-neutral-900 border border-neutral-800 rounded-2xl overflow-hidden mb-8">
+						{[
+							{
+								label: "Symbol",
+								value: DIRHAM_UNICODE,
+								mono: false,
+								desc: "The character U+20C3 itself",
+							},
+							{
+								label: "Unicode",
+								value: "U+20C3",
+								mono: true,
+								desc: "Code point (Unicode 18.0)",
+							},
+							{
+								label: "HTML",
+								value: DIRHAM_HTML_ENTITY,
+								mono: true,
+								desc: "Numeric character reference (there is no named entity)",
+							},
+							{
+								label: "CSS Content",
+								value: DIRHAM_CSS_CONTENT,
+								mono: true,
+								desc: "For content in ::before / ::after",
+							},
+							{
+								label: "JavaScript",
+								value: "\\u20C3",
+								mono: true,
+								desc: "JavaScript and JSON string escape",
+							},
+							{
+								label: "Arabic",
+								value: "د.إ",
+								mono: false,
+								desc: "Arabic abbreviation of درهم إماراتي, not the sign",
+								lang: "ar",
+							},
+							{
+								label: "Currency Code",
+								value: DIRHAM_CURRENCY_CODE,
+								mono: true,
+								desc: "ISO 4217 code",
+							},
+						].map(({ label, value, mono, desc, lang }, i) => (
+							<CopyRow
+								key={label}
+								label={label}
+								value={value}
+								mono={mono}
+								desc={desc}
+								lang={lang}
+								last={i === 6}
+							/>
+						))}
 					</div>
-				</div>
-			</section>
 
-			<div className="h-px bg-gradient-to-r from-transparent via-neutral-800 to-transparent" />
-
-			{/* Copy Dirham Symbol — SEO target for "dirham symbol text copy" / "u+20c3" */}
-			<section id="copy" className="max-w-6xl mx-auto px-8 pt-24 pb-20">
-				<SectionHeader
-					icon={Clipboard}
-					title="Copy Dirham Symbol"
-					description="Click any row to copy the UAE Dirham symbol (℃) in the format you need — Unicode character, HTML entity, CSS, JavaScript, or Arabic text."
-					primary
-				/>
-
-				<div className="bg-neutral-900 border border-neutral-800 rounded-2xl overflow-hidden mb-8">
-					{[
-						{ label: "Symbol", value: DIRHAM_UNICODE, mono: false, desc: "The Dirham character — paste directly into text" },
-						{ label: "Unicode", value: "U+20C3", mono: true, desc: "Official codepoint (Unicode 18.0)" },
-						{ label: "HTML Entity", value: DIRHAM_HTML_ENTITY, mono: true, desc: "For HTML documents" },
-						{ label: "CSS Content", value: DIRHAM_CSS_CONTENT, mono: true, desc: "For ::before / ::after pseudo-elements" },
-						{ label: "JavaScript", value: "\\u20C3", mono: true, desc: "JS/TS string escape" },
-						{ label: "Arabic Text", value: "د.إ", mono: false, desc: "Traditional Arabic abbreviation (د.إ)" },
-						{ label: "Currency Code", value: DIRHAM_CURRENCY_CODE, mono: true, desc: "ISO 4217 code" },
-					].map(({ label, value, mono, desc }, i) => (
-						<CopyRow key={label} label={label} value={value} mono={mono} desc={desc} last={i === 6} />
-					))}
-				</div>
-
-				{/* Why the symbol doesn't render natively yet */}
-				<div className="bg-amber-500/[0.06] border border-amber-500/20 rounded-2xl p-6 mb-8">
-					<div className="flex gap-4">
-						<AlertTriangle size={20} className="text-amber-400 shrink-0 mt-0.5" />
-						<div>
-							<h3 className="text-sm font-semibold text-amber-300 mb-2">
-								Why doesn&apos;t the copied symbol display everywhere?
-							</h3>
-							<p className="text-sm text-neutral-400 leading-relaxed mb-3">
-								The UAE Dirham sign (<span className="font-mono text-white">U+20C3</span>) was accepted into
-								Unicode 18.0 in July 2025, but <strong className="text-white">operating systems and fonts have not
-								shipped support yet</strong>. Until system fonts include the glyph (expected <strong className="text-amber-300">September 2026</strong>),
-								pasting the raw character into most apps will show a blank box (&#x25A1;) or a missing-glyph placeholder.
-							</p>
-							<p className="text-sm text-neutral-400 leading-relaxed mb-4">
-								This is the same situation every new Unicode character goes through &mdash; emoji like &#x1FAE8; and symbols
-								like &#x20BF; (Bitcoin sign) went through the same phase before OS updates rolled out the glyphs.
-							</p>
-							<div className="bg-neutral-950/60 rounded-xl p-4">
-								<p className="text-xs text-neutral-500 uppercase tracking-widest mb-3">How to use the symbol today</p>
-								<div className="space-y-2">
-									{[
-										{ where: "Web apps", how: "Use this package — the web font renders U+20C3 in all browsers today" },
-										{ where: "HTML / Email", how: "Use the HTML entity &#x20C3; with the Dirham CSS font loaded" },
-										{ where: "Native / Mobile", how: "Use the Arabic text د.إ (widely supported) or the ISO code AED" },
-										{ where: "After Sep 2026", how: "System fonts will render U+20C3 natively — no web font needed" },
-									].map(({ where, how }) => (
-										<div key={where} className="flex gap-3 text-sm">
-											<span className="text-amber-400/80 font-medium shrink-0 w-28">{where}</span>
-											<span className="text-neutral-400">{how}</span>
-										</div>
-									))}
+					{/* Until system fonts include U+20C3 */}
+					<div className="bg-amber-500/[0.06] border border-amber-500/20 rounded-2xl p-6 mb-8">
+						<div className="flex gap-4">
+							<AlertTriangle
+								size={20}
+								className="text-amber-400 shrink-0 mt-0.5"
+							/>
+							<div>
+								<h3 className="text-sm font-semibold text-amber-300 mb-2">
+									Where the copied sign shows as a box
+								</h3>
+								<p className="text-sm text-neutral-400 leading-relaxed mb-4">
+									As of October 2026, mainstream system fonts (Apple&apos;s San
+									Francisco, Google&apos;s Noto and Roboto) don&apos;t include
+									U+20C3 yet, so the copied character shows as an empty box
+									wherever no web font covers it. The text itself stays correct.{" "}
+									<a
+										href="#why-the-dirham-sign-shows-as-a-box"
+										className="text-amber-300 hover:underline"
+									>
+										Why it shows as a box
+									</a>
+								</p>
+								<div className="bg-neutral-950/60 rounded-xl p-4">
+									<p className="text-xs text-neutral-500 uppercase tracking-widest mb-3">
+										How to use the sign until then
+									</p>
+									<div className="space-y-2">
+										{[
+											{
+												where: "Web apps",
+												how: "Use this package: its Dirham web font loads only for U+20C3 and renders the sign in every modern browser.",
+											},
+											{
+												where: "HTML and email",
+												how: "Write &#x20C3; and load the Dirham font; where web fonts can't load, write the code AED instead.",
+											},
+											{
+												where: "Native apps",
+												how: "Use the SVG components from dirham/react-native.",
+											},
+											{
+												where: "Phones and messages",
+												how: "Write AED (or د.إ in Arabic text) until your fonts include U+20C3.",
+											},
+											{
+												where: "Word and Excel",
+												how: (
+													<>
+														See the{" "}
+														<a
+															href="#dirham-sign-in-excel-and-word"
+															className="text-amber-300 hover:underline"
+														>
+															Excel and Word answer
+														</a>{" "}
+														in the FAQ.
+													</>
+												),
+											},
+											{
+												where: "Later",
+												how: "Once your users' system fonts include U+20C3, remove the web font; text that already uses U+20C3 needs no changes.",
+											},
+										].map(({ where, how }) => (
+											<div
+												key={where}
+												className="flex flex-col sm:flex-row gap-0.5 sm:gap-3 text-sm"
+											>
+												<span className="text-amber-400/80 font-medium shrink-0 sm:w-36">
+													{where}
+												</span>
+												<span className="text-neutral-400">
+													{typeof how === "string" ? (
+														<ArabicText text={how} />
+													) : (
+														how
+													)}
+												</span>
+											</div>
+										))}
+									</div>
 								</div>
 							</div>
 						</div>
 					</div>
-				</div>
 
-				{/* Unicode reference table */}
-				<div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6">
-					<div className="flex items-center gap-2 mb-4">
-						<Hash size={16} className="text-neutral-500" />
-						<h3 className="text-sm font-medium text-white">Unicode Reference — U+20C3 UAE Dirham Sign</h3>
-					</div>
-					<div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+					{/* Quick reference: every way to write U+20C3 */}
+					<QuickReference />
+				</section>
+
+				<div className="h-px bg-gradient-to-r from-transparent via-neutral-800 to-transparent" />
+
+				{/* FAQ: also published as FAQPage JSON-LD from content/faq.json */}
+				<Faq />
+
+				<div className="h-px bg-gradient-to-r from-transparent via-neutral-800 to-transparent" />
+
+				{/* How It Works */}
+				<section
+					id="how-it-works"
+					className="max-w-6xl mx-auto px-8 pt-24 pb-20"
+				>
+					<SectionHeader
+						icon={Layers}
+						title="How It Works"
+						description="The package maps the Dirham glyph to the standard Unicode code point U+20C3 in a small web font. Once your users' system fonts include U+20C3, the same text renders without it."
+					/>
+
+					<div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
 						{[
-							{ k: "Character Name", v: "UAE DIRHAM SIGN" },
-							{ k: "Codepoint", v: "U+20C3" },
-							{ k: "Block", v: "Currency Symbols" },
-							{ k: "Unicode Version", v: "18.0 (Sep 2026)" },
-							{ k: "Decimal", v: `${DIRHAM_CODEPOINT}` },
-							{ k: "UTF-8 Bytes", v: "E2 83 83" },
-							{ k: "UTF-16", v: "20C3" },
-							{ k: "Category", v: "Symbol, Currency (Sc)" },
-						].map(({ k, v }) => (
-							<div key={k} className="bg-neutral-950 rounded-lg px-3 py-2">
-								<p className="text-[10px] text-neutral-600 uppercase tracking-widest mb-1">{k}</p>
-								<p className="text-sm font-mono text-white">{v}</p>
+							{
+								icon: Zap,
+								title: "Unicode-Native",
+								desc: "Uses the standard code point U+20C3, not a Private Use Area code point, so your text is correct Unicode from day one.",
+								color: "text-emerald-400",
+							},
+							{
+								icon: Shield,
+								title: "Future-Proof",
+								desc: "U+20C3 has been standard Unicode since version 18.0 (16 September 2026). Once your users' system fonts include it, drop the web font; your text and components stay the same.",
+								color: "text-blue-400",
+							},
+							{
+								icon: Layers,
+								title: "Multiple Approaches",
+								desc: "Font-based component for typography-native rendering. CSS ::before content. Format utilities for currency strings.",
+								color: "text-violet-400",
+							},
+						].map(({ icon: Icon, title, desc, color }) => (
+							<div
+								key={title}
+								className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6 hover:border-neutral-700 transition-colors"
+							>
+								<div className="flex items-center justify-center w-9 h-9 rounded-xl bg-white/4 border border-neutral-800 mb-3">
+									<Icon size={17} className={color} />
+								</div>
+								<h3 className="text-sm font-semibold text-white mb-2">{title}</h3>
+								<p className="text-xs text-neutral-400 leading-relaxed">{desc}</p>
 							</div>
 						))}
 					</div>
-				</div>
-			</section>
 
-			<div className="h-px bg-gradient-to-r from-transparent via-neutral-800 to-transparent" />
-
-			{/* How It Works */}
-			<section className="max-w-6xl mx-auto px-8 pt-24 pb-20">
-				<SectionHeader
-					icon={Layers}
-					title="How It Works"
-					description="This package maps the Dirham glyph to the official Unicode codepoint U+20C3 via a custom web font. When system fonts catch up, it just works — zero migration."
-				/>
-
-				<div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-					{[
-						{
-							icon: Zap,
-							title: "Unicode-Native",
-							desc: "Uses the official U+20C3 codepoint — not a Private Use Area hack. Your content is semantically correct from day one.",
-							color: "text-emerald-400",
-						},
-						{
-							icon: Shield,
-							title: "Future-Proof",
-							desc: "When Unicode 18.0 ships (Sep 2026) and OS fonts support U+20C3, the web font becomes optional. No code changes needed.",
-							color: "text-blue-400",
-						},
-						{
-							icon: Layers,
-							title: "Multiple Approaches",
-							desc: "Font-based component for typography-native rendering. CSS ::before content. Format utilities for currency strings.",
-							color: "text-violet-400",
-						},
-					].map(({ icon: Icon, title, desc, color }) => (
-						<div
-							key={title}
-							className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6 hover:border-neutral-700 transition-colors"
-						>
-							<div className="flex items-center justify-center w-9 h-9 rounded-xl bg-white/4 border border-neutral-800 mb-3">
-								<Icon size={17} className={color} />
+					{/* Architecture diagram */}
+					<div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6">
+						<p className="text-[10px] text-neutral-600 uppercase tracking-widest mb-4">
+							Architecture
+						</p>
+						<div className="flex flex-col sm:flex-row items-center justify-center gap-3 text-sm">
+							<div className="flex items-center gap-2 bg-neutral-950 border border-neutral-800 rounded-lg px-4 py-2.5">
+								<span className="text-neutral-400 font-mono">dirham.svg</span>
 							</div>
-							<h3 className="text-sm font-semibold text-white mb-2">{title}</h3>
-							<p className="text-xs text-neutral-400 leading-relaxed">{desc}</p>
-						</div>
-					))}
-				</div>
-
-				{/* Architecture diagram */}
-				<div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6">
-					<p className="text-[10px] text-neutral-600 uppercase tracking-widest mb-4">
-						Architecture
-					</p>
-					<div className="flex flex-col sm:flex-row items-center justify-center gap-3 text-sm">
-						<div className="flex items-center gap-2 bg-neutral-950 border border-neutral-800 rounded-lg px-4 py-2.5">
-							<span className="text-neutral-400 font-mono">dirham.svg</span>
-						</div>
-						<span className="text-neutral-700">→</span>
-						<div className="flex items-center gap-2 bg-neutral-950 border border-neutral-800 rounded-lg px-4 py-2.5">
-							<span className="text-neutral-400 font-mono">svgtofont</span>
-						</div>
-						<span className="text-neutral-700">→</span>
-						<div className="flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/20 rounded-lg px-4 py-2.5">
-							<span className="text-emerald-400 font-mono">U+20C3</span>
-							<span className="text-neutral-500">WOFF2</span>
-						</div>
-						<span className="text-neutral-700">→</span>
-						<div className="flex items-center gap-2 bg-neutral-950 border border-neutral-800 rounded-lg px-4 py-2.5">
-							<span className="text-neutral-400 font-mono">
-								React / CSS / JS
-							</span>
+							<span className="text-neutral-700">→</span>
+							<div className="flex items-center gap-2 bg-neutral-950 border border-neutral-800 rounded-lg px-4 py-2.5">
+								<span className="text-neutral-400 font-mono">svgtofont</span>
+							</div>
+							<span className="text-neutral-700">→</span>
+							<div className="flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/20 rounded-lg px-4 py-2.5">
+								<span className="text-emerald-400 font-mono">U+20C3</span>
+								<span className="text-neutral-500">WOFF2</span>
+							</div>
+							<span className="text-neutral-700">→</span>
+							<div className="flex items-center gap-2 bg-neutral-950 border border-neutral-800 rounded-lg px-4 py-2.5">
+								<span className="text-neutral-400 font-mono">
+									React / CSS / JS
+								</span>
+							</div>
 						</div>
 					</div>
-				</div>
-			</section>
+				</section>
 
-			<div className="h-px bg-gradient-to-r from-transparent via-neutral-800 to-transparent" />
+				<div className="h-px bg-gradient-to-r from-transparent via-neutral-800 to-transparent" />
 
-			{/* Why dirham */}
-			<section className="max-w-6xl mx-auto px-8 pt-24 pb-20">
-				<SectionHeader
-					icon={Sparkles}
-					title="Why dirham?"
-					description="The only npm package built on the officially assigned Unicode 18.0 codepoint — not a Private Use Area workaround."
-				/>
+				{/* Why dirham */}
+				<section id="why-dirham" className="max-w-6xl mx-auto px-8 pt-24 pb-20">
+					<SectionHeader
+						icon={Sparkles}
+						title="Why dirham?"
+						description="Built on the standard Unicode code point U+20C3, not a Private Use Area code point or a substituted letter, so your text stays correct even if the font fails to load or is removed later."
+					/>
 
-				<div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-12">
-					{[
-						{
-							icon: Globe,
-							title: "Official U+20C3 — Not a Hack",
-							desc: "Uses the codepoint ratified by the Unicode Technical Committee for Unicode 18.0 — not a Private Use Area workaround. When OS fonts ship native support, the web font silently becomes optional.",
-							color: "text-cyan-400",
-							glowColor: "cyan" as const,
-						},
-						{
-							icon: Layers,
-							title: "5 Adaptive Font Variants",
-							desc: "Separate fonts for Sans, Serif, Monospace, Arabic, and Default — the Dirham symbol adapts to surrounding typography the same way $, €, and £ look different across typefaces.",
-							color: "text-violet-400",
-							glowColor: "" as const,
-						},
-						{
-							icon: Shield,
-							title: "Zero Migration in 2026",
-							desc: "When OS fonts ship native U+20C3 support with Unicode 18.0 (Sep 2026), the custom web font silently becomes optional. No find-and-replace, no API changes, no breaking updates.",
-							color: "text-emerald-400",
-							glowColor: "" as const,
-						},
-						{
-							icon: Zap,
-							title: "SSR-Safe SVG Component",
-							desc: "DirhamSymbol renders as a pure inline SVG — FOIT-free, works in React Server Components, Next.js App Router, and static site generators out of the box.",
-							color: "text-amber-400",
-							glowColor: "amber" as const,
-						},
-					].map(({ icon: Icon, title, desc, color, glowColor }) => (
-						<div
-							key={title}
-							className={clsx(
-								"rounded-2xl p-7 border transition-all",
-								glowColor === "cyan" &&
-									"bg-cyan-500/4 border-cyan-500/20 hover:border-cyan-500/40",
-								glowColor === "amber" &&
-									"bg-amber-500/4 border-amber-500/20 hover:border-amber-500/40",
-								!glowColor &&
-									"bg-neutral-900/60 border-neutral-800 hover:border-neutral-700 hover:bg-neutral-900",
-							)}
-						>
-							<div className={clsx("mb-4", color)}>
-								<Icon size={22} />
+					<div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-12">
+						{[
+							{
+								icon: Globe,
+								title: "Standard U+20C3, Not a Workaround",
+								desc: "Uses U+20C3 UAE DIRHAM SIGN, accepted by the Unicode Technical Committee on 22 July 2025 (UTC #184, decision 184-C17) and published in Unicode 18.0 on 16 September 2026, not a Private Use Area workaround.",
+								color: "text-cyan-400",
+								glowColor: "cyan" as const,
+							},
+							{
+								icon: Layers,
+								title: "5 Font Families",
+								desc: "Dirham, Dirham-Sans, Dirham-Serif, Dirham-Mono and Dirham-Arabic draw the same outline of the sign; the Serif, Mono and Arabic variants adjust its spacing and proportions slightly to sit beside those typefaces.",
+								color: "text-violet-400",
+								glowColor: "" as const,
+							},
+							{
+								icon: Shield,
+								title: "No Migration Later",
+								desc: "When your users' system fonts include U+20C3, the bundled web font simply stops being needed. No find-and-replace, no API changes, no breaking updates.",
+								color: "text-emerald-400",
+								glowColor: "" as const,
+							},
+							{
+								icon: Zap,
+								title: "SSR-Safe SVG Component",
+								desc: "DirhamSymbol renders as inline SVG, so it needs no font download and server-renders without a flash of missing text. With React Server Components (for example the Next.js App Router), import dirham/react in a Client Component.",
+								color: "text-amber-400",
+								glowColor: "amber" as const,
+							},
+						].map(({ icon: Icon, title, desc, color, glowColor }) => (
+							<div
+								key={title}
+								className={clsx(
+									"rounded-2xl p-7 border transition-all",
+									glowColor === "cyan" &&
+										"bg-cyan-500/4 border-cyan-500/20 hover:border-cyan-500/40",
+									glowColor === "amber" &&
+										"bg-amber-500/4 border-amber-500/20 hover:border-amber-500/40",
+									!glowColor &&
+										"bg-neutral-900/60 border-neutral-800 hover:border-neutral-700 hover:bg-neutral-900",
+								)}
+							>
+								<div className={clsx("mb-4", color)}>
+									<Icon size={22} />
+								</div>
+								<h3 className="text-base font-semibold text-white mb-2">
+									{title}
+								</h3>
+								<p className="text-sm text-neutral-400 leading-relaxed">{desc}</p>
 							</div>
-							<h3 className="text-base font-semibold text-white mb-2">
-								{title}
-							</h3>
-							<p className="text-sm text-neutral-400 leading-relaxed">{desc}</p>
-						</div>
-					))}
-				</div>
-			</section>
-
-			<div className="h-px bg-gradient-to-r from-transparent via-neutral-800 to-transparent" />
-
-			{/* Unicode Integration */}
-			<section className="max-w-6xl mx-auto px-8 pt-24 pb-20">
-				<SectionHeader
-					icon={Code2}
-					title="Unicode Integration"
-					description="Use U+20C3 across every layer of your stack — HTML, CSS, JavaScript, and React."
-				/>
-
-				<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-					<div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6">
-						<div className="flex items-center gap-2 mb-4">
-							<h3 className="text-sm font-medium text-white">HTML</h3>
-							<Badge>Entity</Badge>
-						</div>
-						<CodeBlock
-							code={`<!-- Load the font -->
-<link rel="stylesheet" href="dirham/css" />
-
-<!-- Use the HTML entity -->
-<span class="dirham-symbol">${DIRHAM_HTML_ENTITY}</span>
-
-<!-- Or use the CSS class (auto ::before) -->
-<i class="dirham-symbol" aria-label="Dirham"></i>`}
-							lang="html"
-						/>
+						))}
 					</div>
+				</section>
 
-					<div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6">
-						<div className="flex items-center gap-2 mb-4">
-							<h3 className="text-sm font-medium text-white">CSS</h3>
-							<Badge>Content</Badge>
+				<div className="h-px bg-gradient-to-r from-transparent via-neutral-800 to-transparent" />
+
+				{/* HTML, CSS and JavaScript */}
+				<section
+					id="html-css-js"
+					className="max-w-6xl mx-auto px-8 pt-24 pb-20"
+				>
+					<SectionHeader
+						icon={Code2}
+						title="HTML, CSS & JavaScript"
+						description="Use U+20C3 in every layer of your stack: HTML, CSS, JavaScript and React. The Dirham font covers only U+20C3, so you can add it to any font stack and the rest of the text keeps its own font."
+					/>
+
+					<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+						<div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6">
+							<div className="flex items-center gap-2 mb-4">
+								<h3 className="text-sm font-medium text-white">
+									Dirham sign in HTML
+								</h3>
+								<Badge>Reference</Badge>
+							</div>
+							<CodeBlock
+								code={`<!-- Load the font (with a bundler: import "dirham/css") -->
+<link rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm/dirham/dist/css/dirham.css" />
+
+<!-- Write the character reference in text whose
+     font stack starts with Dirham -->
+<p style="font-family: Dirham, Inter, sans-serif">
+  Total: ${DIRHAM_HTML_ENTITY}&nbsp;1,234.50
+</p>
+
+<!-- Or let the CSS class insert the sign (::before) -->
+<i class="dirham-symbol" role="img" aria-label="UAE Dirham"></i>`}
+								lang="html"
+							/>
 						</div>
-						<CodeBlock
-							code={`.price::before {
+
+						<div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6">
+							<div className="flex items-center gap-2 mb-4">
+								<h3 className="text-sm font-medium text-white">
+									Dirham sign in CSS
+								</h3>
+								<Badge>Content</Badge>
+							</div>
+							<CodeBlock
+								code={`/* With a bundler; or link dist/css/dirham.css from a CDN */
+@import "dirham/css";
+
+/* The sign and a no-break space before each price */
+.price::before {
   font-family: "${DIRHAM_FONT_FAMILY}";
-  content: "${DIRHAM_CSS_CONTENT}";
+  content: "${DIRHAM_CSS_CONTENT}\\00A0";
 }
 
-/* Or use the built-in class */
-@import "dirham/css";
-/* .dirham-symbol::before { content: "\\20C3" } */`}
-							lang="css"
-						/>
-					</div>
-
-					<div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6">
-						<div className="flex items-center gap-2 mb-4">
-							<h3 className="text-sm font-medium text-white">JavaScript</h3>
-							<Badge>Constants</Badge>
+/* Built-in class: .dirham-symbol::before { content: "\\20C3" } */`}
+								lang="css"
+							/>
 						</div>
-						<CodeBlock
-							code={`import {
+
+						<div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6">
+							<div className="flex items-center gap-2 mb-4">
+								<h3 className="text-sm font-medium text-white">
+									Dirham sign in JavaScript
+								</h3>
+								<Badge>Constants</Badge>
+							</div>
+							<CodeBlock
+								code={`import {
   DIRHAM_UNICODE,   // "\\u20C3"
   DIRHAM_CODEPOINT, // 0x20C3 (${DIRHAM_CODEPOINT})
   formatDirham,
 } from "dirham";
 
 console.log(formatDirham(1250));
-// => "\\u20C3 1,250.00"`}
-							lang="ts"
-						/>
-					</div>
-
-					<div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6">
-						<div className="flex items-center gap-2 mb-4">
-							<h3 className="text-sm font-medium text-white">
-								React / Next.js
-							</h3>
-							<Badge variant="green">Recommended</Badge>
+// => "\\u20C3\\u00A01,250.00" (sign, no-break space, amount)`}
+								lang="ts"
+							/>
 						</div>
-						<CodeBlock
-							code={`import "dirham/css";
+
+						<div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6">
+							<div className="flex items-center gap-2 mb-4">
+								<h3 className="text-sm font-medium text-white">
+									Dirham sign in React / Next.js
+								</h3>
+								<Badge variant="green">Recommended</Badge>
+							</div>
+							<CodeBlock
+								code={`import "dirham/css";
 import { DirhamIcon } from "dirham/react";
 
 function Price({ amount }: { amount: number }) {
   return (
     <span>
       <DirhamIcon size="1em" />
-      {" "}{amount.toLocaleString()}
+      &nbsp;{amount.toLocaleString()}
     </span>
   );
 }`}
-						/>
-					</div>
-				</div>
-			</section>
-
-			<div className="h-px bg-gradient-to-r from-transparent via-neutral-800 to-transparent" />
-
-			{/* CDN Usage */}
-			<section className="max-w-6xl mx-auto px-8 pt-24 pb-20">
-				<SectionHeader
-					icon={Globe}
-					title="CDN Usage"
-					description="Use the Dirham symbol without a bundler — just add a stylesheet link and a script tag."
-				/>
-
-				<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-					<div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6">
-						<div className="flex items-center gap-2 mb-4">
-							<h3 className="text-sm font-medium text-white">CSS Only</h3>
-							<Badge>No JS</Badge>
+							/>
 						</div>
-						<CodeBlock
-							code={`<!-- Add to <head> -->
+					</div>
+				</section>
+
+				<div className="h-px bg-gradient-to-r from-transparent via-neutral-800 to-transparent" />
+
+				{/* CDN Usage */}
+				<section id="cdn" className="max-w-6xl mx-auto px-8 pt-24 pb-20">
+					<SectionHeader
+						icon={Globe}
+						title="CDN Usage"
+						description="Use the Dirham symbol without a bundler — just add a stylesheet link and a script tag."
+					/>
+
+					<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+						<div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6">
+							<div className="flex items-center gap-2 mb-4">
+								<h3 className="text-sm font-medium text-white">CSS Only</h3>
+								<Badge>No JS</Badge>
+							</div>
+							<CodeBlock
+								code={`<!-- Add to <head> -->
 <link rel="stylesheet"
   href="https://cdn.jsdelivr.net/npm/dirham/dist/css/dirham.css" />
 
-<!-- Use anywhere -->
-<i class="dirham-symbol"></i>
-<span>100 <i class="dirham-symbol"></i></span>`}
-							lang="html"
-						/>
-					</div>
-
-					<div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6">
-						<div className="flex items-center gap-2 mb-4">
-							<h3 className="text-sm font-medium text-white">Web Component</h3>
-							<Badge variant="green">New</Badge>
+<!-- Use anywhere: the sign goes before the amount -->
+<i class="dirham-symbol" role="img" aria-label="UAE Dirham"></i>
+<span><i class="dirham-symbol" role="img" aria-label="UAE Dirham"></i>&nbsp;100</span>`}
+								lang="html"
+							/>
 						</div>
-						<CodeBlock
-							code={`<!-- Add to <head> -->
+
+						<div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6">
+							<div className="flex items-center gap-2 mb-4">
+								<h3 className="text-sm font-medium text-white">Web Component</h3>
+								<Badge variant="green">New</Badge>
+							</div>
+							<CodeBlock
+								code={`<!-- Add to <head> -->
 <script type="module"
   src="https://cdn.jsdelivr.net/npm/dirham/dist/web-component/index.js">
 </script>
@@ -1633,31 +1764,31 @@ function Price({ amount }: { amount: number }) {
 <dirham-symbol size="24" weight="bold"></dirham-symbol>
 <dirham-price amount="1250"></dirham-price>
 <dirham-price amount="5000000" notation="compact"></dirham-price>`}
-							lang="html"
-						/>
-					</div>
-				</div>
-			</section>
-
-			<div className="h-px bg-gradient-to-r from-transparent via-neutral-800 to-transparent" />
-
-			{/* Framework Integration */}
-			<section className="max-w-6xl mx-auto px-8 pt-24 pb-20">
-				<SectionHeader
-					icon={Layers}
-					title="Framework Integration"
-					description="The Web Components work natively in Vue, Angular, Svelte, and any JavaScript framework — no wrappers needed."
-				/>
-
-				<div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-					{/* Vue */}
-					<div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6">
-						<div className="flex items-center gap-2 mb-4">
-							<h3 className="text-sm font-medium text-white">Vue</h3>
-							<Badge variant="green">v2 / v3</Badge>
+								lang="html"
+							/>
 						</div>
-						<CodeBlock
-							code={`<script setup>
+					</div>
+				</section>
+
+				<div className="h-px bg-gradient-to-r from-transparent via-neutral-800 to-transparent" />
+
+				{/* Framework Integration */}
+				<section id="frameworks" className="max-w-6xl mx-auto px-8 pt-24 pb-20">
+					<SectionHeader
+						icon={Layers}
+						title="Framework Integration"
+						description="The Web Components work natively in Vue, Angular, Svelte, and any JavaScript framework — no wrappers needed."
+					/>
+
+					<div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+						{/* Vue */}
+						<div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6">
+							<div className="flex items-center gap-2 mb-4">
+								<h3 className="text-sm font-medium text-white">Vue</h3>
+								<Badge variant="green">v2 / v3</Badge>
+							</div>
+							<CodeBlock
+								code={`<script setup>
 import "dirham/web-component";
 </script>
 
@@ -1670,18 +1801,18 @@ import "dirham/web-component";
     weight="semibold"
   />
 </template>`}
-							lang="html"
-						/>
-					</div>
-
-					{/* Angular */}
-					<div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6">
-						<div className="flex items-center gap-2 mb-4">
-							<h3 className="text-sm font-medium text-white">Angular</h3>
-							<Badge variant="green">v14+</Badge>
+								lang="html"
+							/>
 						</div>
-						<CodeBlock
-							code={`// app.component.ts
+
+						{/* Angular */}
+						<div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6">
+							<div className="flex items-center gap-2 mb-4">
+								<h3 className="text-sm font-medium text-white">Angular</h3>
+								<Badge variant="green">v14+</Badge>
+							</div>
+							<CodeBlock
+								code={`// app.component.ts
 import { CUSTOM_ELEMENTS_SCHEMA } from "@angular/core";
 import "dirham/web-component";
 
@@ -1697,18 +1828,18 @@ import "dirham/web-component";
   \`
 })
 export class AppComponent {}`}
-							lang="ts"
-						/>
-					</div>
-
-					{/* Svelte */}
-					<div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6">
-						<div className="flex items-center gap-2 mb-4">
-							<h3 className="text-sm font-medium text-white">Svelte</h3>
-							<Badge variant="green">v3 / v4 / v5</Badge>
+								lang="ts"
+							/>
 						</div>
-						<CodeBlock
-							code={`<script>
+
+						{/* Svelte */}
+						<div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6">
+							<div className="flex items-center gap-2 mb-4">
+								<h3 className="text-sm font-medium text-white">Svelte</h3>
+								<Badge variant="green">v3 / v4 / v5</Badge>
+							</div>
+							<CodeBlock
+								code={`<script>
   import "dirham/web-component";
 </script>
 
@@ -1719,18 +1850,18 @@ export class AppComponent {}`}
   notation="compact"
   weight="semibold"
 ></dirham-price>`}
-							lang="html"
-						/>
-					</div>
-
-					{/* Vanilla / Any Framework */}
-					<div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6">
-						<div className="flex items-center gap-2 mb-4">
-							<h3 className="text-sm font-medium text-white">Vanilla JS</h3>
-							<Badge>Any Framework</Badge>
+								lang="html"
+							/>
 						</div>
-						<CodeBlock
-							code={`<script type="module">
+
+						{/* Vanilla / Any Framework */}
+						<div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6">
+							<div className="flex items-center gap-2 mb-4">
+								<h3 className="text-sm font-medium text-white">Vanilla JS</h3>
+								<Badge>Any Framework</Badge>
+							</div>
+							<CodeBlock
+								code={`<script type="module">
   import "dirham/web-component";
 </script>
 
@@ -1749,412 +1880,430 @@ export class AppComponent {}`}
 
 <!-- Use currency code instead of symbol -->
 <dirham-price amount="500" use-code></dirham-price>`}
-							lang="html"
-						/>
-					</div>
-				</div>
-
-				{/* Attributes reference table */}
-				<div className="mt-8 bg-neutral-900 border border-neutral-800 rounded-2xl overflow-hidden">
-					<div className="px-6 py-4 border-b border-neutral-800">
-						<h3 className="text-sm font-medium text-white">
-							{"<dirham-price>"} Attributes
-						</h3>
-					</div>
-					<div className="overflow-x-auto">
-						<table className="w-full text-left text-sm">
-							<thead>
-								<tr className="border-b border-neutral-800 text-neutral-500">
-									<th className="px-6 py-3 font-medium">Attribute</th>
-									<th className="px-6 py-3 font-medium">Default</th>
-									<th className="px-6 py-3 font-medium">Description</th>
-								</tr>
-							</thead>
-							<tbody className="text-neutral-300">
-								{[
-									["amount", "0", "Numeric value to display"],
-									["locale", '"en-AE"', "Intl locale string (e.g. ar-AE)"],
-									["decimals", "2", "Number of decimal places"],
-									["notation", '"standard"', '"standard" or "compact"'],
-									["use-code", "—", "Boolean attr — show AED instead of symbol"],
-									["symbol-size", '"1em"', "SVG symbol width/height"],
-									["weight", '"regular"', "thin · light · regular · bold · black …"],
-									["currency", '"AED"', "Currency code when use-code is set"],
-								].map(([attr, def, desc]) => (
-									<tr
-										key={attr}
-										className="border-b border-neutral-800/50 hover:bg-neutral-800/30 transition-colors"
-									>
-										<td className="px-6 py-3">
-											<code className="text-xs bg-neutral-800 px-2 py-0.5 rounded text-emerald-400">
-												{attr}
-											</code>
-										</td>
-										<td className="px-6 py-3 font-mono text-xs text-neutral-500">
-											{def}
-										</td>
-										<td className="px-6 py-3 text-neutral-400">{desc}</td>
-									</tr>
-								))}
-							</tbody>
-						</table>
-					</div>
-				</div>
-			</section>
-
-			<div className="h-px bg-gradient-to-r from-transparent via-neutral-800 to-transparent" />
-			<section className="max-w-6xl mx-auto px-8 pt-24 pb-20">
-				<SectionHeader
-					icon={Type}
-					title="Font Playground"
-					description="Explore how the Dirham symbol pairs with different typefaces and weights. Select a font to see it in action."
-				/>
-
-				<div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-6">
-					{/* Controls panel */}
-					<div className="space-y-4">
-						{/* Font selector dropdown */}
-						<div ref={fontDropdownRef} className="relative">
-							<label className="block text-xs font-medium text-neutral-500 uppercase tracking-wider mb-2">
-								Typeface
-							</label>
-							<button
-								type="button"
-								onClick={() => setFontDropdownOpen(!fontDropdownOpen)}
-								className="w-full flex items-center justify-between bg-neutral-900 border border-neutral-800 rounded-xl px-4 py-3 text-sm text-white hover:border-neutral-700 transition-colors cursor-pointer"
-							>
-								<div className="flex items-center gap-3">
-									<span
-										style={{ fontFamily: selectedFont.family }}
-										className="text-base"
-									>
-										Aa
-									</span>
-									<span>{selectedFont.name}</span>
-								</div>
-								<ChevronDown
-									size={16}
-									className={clsx(
-										"text-neutral-500 transition-transform",
-										fontDropdownOpen && "rotate-180",
-									)}
-								/>
-							</button>
-
-							{fontDropdownOpen && (
-								<div className="absolute z-40 mt-2 w-full bg-neutral-900 border border-neutral-800 rounded-xl shadow-2xl shadow-black/40 overflow-hidden max-h-80 overflow-y-auto">
-									{["Sans", "Arabic", "Serif", "Mono", "System"].map((cat) => {
-										const fonts = FONT_FAMILIES.filter(
-											(f) => f.category === cat,
-										);
-										if (fonts.length === 0) return null;
-										return (
-											<div key={cat}>
-												<div className="px-4 py-2 text-[10px] font-medium text-neutral-600 uppercase tracking-widest bg-neutral-950/50">
-													{cat}
-												</div>
-												{fonts.map((font) => (
-													<button
-														type="button"
-														key={font.name}
-														onClick={() => {
-															setSelectedFont(font);
-															setFontDropdownOpen(false);
-														}}
-														className={clsx(
-															"w-full flex items-center justify-between px-4 py-2.5 text-sm hover:bg-white/5 transition-colors cursor-pointer",
-															selectedFont.name === font.name
-																? "text-white bg-white/[0.03]"
-																: "text-neutral-400",
-														)}
-													>
-														<span style={{ fontFamily: font.family }}>
-															{font.name}
-														</span>
-														{selectedFont.name === font.name && (
-															<Check size={14} className="text-white" />
-														)}
-													</button>
-												))}
-											</div>
-										);
-									})}
-								</div>
-							)}
+								lang="html"
+							/>
 						</div>
+					</div>
 
-						{/* Weight selector */}
-						<div>
-							<label className="block text-xs font-medium text-neutral-500 uppercase tracking-wider mb-2">
-								Weight
-							</label>
-							<div className="grid grid-cols-3 gap-1.5">
-								{WEIGHTS.map((w) => (
-									<button
-										type="button"
-										key={w}
-										onClick={() => setSelectedWeight(w)}
+					{/* Attributes reference table */}
+					<div className="mt-8 bg-neutral-900 border border-neutral-800 rounded-2xl overflow-hidden">
+						<div className="px-6 py-4 border-b border-neutral-800">
+							<h3 className="text-sm font-medium text-white">
+								{"<dirham-price>"} Attributes
+							</h3>
+						</div>
+						<div className="overflow-x-auto">
+							<table className="w-full text-left text-sm">
+								<thead>
+									<tr className="border-b border-neutral-800 text-neutral-500">
+										<th className="px-6 py-3 font-medium">Attribute</th>
+										<th className="px-6 py-3 font-medium">Default</th>
+										<th className="px-6 py-3 font-medium">Description</th>
+									</tr>
+								</thead>
+								<tbody className="text-neutral-300">
+									{[
+										["amount", "0", "Numeric value to display"],
+										["locale", '"en-AE"', "Intl locale string (e.g. ar-AE)"],
+										["decimals", "2", "Number of decimal places"],
+										["notation", '"standard"', '"standard" or "compact"'],
+										["use-code", "—", "Boolean attr — show AED instead of symbol"],
+										["symbol-size", '"1em"', "SVG symbol width/height"],
+										["weight", '"regular"', "thin · light · regular · bold · black …"],
+										["currency", '"AED"', "Currency code when use-code is set"],
+									].map(([attr, def, desc]) => (
+										<tr
+											key={attr}
+											className="border-b border-neutral-800/50 hover:bg-neutral-800/30 transition-colors"
+										>
+											<td className="px-6 py-3">
+												<code className="text-xs bg-neutral-800 px-2 py-0.5 rounded text-emerald-400">
+													{attr}
+												</code>
+											</td>
+											<td className="px-6 py-3 font-mono text-xs text-neutral-500">
+												{def}
+											</td>
+											<td className="px-6 py-3 text-neutral-400">{desc}</td>
+										</tr>
+									))}
+								</tbody>
+							</table>
+						</div>
+					</div>
+				</section>
+
+				<div className="h-px bg-gradient-to-r from-transparent via-neutral-800 to-transparent" />
+				<section
+					id="font-playground"
+					data-demo-fonts
+					className="max-w-6xl mx-auto px-8 pt-24 pb-20"
+				>
+					<SectionHeader
+						icon={Type}
+						title="Font Playground"
+						description="Explore how the Dirham symbol pairs with different typefaces and weights. Select a font to see it in action."
+					/>
+
+					<div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-6">
+						{/* Controls panel */}
+						<div className="space-y-4">
+							{/* Font selector dropdown */}
+							<div ref={fontDropdownRef} className="relative">
+								<label className="block text-xs font-medium text-neutral-500 uppercase tracking-wider mb-2">
+									Typeface
+								</label>
+								<button
+									type="button"
+									onClick={() => setFontDropdownOpen(!fontDropdownOpen)}
+									className="w-full flex items-center justify-between bg-neutral-900 border border-neutral-800 rounded-xl px-4 py-3 text-sm text-white hover:border-neutral-700 transition-colors cursor-pointer"
+								>
+									<div className="flex items-center gap-3">
+										<span
+											style={{ fontFamily: selectedFont.family }}
+											className="text-base"
+										>
+											Aa
+										</span>
+										<span>{selectedFont.name}</span>
+									</div>
+									<ChevronDown
+										size={16}
 										className={clsx(
-											"px-3 py-2 rounded-lg text-xs font-medium transition-all cursor-pointer",
-											selectedWeight === w
-												? "bg-white text-black"
-												: "bg-neutral-900 text-neutral-500 border border-neutral-800 hover:border-neutral-700 hover:text-neutral-300",
+											"text-neutral-500 transition-transform",
+											fontDropdownOpen && "rotate-180",
 										)}
-									>
-										{w}
-									</button>
-								))}
+									/>
+								</button>
+
+								{fontDropdownOpen && (
+									<div className="absolute z-40 mt-2 w-full bg-neutral-900 border border-neutral-800 rounded-xl shadow-2xl shadow-black/40 overflow-hidden max-h-80 overflow-y-auto">
+										{["Sans", "Arabic", "Serif", "Mono", "System"].map((cat) => {
+											const fonts = FONT_FAMILIES.filter(
+												(f) => f.category === cat,
+											);
+											if (fonts.length === 0) return null;
+											return (
+												<div key={cat}>
+													<div className="px-4 py-2 text-[10px] font-medium text-neutral-600 uppercase tracking-widest bg-neutral-950/50">
+														{cat}
+													</div>
+													{fonts.map((font) => (
+														<button
+															type="button"
+															key={font.name}
+															onClick={() => {
+																setSelectedFont(font);
+																setFontDropdownOpen(false);
+															}}
+															className={clsx(
+																"w-full flex items-center justify-between px-4 py-2.5 text-sm hover:bg-white/5 transition-colors cursor-pointer",
+																selectedFont.name === font.name
+																	? "text-white bg-white/[0.03]"
+																	: "text-neutral-400",
+															)}
+														>
+															<span style={{ fontFamily: font.family }}>
+																{font.name}
+															</span>
+															{selectedFont.name === font.name && (
+																<Check size={14} className="text-white" />
+															)}
+														</button>
+													))}
+												</div>
+											);
+										})}
+									</div>
+								)}
+							</div>
+
+							{/* Weight selector */}
+							<div>
+								<label className="block text-xs font-medium text-neutral-500 uppercase tracking-wider mb-2">
+									Weight
+								</label>
+								<div className="grid grid-cols-3 gap-1.5">
+									{WEIGHTS.map((w) => (
+										<button
+											type="button"
+											key={w}
+											onClick={() => setSelectedWeight(w)}
+											className={clsx(
+												"px-3 py-2 rounded-lg text-xs font-medium transition-all cursor-pointer",
+												selectedWeight === w
+													? "bg-white text-black"
+													: "bg-neutral-900 text-neutral-500 border border-neutral-800 hover:border-neutral-700 hover:text-neutral-300",
+											)}
+										>
+											{w}
+										</button>
+									))}
+								</div>
+							</div>
+
+							{/* Size slider */}
+							<div>
+								<label
+									htmlFor="playground-size"
+									className="block text-xs font-medium text-neutral-500 uppercase tracking-wider mb-2"
+								>
+									Size — {size}px
+								</label>
+								<input
+									id="playground-size"
+									type="range"
+									min="16"
+									max="128"
+									value={size}
+									onChange={(e) => setSize(Number(e.target.value))}
+									className="w-full accent-white h-1 bg-neutral-800 rounded-full appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3.5 [&::-webkit-slider-thumb]:h-3.5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:cursor-pointer"
+								/>
+							</div>
+
+							{/* Amount */}
+							<div>
+								<label
+									htmlFor="playground-amount"
+									className="block text-xs font-medium text-neutral-500 uppercase tracking-wider mb-2"
+								>
+									Amount
+								</label>
+								<input
+									id="playground-amount"
+									type="number"
+									value={amount}
+									min="0"
+									step="0.01"
+									onChange={(e) => {
+										const v = Number(e.target.value);
+										if (Number.isFinite(v)) setAmount(v);
+									}}
+									className="w-full bg-neutral-900 border border-neutral-800 rounded-xl px-4 py-3 text-sm text-white font-mono focus:outline-none focus:border-neutral-600 transition-colors"
+								/>
 							</div>
 						</div>
 
-						{/* Size slider */}
-						<div>
-							<label className="block text-xs font-medium text-neutral-500 uppercase tracking-wider mb-2">
-								Size — {size}px
-							</label>
-							<input
-								type="range"
-								min="16"
-								max="128"
-								value={size}
-								onChange={(e) => setSize(Number(e.target.value))}
-								className="w-full accent-white h-1 bg-neutral-800 rounded-full appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3.5 [&::-webkit-slider-thumb]:h-3.5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:cursor-pointer"
-							/>
-						</div>
-
-						{/* Amount */}
-						<div>
-							<label className="block text-xs font-medium text-neutral-500 uppercase tracking-wider mb-2">
-								Amount
-							</label>
-							<input
-								type="number"
-								value={amount}
-								min="0"
-								step="0.01"
-								onChange={(e) => {
-									const v = Number(e.target.value);
-									if (Number.isFinite(v)) setAmount(v);
+						{/* Preview panel */}
+						<div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-8 flex flex-col items-center justify-center min-h-[320px]">
+							<div
+								style={{
+									fontFamily: dirhamFontStack(selectedFont),
+									fontWeight: DIRHAM_WEIGHT_MAP[selectedWeight],
+									fontSize: `${size}px`,
+									lineHeight: 1.2,
 								}}
-								className="w-full bg-neutral-900 border border-neutral-800 rounded-xl px-4 py-3 text-sm text-white font-mono focus:outline-none focus:border-neutral-600 transition-colors"
-							/>
-						</div>
-					</div>
-
-					{/* Preview panel */}
-					<div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-8 flex flex-col items-center justify-center min-h-[320px]">
-						<div
-							style={{
-								fontFamily: dirhamFontStack(selectedFont),
-								fontWeight: DIRHAM_WEIGHT_MAP[selectedWeight],
-								fontSize: `${size}px`,
-								lineHeight: 1.2,
-							}}
-							className="text-white mb-6 text-center break-all"
-						>
-							{DIRHAM_UNICODE}{" "}
-							{amount.toLocaleString("en-US", {
-								minimumFractionDigits: 2,
-								maximumFractionDigits: 2,
-							})}
-						</div>
-
-						<div className="text-center space-y-1">
-							<p className="text-xs text-neutral-600 font-mono">
-								{selectedFont.name} · {selectedWeight} · {size}px ·{" "}
-								<span className="text-emerald-500">
-									Dirham-{selectedFont.category}
-								</span>
-							</p>
-							<DirhamText
-								className="text-sm text-neutral-400 font-mono"
-								variant={CATEGORY_TO_DIRHAM_FONT[selectedFont.category]}
+								className="text-white mb-6 text-center break-all"
 							>
-								{(() => {
-									try {
-										return formatDirham(amount);
-									} catch {
-										return "—";
-									}
-								})()}
-							</DirhamText>
+								{DIRHAM_UNICODE}{" "}
+								{amount.toLocaleString("en-US", {
+									minimumFractionDigits: 2,
+									maximumFractionDigits: 2,
+								})}
+							</div>
+
+							<div className="text-center space-y-1">
+								<p className="text-xs text-neutral-600 font-mono">
+									{selectedFont.name} · {selectedWeight} · {size}px ·{" "}
+									<span className="text-emerald-500">
+										Dirham-{selectedFont.category}
+									</span>
+								</p>
+								<DirhamText
+									className="text-sm text-neutral-400 font-mono"
+									variant={CATEGORY_TO_DIRHAM_FONT[selectedFont.category]}
+								>
+									{(() => {
+										try {
+											return formatDirham(amount);
+										} catch {
+											return "—";
+										}
+									})()}
+								</DirhamText>
+							</div>
 						</div>
 					</div>
-				</div>
-			</section>
+				</section>
 
-			<div className="h-px bg-gradient-to-r from-transparent via-neutral-800 to-transparent" />
+				<div className="h-px bg-gradient-to-r from-transparent via-neutral-800 to-transparent" />
 
-			{/* Unicode Sizes */}
-			<section className="max-w-6xl mx-auto px-8 pt-20 pb-16">
-				<SectionHeader
-					icon={Sparkles}
-					title="Unicode Sizes"
-					description="The font-based glyph scales naturally with font-size, same as $, € and £."
-				/>
+				{/* Unicode Sizes */}
+				<section id="sizes" className="max-w-6xl mx-auto px-8 pt-20 pb-16">
+					<SectionHeader
+						icon={Sparkles}
+						title="Unicode Sizes"
+						description="The font-based glyph scales naturally with font-size, same as $, € and £."
+					/>
 
-				<div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-8">
-					<div className="flex flex-wrap justify-center gap-x-12 gap-y-10 items-end">
-						{[12, 16, 20, 24, 32, 40, 48, 64, 80].map((s) => (
-							<div key={s} className="flex flex-col items-center gap-3">
-								<div
-									className="flex items-center justify-center rounded-xl bg-neutral-950 border border-neutral-800"
-									style={{
-										width: Math.max(64, s + 24),
-										height: Math.max(64, s + 24),
-									}}
-								>
-									<DirhamIcon size={s} />
+					<div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-8">
+						<div className="flex flex-wrap justify-center gap-x-12 gap-y-10 items-end">
+							{[12, 16, 20, 24, 32, 40, 48, 64, 80].map((s) => (
+								<div key={s} className="flex flex-col items-center gap-3">
+									<div
+										className="flex items-center justify-center rounded-xl bg-neutral-950 border border-neutral-800"
+										style={{
+											width: Math.max(64, s + 24),
+											height: Math.max(64, s + 24),
+										}}
+									>
+										<DirhamIcon size={s} />
+									</div>
+									<div className="text-center">
+										<p className="text-[10px] text-neutral-700 font-mono">
+											{s}px
+										</p>
+									</div>
 								</div>
-								<div className="text-center">
-									<p className="text-[10px] text-neutral-700 font-mono">
-										{s}px
+							))}
+						</div>
+					</div>
+
+					<CodeBlock code={`<DirhamIcon size={32} />`} />
+				</section>
+
+				<div className="h-px bg-gradient-to-r from-transparent via-neutral-800 to-transparent" />
+
+				{/* Font Pairing Grid */}
+				<section
+					id="font-pairing"
+					data-demo-fonts
+					className="max-w-6xl mx-auto px-8 pt-24 pb-20"
+				>
+					<SectionHeader
+						icon={Type}
+						title="Font Pairing"
+						description="See how the Dirham symbol harmonizes with different typefaces across weights."
+					/>
+
+					<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+						{FONT_FAMILIES.filter((f) => f.category !== "System").map((font) => (
+							<div
+								key={font.name}
+								className="bg-neutral-900 border border-neutral-800 rounded-2xl p-5 hover:border-neutral-700 transition-colors group"
+							>
+								<div className="flex items-center justify-between mb-4">
+									<p className="text-sm font-medium text-white">
+										{font.name}
 									</p>
+									<Badge>{font.category}</Badge>
+								</div>
+								<div
+									className="space-y-2"
+									style={{ fontFamily: dirhamFontStack(font) }}
+								>
+									{(["light", "regular", "medium", "bold"] as DirhamWeight[]).map(
+										(w) => (
+											<div
+												key={w}
+												className="flex items-center justify-between px-3 py-2 rounded-lg bg-neutral-950/60"
+												style={{ fontWeight: DIRHAM_WEIGHT_MAP[w] }}
+											>
+												<span className="text-white text-base">
+													{DIRHAM_UNICODE} 1,250.00
+												</span>
+												<span
+													className="text-[10px] text-neutral-600 font-mono capitalize"
+													style={{ fontFamily: "var(--font-sans)" }}
+												>
+													{w}
+												</span>
+											</div>
+										),
+									)}
 								</div>
 							</div>
 						))}
 					</div>
-				</div>
+				</section>
 
-				<CodeBlock code={`<DirhamIcon size={32} />`} />
-			</section>
+				<div className="h-px bg-gradient-to-r from-transparent via-neutral-800 to-transparent" />
 
-			<div className="h-px bg-gradient-to-r from-transparent via-neutral-800 to-transparent" />
+				{/* React Components */}
+				<section id="react" className="max-w-6xl mx-auto px-8 pt-24 pb-20">
+					<SectionHeader
+						icon={Code2}
+						title="React Components"
+						description="Three approaches: an inline SVG component (no font loading, SSR-safe), a font-based icon that inherits text size and color, and a price component that combines formatting with the symbol."
+						primary
+					/>
 
-			{/* Font Pairing Grid */}
-			<section className="max-w-6xl mx-auto px-8 pt-24 pb-20">
-				<SectionHeader
-					icon={Type}
-					title="Font Pairing"
-					description="See how the Dirham symbol harmonizes with different typefaces across weights."
-				/>
-
-				<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-					{FONT_FAMILIES.filter((f) => f.category !== "System").map((font) => (
-						<div
-							key={font.name}
-							className="bg-neutral-900 border border-neutral-800 rounded-2xl p-5 hover:border-neutral-700 transition-colors group"
-						>
-							<div className="flex items-center justify-between mb-4">
-								<h3 className="text-sm font-medium text-white">{font.name}</h3>
-								<Badge>{font.category}</Badge>
-							</div>
-							<div
-								className="space-y-2"
-								style={{ fontFamily: dirhamFontStack(font) }}
-							>
-								{(["light", "regular", "medium", "bold"] as DirhamWeight[]).map(
-									(w) => (
-										<div
-											key={w}
-											className="flex items-center justify-between px-3 py-2 rounded-lg bg-neutral-950/60"
-											style={{ fontWeight: DIRHAM_WEIGHT_MAP[w] }}
-										>
-											<span className="text-white text-base">
-												{DIRHAM_UNICODE} 1,250.00
-											</span>
-											<span
-												className="text-[10px] text-neutral-600 font-mono capitalize"
-												style={{ fontFamily: "var(--font-sans)" }}
-											>
-												{w}
-											</span>
-										</div>
-									),
-								)}
-							</div>
+					{/* DirhamSymbol — SVG component */}
+					<div className="bg-neutral-900 border border-neutral-800 rounded-2xl overflow-hidden mb-6">
+						<div className="px-6 py-4 border-b border-neutral-800 flex items-center gap-2">
+							<h3 className="text-sm font-medium text-white">DirhamSymbol</h3>
+							<Badge variant="green">SVG · Recommended</Badge>
 						</div>
-					))}
-				</div>
-			</section>
-
-			<div className="h-px bg-gradient-to-r from-transparent via-neutral-800 to-transparent" />
-
-			{/* React Components */}
-			<section className="max-w-6xl mx-auto px-8 pt-24 pb-20">
-				<SectionHeader
-					icon={Code2}
-					title="React Components"
-					description="Three approaches: an inline SVG component (no font loading, SSR-safe), a font-based icon that inherits text size and color, and a price component that combines formatting with the symbol."
-					primary
-				/>
-
-				{/* DirhamSymbol — SVG component */}
-				<div className="bg-neutral-900 border border-neutral-800 rounded-2xl overflow-hidden mb-6">
-					<div className="px-6 py-4 border-b border-neutral-800 flex items-center gap-2">
-						<h3 className="text-sm font-medium text-white">DirhamSymbol</h3>
-						<Badge variant="green">SVG · Recommended</Badge>
-					</div>
-					<div className="p-6">
-						<p className="text-[10px] text-neutral-600 uppercase tracking-widest mb-3">
-							Weight variants
-						</p>
-						<div className="flex items-end gap-6 mb-6">
-							{(
-								[
-									"light",
-									"regular",
-									"medium",
-									"bold",
-									"extrabold",
-								] as DirhamWeight[]
-							).map((w) => (
-								<div key={w} className="flex flex-col items-center gap-1.5">
-									<DirhamSymbol size={24} weight={w} />
-									<span className="text-[10px] text-neutral-600 font-mono">
-										{w}
-									</span>
-								</div>
-							))}
-						</div>
-						<p className="text-[10px] text-neutral-600 uppercase tracking-widest mb-3">
-							Inline with text
-						</p>
-						<p className="text-lg text-white mb-6">
-							Total: 100 <DirhamSymbol size="1em" weight="medium" /> per unit
-						</p>
-						<CodeBlock
-								code={`import { DirhamSymbol } from "dirham/react";
+						<div className="p-6">
+							<p className="text-[10px] text-neutral-600 uppercase tracking-widest mb-3">
+								Weight variants
+							</p>
+							<div className="flex items-end gap-6 mb-6">
+								{(
+									[
+										"light",
+										"regular",
+										"medium",
+										"bold",
+										"extrabold",
+									] as DirhamWeight[]
+								).map((w) => (
+									<div key={w} className="flex flex-col items-center gap-1.5">
+										<DirhamSymbol size={24} weight={w} />
+										<span className="text-[10px] text-neutral-600 font-mono">
+											{w}
+										</span>
+									</div>
+								))}
+							</div>
+							<p className="text-[10px] text-neutral-600 uppercase tracking-widest mb-3">
+								Inline with text
+							</p>
+							<p className="text-lg text-white mb-6">
+								Total: <DirhamSymbol size="1em" weight="medium" /> 100 per unit
+							</p>
+							<CodeBlock
+									code={`import { DirhamSymbol } from "dirham/react";
 
 // Inline SVG — no font loading, SSR-safe
 <DirhamSymbol size={24} />
 <DirhamSymbol size="1em" weight="bold" />
 <DirhamSymbol size={40} color="#10b981" weight="light" />`}
-							/>
-						</div>
-					</div>
-
-					{/* DirhamPrice — all-in-one price component */}
-					<div className="bg-neutral-900 border border-neutral-800 rounded-2xl overflow-hidden mb-6">
-						<div className="px-6 py-4 border-b border-neutral-800 flex items-center gap-2">
-							<h3 className="text-sm font-medium text-white">DirhamPrice</h3>
-							<Badge variant="green">New</Badge>
-						</div>
-						<div className="p-6">
-							<p className="text-[10px] text-neutral-600 uppercase tracking-widest mb-3">
-								Live examples
-							</p>
-							<div className="space-y-3 mb-6">
-								{[
-									{ label: "Default", props: { amount: 1250 } },
-									{ label: "Compact", props: { amount: 5000000, notation: "compact" as const } },
-									{ label: "Bold", props: { amount: 9999.99, weight: "bold" as const } },
-									{ label: "No decimals", props: { amount: 100, decimals: 0 } },
-									{ label: "AED code", props: { amount: 500, useCode: true } },
-								].map(({ label, props }) => (
-									<div
-										key={label}
-										className="flex items-center justify-between px-4 py-3 rounded-lg bg-neutral-950"
-									>
-										<span className="text-xs font-mono text-neutral-500">{label}</span>
-										<span className="text-lg text-white">
-											<DirhamPrice {...props} />
-										</span>
-									</div>
-								))}
+								/>
 							</div>
-							<CodeBlock
-								code={`import { DirhamPrice } from "dirham/react";
+						</div>
+
+						{/* DirhamPrice — all-in-one price component */}
+						<div className="bg-neutral-900 border border-neutral-800 rounded-2xl overflow-hidden mb-6">
+							<div className="px-6 py-4 border-b border-neutral-800 flex items-center gap-2">
+								<h3 className="text-sm font-medium text-white">DirhamPrice</h3>
+								<Badge variant="green">New</Badge>
+							</div>
+							<div className="p-6">
+								<p className="text-[10px] text-neutral-600 uppercase tracking-widest mb-3">
+									Live examples
+								</p>
+								<div className="space-y-3 mb-6">
+									{[
+										{ label: "Default", props: { amount: 1250 } },
+										{ label: "Compact", props: { amount: 5000000, notation: "compact" as const } },
+										{ label: "Bold", props: { amount: 9999.99, weight: "bold" as const } },
+										{ label: "No decimals", props: { amount: 100, decimals: 0 } },
+										{ label: "AED code", props: { amount: 500, useCode: true } },
+									].map(({ label, props }) => (
+										<div
+											key={label}
+											className="flex items-center justify-between px-4 py-3 rounded-lg bg-neutral-950"
+										>
+											<span className="text-xs font-mono text-neutral-500">{label}</span>
+											<span className="text-lg text-white">
+												<DirhamPrice {...props} />
+											</span>
+										</div>
+									))}
+								</div>
+								<CodeBlock
+									code={`import { DirhamPrice } from "dirham/react";
 
 <DirhamPrice amount={1250} />
 <DirhamPrice amount={5000000} notation="compact" />
@@ -2164,338 +2313,367 @@ export class AppComponent {}`}
 
 {/* className works — use Tailwind, CSS modules, etc. */}
 <DirhamPrice amount={750} className="text-emerald-400 text-2xl" />`}
-							/>
-						</div>
-					</div>
-
-					<div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-					{/* DirhamIcon component */}
-					<div className="bg-neutral-900 border border-neutral-800 rounded-2xl overflow-hidden">
-						<div className="px-6 py-4 border-b border-neutral-800 flex items-center justify-between">
-							<div className="flex items-center gap-2">
-								<h3 className="text-sm font-medium text-white">DirhamIcon</h3>
-								<Badge variant="green">Unicode U+20C3</Badge>
+								/>
 							</div>
 						</div>
-						<div className="p-6">
-							{/* Size demos */}
-							<p className="text-[10px] text-neutral-600 uppercase tracking-widest mb-3">
-								Sizes
-							</p>
-							<div className="flex items-end gap-4 mb-6">
-								{[12, 16, 24, 32, 48, 64].map((s) => (
-									<div key={s} className="flex flex-col items-center gap-1.5">
-										<DirhamIcon size={s} />
-										<span className="text-[10px] text-neutral-600 font-mono">
-											{s}
-										</span>
-									</div>
-								))}
+
+						<div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+						{/* DirhamIcon component */}
+						<div className="bg-neutral-900 border border-neutral-800 rounded-2xl overflow-hidden">
+							<div className="px-6 py-4 border-b border-neutral-800 flex items-center justify-between">
+								<div className="flex items-center gap-2">
+									<h3 className="text-sm font-medium text-white">DirhamIcon</h3>
+									<Badge variant="green">Unicode U+20C3</Badge>
+								</div>
 							</div>
+							<div className="p-6">
+								{/* Size demos */}
+								<p className="text-[10px] text-neutral-600 uppercase tracking-widest mb-3">
+									Sizes
+								</p>
+								<div className="flex items-end gap-4 mb-6">
+									{[12, 16, 24, 32, 48, 64].map((s) => (
+										<div key={s} className="flex flex-col items-center gap-1.5">
+											<DirhamIcon size={s} />
+											<span className="text-[10px] text-neutral-600 font-mono">
+												{s}
+											</span>
+										</div>
+									))}
+								</div>
 
-							{/* Inline */}
-							<p className="text-[10px] text-neutral-600 uppercase tracking-widest mb-3">
-								Inline with text
-							</p>
-							<p className="text-lg text-white mb-6">
-								Price: <DirhamIcon size="1em" /> 100
-							</p>
+								{/* Inline */}
+								<p className="text-[10px] text-neutral-600 uppercase tracking-widest mb-3">
+									Inline with text
+								</p>
+								<p className="text-lg text-white mb-6">
+									Price: <DirhamIcon size="1em" /> 100
+								</p>
 
-							<CodeBlock
-								code={`import "dirham/css";
+								<CodeBlock
+									code={`import "dirham/css";
 import { DirhamIcon } from "dirham/react";
 
 <DirhamIcon size={24} />
 <DirhamIcon size="1em" />`}
-							/>
+								/>
+							</div>
+						</div>
+
+						{/* CSS Class usage */}
+						<div className="bg-neutral-900 border border-neutral-800 rounded-2xl overflow-hidden">
+							<div className="px-6 py-4 border-b border-neutral-800 flex items-center gap-2">
+								<h3 className="text-sm font-medium text-white">CSS Class</h3>
+								<Badge>No JS</Badge>
+							</div>
+							<div className="p-6">
+								<p className="text-[10px] text-neutral-600 uppercase tracking-widest mb-3">
+									Sizes via font-size
+								</p>
+								<div className="flex items-end gap-4 mb-6">
+									{[16, 24, 32, 48].map((s) => (
+										<div key={s} className="flex flex-col items-center gap-1.5">
+											{/* biome-ignore lint/a11y/noInteractiveElementToNoninteractiveRole: <i> is not interactive; role="img" makes its aria-label valid */}
+											<i
+												className="dirham-symbol"
+												style={{ fontSize: `${s}px` }}
+												role="img"
+												aria-label="UAE Dirham"
+											/>
+											<span className="text-[10px] text-neutral-600 font-mono">
+												{s}
+											</span>
+										</div>
+									))}
+								</div>
+
+								{/* CSS class */}
+								<p className="text-[10px] text-neutral-600 uppercase tracking-widest mb-3">
+									Markup
+								</p>
+								<div className="flex items-center gap-3 mb-6">
+									{/* biome-ignore lint/a11y/noInteractiveElementToNoninteractiveRole: <i> is not interactive; role="img" makes its aria-label valid */}
+									<i
+										className="dirham-symbol"
+										style={{ fontSize: "32px" }}
+										role="img"
+										aria-label="UAE Dirham"
+									/>
+									<code className="text-xs text-neutral-500 font-mono">
+										&lt;i class="dirham-symbol"&gt;&lt;/i&gt;
+									</code>
+								</div>
+
+								<CodeBlock
+									code={`<!-- Load the CSS (with a bundler: import "dirham/css") -->
+<link rel="stylesheet"
+  href="https://cdn.jsdelivr.net/npm/dirham/dist/css/dirham.css" />
+
+<!-- Use the class — renders U+20C3 via ::before -->
+<i class="dirham-symbol" role="img" aria-label="UAE Dirham"></i>
+<span class="dirham-symbol" style="font-size: 32px"></span>`}
+									lang="html"
+								/>
+							</div>
 						</div>
 					</div>
+				</section>
 
-					{/* CSS Class usage */}
-					<div className="bg-neutral-900 border border-neutral-800 rounded-2xl overflow-hidden">
-						<div className="px-6 py-4 border-b border-neutral-800 flex items-center gap-2">
-							<h3 className="text-sm font-medium text-white">CSS Class</h3>
-							<Badge>No JS</Badge>
-						</div>
-						<div className="p-6">
-							<p className="text-[10px] text-neutral-600 uppercase tracking-widest mb-3">
-								Sizes via font-size
-							</p>
-							<div className="flex items-end gap-4 mb-6">
-								{[16, 24, 32, 48].map((s) => (
-									<div key={s} className="flex flex-col items-center gap-1.5">
-										<i
-											className="dirham-symbol"
-											style={{ fontSize: `${s}px` }}
-											aria-label="UAE Dirham"
-										/>
-										<span className="text-[10px] text-neutral-600 font-mono">
-											{s}
+				<div className="h-px bg-gradient-to-r from-transparent via-neutral-800 to-transparent" />
+
+				{/* Formatting & Constants */}
+				<section id="formatting" className="max-w-6xl mx-auto px-8 pt-20 pb-16">
+					<SectionHeader
+						icon={Package}
+						title="Formatting & Constants"
+						description={
+							<>
+								Built-in formatting and exported constants. Intl.NumberFormat
+								prints AED or <span lang="ar">د.إ.</span> for AED and never
+								U+20C3 (checked October 2026), so formatDirham inserts the sign
+								itself, followed by a no-break space.
+							</>
+						}
+					/>
+
+					<div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+						{/* formatDirham */}
+						<div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6">
+							<h3 className="text-sm font-medium text-white mb-4 flex items-center gap-2">
+								<code className="text-xs font-mono text-neutral-400 bg-neutral-950 px-2 py-1 rounded-md">
+									formatDirham()
+								</code>
+							</h3>
+							<div className="space-y-2">
+								{[
+									{ input: "100", output: formatDirham(100) },
+									{ input: "1234.5", output: formatDirham(1234.5) },
+									{
+										input: "100, { useCode: true }",
+										output: formatDirham(100, { useCode: true }),
+									},
+									{
+										input: '100, { locale: "ar-AE" }',
+										output: formatDirham(100, { locale: "ar-AE" }),
+									},
+									{ input: "999999.99", output: formatDirham(999999.99) },
+									{
+										input: '5000000, { notation: "compact" }',
+										output: formatDirham(5000000, { notation: "compact" }),
+									},
+								].map(({ input, output }) => (
+									<div
+										key={input}
+										className="flex items-center justify-between px-3 py-2 rounded-lg bg-neutral-950"
+									>
+										<span className="text-xs font-mono text-neutral-500">
+											formatDirham({input})
 										</span>
+										<DirhamText className="text-sm font-mono text-white">
+											{output}
+										</DirhamText>
 									</div>
 								))}
 							</div>
+						</div>
 
-							{/* CSS class */}
-							<p className="text-[10px] text-neutral-600 uppercase tracking-widest mb-3">
-								Markup
-							</p>
-							<div className="flex items-center gap-3 mb-6">
-								<i
-									className="dirham-symbol"
-									style={{ fontSize: "32px" }}
-									aria-label="UAE Dirham"
-								/>
-								<code className="text-xs text-neutral-500 font-mono">
-									&lt;i class="dirham-symbol"&gt;&lt;/i&gt;
-								</code>
+						{/* Constants */}
+						<div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6">
+							<h3 className="text-sm font-medium text-white mb-4">Constants</h3>
+							<div className="space-y-2">
+								{[
+									{
+										name: "DIRHAM_UNICODE",
+										value: JSON.stringify(DIRHAM_UNICODE),
+									},
+									{ name: "DIRHAM_HTML_ENTITY", value: DIRHAM_HTML_ENTITY },
+									{ name: "DIRHAM_CSS_CONTENT", value: DIRHAM_CSS_CONTENT },
+									{ name: "DIRHAM_CURRENCY_CODE", value: DIRHAM_CURRENCY_CODE },
+									{ name: "DIRHAM_FONT_FAMILY", value: DIRHAM_FONT_FAMILY },
+								].map(({ name, value }) => (
+									<div
+										key={name}
+										className="flex items-center justify-between px-3 py-2 rounded-lg bg-neutral-950"
+									>
+										<span className="text-xs font-mono text-neutral-500">
+											{name}
+										</span>
+										<DirhamText className="text-sm font-mono text-white">
+											{value}
+										</DirhamText>
+									</div>
+								))}
 							</div>
-
-							<CodeBlock
-								code={`<!-- Just import the CSS -->
-<link rel="stylesheet" href="dirham/css" />
-
-<!-- Use the class — renders U+20C3 via ::before -->
-<i class="dirham-symbol"></i>
-<span class="dirham-symbol" style="font-size: 32px"></span>`}
-								lang="html"
-							/>
 						</div>
 					</div>
-				</div>
-			</section>
 
-			<div className="h-px bg-gradient-to-r from-transparent via-neutral-800 to-transparent" />
-
-			{/* Formatting & Constants */}
-			<section className="max-w-6xl mx-auto px-8 pt-20 pb-16">
-				<SectionHeader
-					icon={Package}
-					title="Formatting & Constants"
-					description="Built-in currency formatting and exported constants for every use case."
-				/>
-
-				<div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-					{/* formatDirham */}
-					<div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6">
+					{/* parseDirham */}
+					<div className="mt-6 bg-neutral-900 border border-neutral-800 rounded-2xl p-6">
 						<h3 className="text-sm font-medium text-white mb-4 flex items-center gap-2">
 							<code className="text-xs font-mono text-neutral-400 bg-neutral-950 px-2 py-1 rounded-md">
-								formatDirham()
+								parseDirham()
 							</code>
+							<span className="text-xs text-neutral-600">
+								— parse a formatted string back to a number
+							</span>
 						</h3>
 						<div className="space-y-2">
-							{[
-								{ input: "100", output: formatDirham(100) },
-								{ input: "1234.5", output: formatDirham(1234.5) },
-								{
-									input: "100, { useCode: true }",
-									output: formatDirham(100, { useCode: true }),
-								},
-								{
-									input: '100, { locale: "ar-AE" }',
-									output: formatDirham(100, { locale: "ar-AE" }),
-								},
-								{ input: "999999.99", output: formatDirham(999999.99) },
-								{
-									input: '5000000, { notation: "compact" }',
-									output: formatDirham(5000000, { notation: "compact" }),
-								},
-							].map(({ input, output }) => (
+							{(
+								[
+									{
+										label: `parseDirham(formatDirham(1234.5))`,
+										value: parseDirham(formatDirham(1234.5)),
+									},
+									{
+										label: `parseDirham(formatDirham(100, { useCode: true }))`,
+										value: parseDirham(formatDirham(100, { useCode: true })),
+									},
+									{
+										label: `parseDirham(formatDirham(250, { locale: "ar-AE" }))`,
+										value: parseDirham(formatDirham(250, { locale: "ar-AE" })),
+									},
+								] as { label: string; value: number }[]
+							).map(({ label, value }) => (
 								<div
-									key={input}
-									className="flex items-center justify-between px-3 py-2 rounded-lg bg-neutral-950"
+									key={label}
+									className="flex items-center justify-between px-3 py-2 rounded-lg bg-neutral-950 gap-4"
 								>
-									<span className="text-xs font-mono text-neutral-500">
-										formatDirham({input})
+									<span className="text-xs font-mono text-neutral-500 truncate">
+										{label}
 									</span>
-									<DirhamText className="text-sm font-mono text-white">
-										{output}
-									</DirhamText>
+									<span className="text-sm font-mono text-white shrink-0">
+										{value}
+									</span>
 								</div>
 							))}
 						</div>
 					</div>
+				</section>
 
-					{/* Constants */}
-					<div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6">
-						<h3 className="text-sm font-medium text-white mb-4">Constants</h3>
-						<div className="space-y-2">
-							{[
-								{
-									name: "DIRHAM_UNICODE",
-									value: JSON.stringify(DIRHAM_UNICODE),
-								},
-								{ name: "DIRHAM_HTML_ENTITY", value: DIRHAM_HTML_ENTITY },
-								{ name: "DIRHAM_CSS_CONTENT", value: DIRHAM_CSS_CONTENT },
-								{ name: "DIRHAM_CURRENCY_CODE", value: DIRHAM_CURRENCY_CODE },
-								{ name: "DIRHAM_FONT_FAMILY", value: DIRHAM_FONT_FAMILY },
-							].map(({ name, value }) => (
-								<div
-									key={name}
-									className="flex items-center justify-between px-3 py-2 rounded-lg bg-neutral-950"
-								>
-									<span className="text-xs font-mono text-neutral-500">
-										{name}
-									</span>
-									<span className="text-sm font-mono text-white">{value}</span>
-								</div>
-							))}
-						</div>
-					</div>
-				</div>
+				<div className="h-px bg-gradient-to-r from-transparent via-neutral-800 to-transparent" />
 
-				{/* parseDirham */}
-				<div className="mt-6 bg-neutral-900 border border-neutral-800 rounded-2xl p-6">
-					<h3 className="text-sm font-medium text-white mb-4 flex items-center gap-2">
-						<code className="text-xs font-mono text-neutral-400 bg-neutral-950 px-2 py-1 rounded-md">
-							parseDirham()
-						</code>
-						<span className="text-xs text-neutral-600">
-							— parse a formatted string back to a number
-						</span>
-					</h3>
-					<div className="space-y-2">
-						{(
-							[
-								{
-									label: `parseDirham(formatDirham(1234.5))`,
-									value: parseDirham(formatDirham(1234.5)),
-								},
-								{
-									label: `parseDirham(formatDirham(100, { useCode: true }))`,
-									value: parseDirham(formatDirham(100, { useCode: true })),
-								},
-								{
-									label: `parseDirham(formatDirham(250, { locale: "ar-AE" }))`,
-									value: parseDirham(formatDirham(250, { locale: "ar-AE" })),
-								},
-							] as { label: string; value: number }[]
-						).map(({ label, value }) => (
-							<div
-								key={label}
-								className="flex items-center justify-between px-3 py-2 rounded-lg bg-neutral-950 gap-4"
-							>
-								<span className="text-xs font-mono text-neutral-500 truncate">
-									{label}
-								</span>
-								<span className="text-sm font-mono text-white shrink-0">
-									{value}
-								</span>
-							</div>
-						))}
-					</div>
-				</div>
-			</section>
+				{/* RTL Support */}
+				<section
+					id="rtl"
+					data-demo-fonts
+					className="max-w-6xl mx-auto px-8 pt-20 pb-16"
+				>
+					<SectionHeader
+						icon={Globe}
+						title="RTL / LTR"
+						description='The sign goes before the amount with a space, at the same height and weight as the digits; the CBUAE guidelines require it to the left of the number in digital interfaces. Arabic output puts it after the number in logical order, which displays on the left inside dir="rtl".'
+					/>
 
-			<div className="h-px bg-gradient-to-r from-transparent via-neutral-800 to-transparent" />
-
-			{/* RTL Support */}
-			<section className="max-w-6xl mx-auto px-8 pt-20 pb-16">
-				<SectionHeader
-					icon={Globe}
-					title="RTL / LTR"
-					description="First-class support for both text directions — essential for Arabic-speaking markets."
-				/>
-
-				<div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-					<div
-						className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6"
-						dir="ltr"
-					>
-						<p className="text-[10px] text-neutral-600 uppercase tracking-widest mb-3">
-							English — LTR
-						</p>
-						<DirhamText className="text-2xl text-white">
-							{formatDirham(250)}
-						</DirhamText>
-					</div>
-					<div
-						className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6"
-						dir="rtl"
-					>
-						<p className="text-[10px] text-neutral-600 uppercase tracking-widest mb-3">
-							العربية — RTL
-						</p>
-						<p
-							className="text-2xl text-white"
-							style={{ fontFamily: "'Vazirmatn', 'Cairo', sans-serif" }}
+					<div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+						<div
+							className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6"
+							dir="ltr"
 						>
-							<DirhamText>{formatDirham(250, { locale: "ar-AE" })}</DirhamText>
-						</p>
-					</div>
-				</div>
-			</section>
-
-			<div className="h-px bg-gradient-to-r from-transparent via-neutral-800 to-transparent" />
-
-			{/* Animated Price & Currency Input */}
-			<section className="max-w-6xl mx-auto px-8 pt-24 pb-20">
-				<SectionHeader
-					icon={Sparkles}
-					title="Interactive Components"
-					description="Animated price displays and formatted currency inputs for rich user experiences."
-					primary
-				/>
-				<div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-					<AnimatedPriceDemo />
-					<DirhamInputDemo />
-				</div>
-			</section>
-
-			<div className="h-px bg-gradient-to-r from-transparent via-neutral-800 to-transparent" />
-
-			{/* VAT & Currency Conversion */}
-			<section className="max-w-6xl mx-auto px-8 pt-24 pb-20">
-				<SectionHeader
-					icon={Calculator}
-					title="VAT & Currency Conversion"
-					description="Built-in UAE VAT calculations and live exchange rate conversions."
-					primary
-				/>
-				<div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-					<VATDemo />
-					<CurrencyConversionDemo />
-				</div>
-			</section>
-
-			<div className="h-px bg-gradient-to-r from-transparent via-neutral-800 to-transparent" />
-
-			{/* Clipboard API */}
-			<section className="max-w-6xl mx-auto px-8 pt-24 pb-20">
-				<SectionHeader
-					icon={Clipboard}
-					title="Clipboard API"
-					description="Copy the Dirham symbol or formatted amounts to the clipboard in multiple formats."
-				/>
-				<div className="max-w-xl mx-auto">
-					<ClipboardDemo />
-				</div>
-			</section>
-
-			<div className="h-px bg-gradient-to-r from-transparent via-neutral-800 to-transparent" />
-
-			{/* React Native */}
-			<section className="max-w-6xl mx-auto px-8 pt-24 pb-20">
-				<SectionHeader
-					icon={Smartphone}
-					title="React Native"
-					description="Native SVG-based components for iOS and Android — no webview or font loading needed."
-					primary
-				/>
-
-				<div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-					<div className="bg-neutral-900 border border-neutral-800 rounded-2xl overflow-hidden">
-						<div className="px-6 py-4 border-b border-neutral-800 flex items-center gap-2">
-							<h3 className="text-sm font-medium text-white">DirhamSymbol</h3>
-							<Badge variant="green">SVG</Badge>
-						</div>
-						<div className="p-6">
-							<p className="text-xs text-neutral-400 mb-4">
-								Renders the Dirham glyph as a native SVG path via <code className="text-xs font-mono text-neutral-300">react-native-svg</code>.
-								No font files required.
+							<p className="text-[10px] text-neutral-600 uppercase tracking-widest mb-3">
+								English — LTR
 							</p>
-							<CodeBlock
-								code={`import { DirhamSymbol } from "dirham/react-native";
+							<DirhamText className="text-2xl text-white">
+								{formatDirham(250)}
+							</DirhamText>
+						</div>
+						<div
+							className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6"
+							dir="rtl"
+						>
+							<p className="text-[10px] text-neutral-600 uppercase tracking-widest mb-3">
+								<span lang="ar">العربية</span> — RTL
+							</p>
+							<p
+								className="text-2xl text-white"
+								style={{ fontFamily: "'Vazirmatn', 'Cairo', sans-serif" }}
+							>
+								<DirhamText>{formatDirham(250, { locale: "ar-AE" })}</DirhamText>
+							</p>
+						</div>
+					</div>
+				</section>
+
+				<div className="h-px bg-gradient-to-r from-transparent via-neutral-800 to-transparent" />
+
+				{/* Animated Price & Currency Input */}
+				<section
+					id="interactive-components"
+					className="max-w-6xl mx-auto px-8 pt-24 pb-20"
+				>
+					<SectionHeader
+						icon={Sparkles}
+						title="Interactive Components"
+						description="Animated price displays and formatted currency inputs for rich user experiences."
+						primary
+					/>
+					<div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+						<AnimatedPriceDemo />
+						<DirhamInputDemo />
+					</div>
+				</section>
+
+				<div className="h-px bg-gradient-to-r from-transparent via-neutral-800 to-transparent" />
+
+				{/* VAT & Currency Conversion */}
+				<section
+					id="vat-currency-conversion"
+					className="max-w-6xl mx-auto px-8 pt-24 pb-20"
+				>
+					<SectionHeader
+						icon={Calculator}
+						title="VAT & Currency Conversion"
+						description="Built-in UAE VAT calculations and live exchange rate conversions."
+						primary
+					/>
+					<div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+						<VATDemo />
+						<CurrencyConversionDemo />
+					</div>
+				</section>
+
+				<div className="h-px bg-gradient-to-r from-transparent via-neutral-800 to-transparent" />
+
+				{/* Clipboard API */}
+				<section id="clipboard" className="max-w-6xl mx-auto px-8 pt-24 pb-20">
+					<SectionHeader
+						icon={Clipboard}
+						title="Clipboard API"
+						description="Copy the Dirham symbol or formatted amounts to the clipboard in multiple formats."
+					/>
+					<div className="max-w-xl mx-auto">
+						<ClipboardDemo />
+					</div>
+				</section>
+
+				<div className="h-px bg-gradient-to-r from-transparent via-neutral-800 to-transparent" />
+
+				{/* React Native */}
+				<section
+					id="react-native"
+					className="max-w-6xl mx-auto px-8 pt-24 pb-20"
+				>
+					<SectionHeader
+						icon={Smartphone}
+						title="React Native"
+						description="Native SVG-based components for iOS and Android — no webview or font loading needed."
+						primary
+					/>
+
+					<div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+						<div className="bg-neutral-900 border border-neutral-800 rounded-2xl overflow-hidden">
+							<div className="px-6 py-4 border-b border-neutral-800 flex items-center gap-2">
+								<h3 className="text-sm font-medium text-white">
+									DirhamSymbol for React Native
+								</h3>
+								<Badge variant="green">SVG</Badge>
+							</div>
+							<div className="p-6">
+								<p className="text-xs text-neutral-400 mb-4">
+									Renders the Dirham glyph as a native SVG path via <code className="text-xs font-mono text-neutral-300">react-native-svg</code>.
+									No font files required.
+								</p>
+								<CodeBlock
+									code={`import { DirhamSymbol } from "dirham/react-native";
 
 <DirhamSymbol />
 <DirhamSymbol size={32} color="#10b981" />
@@ -2506,39 +2684,41 @@ import { DirhamIcon } from "dirham/react";
   weight="light"
   accessibilityLabel="Dirham currency"
 />`}
-							/>
-							<div className="mt-4">
-								<p className="text-[10px] text-neutral-600 uppercase tracking-widest mb-2">Props</p>
-								<div className="space-y-1">
-									{[
-										{ prop: "size", type: "number", def: "24" },
-										{ prop: "color", type: "string", def: '"#000"' },
-										{ prop: "weight", type: "DirhamWeight", def: '"regular"' },
-										{ prop: "accessibilityLabel", type: "string", def: '"UAE Dirham"' },
-									].map(({ prop, type, def }) => (
-										<div key={prop} className="flex items-center justify-between px-3 py-1.5 rounded-lg bg-neutral-950">
-											<code className="text-xs font-mono text-neutral-400">{prop}</code>
-											<span className="text-[10px] text-neutral-600">
-												<code className="text-neutral-500">{type}</code> = <code className="text-neutral-400">{def}</code>
-											</span>
-										</div>
-									))}
+								/>
+								<div className="mt-4">
+									<p className="text-[10px] text-neutral-600 uppercase tracking-widest mb-2">Props</p>
+									<div className="space-y-1">
+										{[
+											{ prop: "size", type: "number", def: "24" },
+											{ prop: "color", type: "string", def: '"#000"' },
+											{ prop: "weight", type: "DirhamWeight", def: '"regular"' },
+											{ prop: "accessibilityLabel", type: "string", def: '"UAE Dirham"' },
+										].map(({ prop, type, def }) => (
+											<div key={prop} className="flex items-center justify-between px-3 py-1.5 rounded-lg bg-neutral-950">
+												<code className="text-xs font-mono text-neutral-400">{prop}</code>
+												<span className="text-[10px] text-neutral-600">
+													<code className="text-neutral-500">{type}</code> = <code className="text-neutral-400">{def}</code>
+												</span>
+											</div>
+										))}
+									</div>
 								</div>
 							</div>
 						</div>
-					</div>
 
-					<div className="bg-neutral-900 border border-neutral-800 rounded-2xl overflow-hidden">
-						<div className="px-6 py-4 border-b border-neutral-800 flex items-center gap-2">
-							<h3 className="text-sm font-medium text-white">DirhamPrice</h3>
-							<Badge variant="green">Native</Badge>
-						</div>
-						<div className="p-6">
-							<p className="text-xs text-neutral-400 mb-4">
-								Full price display with inline SVG symbol and <code className="text-xs font-mono text-neutral-300">formatDirham()</code> formatting.
-							</p>
-							<CodeBlock
-								code={`import { DirhamPrice } from "dirham/react-native";
+						<div className="bg-neutral-900 border border-neutral-800 rounded-2xl overflow-hidden">
+							<div className="px-6 py-4 border-b border-neutral-800 flex items-center gap-2">
+								<h3 className="text-sm font-medium text-white">
+									DirhamPrice for React Native
+								</h3>
+								<Badge variant="green">Native</Badge>
+							</div>
+							<div className="p-6">
+								<p className="text-xs text-neutral-400 mb-4">
+									Full price display with inline SVG symbol and <code className="text-xs font-mono text-neutral-300">formatDirham()</code> formatting.
+								</p>
+								<CodeBlock
+									code={`import { DirhamPrice } from "dirham/react-native";
 
 <DirhamPrice amount={1250} />
 <DirhamPrice amount={99.99} color="white" fontSize={24} />
@@ -2550,62 +2730,62 @@ import { DirhamIcon } from "dirham/react";
   color="#10b981"
   fontSize={20}
 />`}
-							/>
-							<div className="mt-4">
-								<p className="text-[10px] text-neutral-600 uppercase tracking-widest mb-2">Props</p>
-								<div className="space-y-1">
-									{[
-										{ prop: "amount", type: "number", def: "required" },
-										{ prop: "locale", type: "string", def: '"en-AE"' },
-										{ prop: "decimals", type: "number", def: "2" },
-										{ prop: "useCode", type: "boolean", def: "false" },
-										{ prop: "notation", type: "string", def: '"standard"' },
-										{ prop: "symbolSize", type: "number", def: "16" },
-										{ prop: "weight", type: "DirhamWeight", def: '"regular"' },
-										{ prop: "color", type: "string", def: '"#000"' },
-										{ prop: "fontSize", type: "number", def: "16" },
-									].map(({ prop, type, def }) => (
-										<div key={prop} className="flex items-center justify-between px-3 py-1.5 rounded-lg bg-neutral-950">
-											<code className="text-xs font-mono text-neutral-400">{prop}</code>
-											<span className="text-[10px] text-neutral-600">
-												<code className="text-neutral-500">{type}</code> = <code className="text-neutral-400">{def}</code>
-											</span>
-										</div>
-									))}
+								/>
+								<div className="mt-4">
+									<p className="text-[10px] text-neutral-600 uppercase tracking-widest mb-2">Props</p>
+									<div className="space-y-1">
+										{[
+											{ prop: "amount", type: "number", def: "required" },
+											{ prop: "locale", type: "string", def: '"en-AE"' },
+											{ prop: "decimals", type: "number", def: "2" },
+											{ prop: "useCode", type: "boolean", def: "false" },
+											{ prop: "notation", type: "string", def: '"standard"' },
+											{ prop: "symbolSize", type: "number", def: "16" },
+											{ prop: "weight", type: "DirhamWeight", def: '"regular"' },
+											{ prop: "color", type: "string", def: '"#000"' },
+											{ prop: "fontSize", type: "number", def: "16" },
+										].map(({ prop, type, def }) => (
+											<div key={prop} className="flex items-center justify-between px-3 py-1.5 rounded-lg bg-neutral-950">
+												<code className="text-xs font-mono text-neutral-400">{prop}</code>
+												<span className="text-[10px] text-neutral-600">
+													<code className="text-neutral-500">{type}</code> = <code className="text-neutral-400">{def}</code>
+												</span>
+											</div>
+										))}
+									</div>
 								</div>
 							</div>
 						</div>
 					</div>
-				</div>
 
-				<div className="bg-amber-900/20 border border-amber-800/40 rounded-xl p-4">
-					<div className="flex items-start gap-3">
-						<AlertTriangle size={16} className="text-amber-500 mt-0.5 shrink-0" />
-						<div className="text-xs text-amber-200/80">
-							<p className="font-medium mb-1">Peer dependency required</p>
-							<p className="text-amber-200/60">
-								React Native components require <code className="font-mono text-amber-300/80">react-native-svg</code> as a peer dependency.
-								Install it with: <code className="font-mono text-amber-300/80">npx expo install react-native-svg</code> (Expo)
-								or <code className="font-mono text-amber-300/80">npm install react-native-svg</code> (bare RN).
-							</p>
+					<div className="bg-amber-900/20 border border-amber-800/40 rounded-xl p-4">
+						<div className="flex items-start gap-3">
+							<AlertTriangle size={16} className="text-amber-500 mt-0.5 shrink-0" />
+							<div className="text-xs text-amber-200/80">
+								<p className="font-medium mb-1">Peer dependency required</p>
+								<p className="text-amber-200/60">
+									React Native components require <code className="font-mono text-amber-300/80">react-native-svg</code> as a peer dependency.
+									Install it with: <code className="font-mono text-amber-300/80">npx expo install react-native-svg</code> (Expo)
+									or <code className="font-mono text-amber-300/80">npm install react-native-svg</code> (bare RN).
+								</p>
+							</div>
 						</div>
 					</div>
-				</div>
-			</section>
+				</section>
 
-			<div className="h-px bg-gradient-to-r from-transparent via-neutral-800 to-transparent" />
+				<div className="h-px bg-gradient-to-r from-transparent via-neutral-800 to-transparent" />
 
-			{/* Next.js Integration */}
-			<section className="max-w-6xl mx-auto px-8 pt-24 pb-20">
-				<SectionHeader
-					icon={Layers}
-					title="Next.js Integration"
-					description="Zero-config font loading with next/font/local — automatic preloading, self-hosting, and no FOIT/FOUT."
-				/>
+				{/* Next.js Integration */}
+				<section id="nextjs" className="max-w-6xl mx-auto px-8 pt-24 pb-20">
+					<SectionHeader
+						icon={Layers}
+						title="Next.js Integration"
+						description="A preconfigured next/font/local loader: Next.js self-hosts and preloads the Dirham font and exposes it as the --font-dirham CSS variable."
+					/>
 
-				<div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6">
-					<CodeBlock
-						code={`// app/layout.tsx
+					<div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6">
+						<CodeBlock
+							code={`// app/layout.tsx
 import { dirhamFont } from "dirham/next";
 
 export default function RootLayout({ children }) {
@@ -2619,81 +2799,84 @@ export default function RootLayout({ children }) {
 // In any component:
 import { dirhamFont } from "dirham/next";
 
-<span className={dirhamFont.className}>ৃ 1,250.00</span>
-<span className="font-[family-name:var(--font-dirham)]">ৃ</span>`}
+<span className={dirhamFont.className}>${DIRHAM_HTML_ENTITY}</span>&nbsp;1,250.00
+<span className="font-[family-name:var(--font-dirham)]">${DIRHAM_HTML_ENTITY}</span>`}
+						/>
+					</div>
+				</section>
+
+				<div className="h-px bg-gradient-to-r from-transparent via-neutral-800 to-transparent" />
+
+				{/* Tailwind CSS Plugin */}
+				<section id="tailwind" className="max-w-6xl mx-auto px-8 pt-24 pb-20">
+					<SectionHeader
+						icon={Paintbrush}
+						title="Tailwind CSS Plugin"
+						description="Utility classes for the Dirham symbol — weights, sizes, and pseudo-element helpers."
 					/>
-				</div>
-			</section>
 
-			<div className="h-px bg-gradient-to-r from-transparent via-neutral-800 to-transparent" />
-
-			{/* Tailwind CSS Plugin */}
-			<section className="max-w-6xl mx-auto px-8 pt-24 pb-20">
-				<SectionHeader
-					icon={Paintbrush}
-					title="Tailwind CSS Plugin"
-					description="Utility classes for the Dirham symbol — weights, sizes, and pseudo-element helpers."
-				/>
-
-				<div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-					<div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6">
-						<h3 className="text-sm font-medium text-white mb-4">Setup</h3>
-						<CodeBlock
-							code={`// tailwind.config.ts
+					<div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+						<div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6">
+							<h3 className="text-sm font-medium text-white mb-4">Setup</h3>
+							<CodeBlock
+								code={`// tailwind.config.ts
 import dirhamPlugin from "dirham/tailwind";
 
 export default {
   plugins: [dirhamPlugin],
 };`}
-						/>
-					</div>
-
-					<div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6">
-						<h3 className="text-sm font-medium text-white mb-4">Classes</h3>
-						<div className="space-y-2 mb-4">
-							{[
-								{ cls: ".dirham", desc: "Base — sets font-family" },
-								{ cls: ".dirham-bold", desc: "Weight utility" },
-								{ cls: ".dirham-lg", desc: "Size utility (1.125rem)" },
-								{ cls: ".dirham-before", desc: "Prepend symbol via ::before" },
-								{ cls: ".dirham-after", desc: "Append symbol via ::after" },
-								{ cls: ".dirham-price", desc: "Price component (nowrap)" },
-							].map(({ cls, desc }) => (
-								<div key={cls} className="flex items-center justify-between px-3 py-2 rounded-lg bg-neutral-950">
-									<code className="text-xs font-mono text-emerald-400">{cls}</code>
-									<span className="text-[10px] text-neutral-500">{desc}</span>
-								</div>
-							))}
+							/>
 						</div>
-						<CodeBlock
-							code={`<span class="dirham">ৃ</span>
-<span class="dirham dirham-bold dirham-2xl">ৃ</span>
+
+						<div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6">
+							<h3 className="text-sm font-medium text-white mb-4">Classes</h3>
+							<div className="space-y-2 mb-4">
+								{[
+									{ cls: ".dirham", desc: "Base — sets font-family" },
+									{ cls: ".dirham-bold", desc: "Weight utility" },
+									{ cls: ".dirham-lg", desc: "Size utility (1.125rem)" },
+									{ cls: ".dirham-before", desc: "Prepend symbol via ::before" },
+									{ cls: ".dirham-after", desc: "Append symbol via ::after" },
+									{ cls: ".dirham-price", desc: "Price component (nowrap)" },
+								].map(({ cls, desc }) => (
+									<div key={cls} className="flex items-center justify-between px-3 py-2 rounded-lg bg-neutral-950">
+										<code className="text-xs font-mono text-emerald-400">{cls}</code>
+										<span className="text-[10px] text-neutral-500">{desc}</span>
+									</div>
+								))}
+							</div>
+							<CodeBlock
+								code={`<span class="dirham">${DIRHAM_HTML_ENTITY}</span>
+<span class="dirham dirham-bold dirham-2xl">${DIRHAM_HTML_ENTITY}</span>
 <span class="dirham-before">1,234.50</span>
 <span class="dirham-after">1,234.50</span>`}
-							lang="html"
-						/>
-					</div>
-				</div>
-			</section>
-
-			<div className="h-px bg-gradient-to-r from-transparent via-neutral-800 to-transparent" />
-
-			{/* Web Components — Input & Animated */}
-			<section className="max-w-6xl mx-auto px-8 pt-24 pb-20">
-				<SectionHeader
-					icon={Code2}
-					title="Web Components — Input & Animated"
-					description="Framework-agnostic custom elements for currency input and animated price displays."
-				/>
-
-				<div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-					<div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6">
-						<div className="flex items-center gap-2 mb-4">
-							<h3 className="text-sm font-medium text-white">&lt;dirham-input&gt;</h3>
-							<Badge variant="green">Custom Element</Badge>
+								lang="html"
+							/>
 						</div>
-						<CodeBlock
-							code={`<script type="module">
+					</div>
+				</section>
+
+				<div className="h-px bg-gradient-to-r from-transparent via-neutral-800 to-transparent" />
+
+				{/* Web Components — Input & Animated */}
+				<section
+					id="web-components"
+					className="max-w-6xl mx-auto px-8 pt-24 pb-20"
+				>
+					<SectionHeader
+						icon={Code2}
+						title="Web Components — Input & Animated"
+						description="Framework-agnostic custom elements for currency input and animated price displays."
+					/>
+
+					<div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+						<div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6">
+							<div className="flex items-center gap-2 mb-4">
+								<h3 className="text-sm font-medium text-white">&lt;dirham-input&gt;</h3>
+								<Badge variant="green">Custom Element</Badge>
+							</div>
+							<CodeBlock
+								code={`<script type="module">
   import "dirham/web-component";
 </script>
 
@@ -2707,17 +2890,17 @@ export default {
       console.log("New value:", e.detail.value);
     });
 </script>`}
-							lang="html"
-						/>
-					</div>
-
-					<div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6">
-						<div className="flex items-center gap-2 mb-4">
-							<h3 className="text-sm font-medium text-white">&lt;dirham-animated-price&gt;</h3>
-							<Badge variant="green">Custom Element</Badge>
+								lang="html"
+							/>
 						</div>
-						<CodeBlock
-							code={`<script type="module">
+
+						<div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6">
+							<div className="flex items-center gap-2 mb-4">
+								<h3 className="text-sm font-medium text-white">&lt;dirham-animated-price&gt;</h3>
+								<Badge variant="green">Custom Element</Badge>
+							</div>
+							<CodeBlock
+								code={`<script type="module">
   import "dirham/web-component";
 </script>
 
@@ -2733,47 +2916,45 @@ export default {
   notation="compact"
   decimals="0"
 ></dirham-animated-price>`}
-							lang="html"
-						/>
+								lang="html"
+							/>
+						</div>
 					</div>
-				</div>
-			</section>
+				</section>
 
-			<div className="h-px bg-gradient-to-r from-transparent via-neutral-800 to-transparent" />
+				<div className="h-px bg-gradient-to-r from-transparent via-neutral-800 to-transparent" />
 
-			{/* CLI */}
-			<section className="max-w-6xl mx-auto px-8 pt-24 pb-20">
-				<SectionHeader
-					icon={TerminalSquare}
-					title="CLI"
-					description="Copy the Dirham symbol from your terminal. Works on macOS and Linux."
-				/>
+				{/* CLI */}
+				<section id="cli" className="max-w-6xl mx-auto px-8 pt-24 pb-20">
+					<SectionHeader
+						icon={TerminalSquare}
+						title="CLI"
+						description="Print the sign's code point and escapes, or copy one of them from your terminal. Copying uses pbcopy on macOS, xclip or xsel on Linux and clip on Windows."
+					/>
 
-				<div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6">
-					<CodeBlock
-						code={`# Print symbol info
+					<div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6">
+						<CodeBlock
+							code={`# Print the code point, escapes and ISO code
 npx dirham
 
-# Copy symbol to clipboard
+# Copy the character U+20C3 to the clipboard
 npx dirham copy
 
-# Copy as HTML entity
+# Copy ${DIRHAM_HTML_ENTITY} (also: css, js, arabic, code)
 npx dirham copy html
-
-# Copy as CSS content value
-npx dirham copy css
 
 # Show help
 npx dirham --help`}
-						lang="bash"
-					/>
-				</div>
-			</section>
+							lang="bash"
+						/>
+					</div>
+				</section>
 
-			<div className="h-px bg-gradient-to-r from-transparent via-neutral-800 to-transparent" />
+				<div className="h-px bg-gradient-to-r from-transparent via-neutral-800 to-transparent" />
 
-			{/* OG / Social Media Price Cards */}
-			<OGPriceCardSection />
+				{/* OG / Social Media Price Cards */}
+				<OGPriceCardSection />
+			</main>
 
 			{/* Footer */}
 			<footer className="border-t border-neutral-800/60">
@@ -2782,12 +2963,37 @@ npx dirham --help`}
 						{/* Brand */}
 						<div>
 							<div className="flex items-center gap-2.5 mb-3">
-								<DirhamIcon size={20} color="white" />
+								<DirhamIcon size={20} color="white" aria-hidden="true" />
 								<span className="font-semibold text-white text-sm">dirham</span>
 							</div>
 							<p className="text-xs text-neutral-500 leading-relaxed">
-								The official UAE Dirham currency symbol for the web. Built on
-								Unicode 18.0 codepoint U+20C3.
+								Open-source (MIT) toolkit for the UAE Dirham sign (U+20C3).
+								Maintained by{" "}
+								<a
+									href={MAINTAINER.url}
+									rel="author"
+									className="text-neutral-400 hover:text-white transition-colors"
+								>
+									{MAINTAINER.name}
+								</a>
+								. Not affiliated with the Central Bank of the UAE or the Unicode
+								Consortium.
+							</p>
+							<p className="mt-3 text-xs text-neutral-500 leading-relaxed">
+								More from the maintainer:{" "}
+								<a
+									href={MAINTAINER.url}
+									className="text-neutral-400 hover:text-white transition-colors"
+								>
+									pooyagolchian.com
+								</a>{" "}
+								·{" "}
+								<a
+									href={MAINTAINER.aidlcUrl}
+									className="text-neutral-400 hover:text-white transition-colors"
+								>
+									AIDLC: the AI Development Life Cycle
+								</a>
 							</p>
 						</div>
 
@@ -2814,6 +3020,14 @@ npx dirham --help`}
 									GitHub
 								</a>
 								<a
+									href="https://github.com/pooyagolchian/dirham/blob/main/packages/dirham-symbol/CHANGELOG.md"
+									target="_blank"
+									rel="noreferrer noopener"
+									className="block text-sm text-neutral-500 hover:text-white transition-colors"
+								>
+									Changelog
+								</a>
+								<a
 									href="https://github.com/pooyagolchian/dirham/blob/main/CONTRIBUTING.md"
 									target="_blank"
 									rel="noreferrer noopener"
@@ -2821,25 +3035,65 @@ npx dirham --help`}
 								>
 									Contributing
 								</a>
+								<a
+									href="/llms.txt"
+									className="block text-sm text-neutral-500 hover:text-white transition-colors"
+								>
+									llms.txt
+								</a>
+								<a
+									href="/llms-full.txt"
+									className="block text-sm text-neutral-500 hover:text-white transition-colors"
+								>
+									Full reference (Markdown)
+								</a>
 							</div>
 						</div>
 
-						{/* Project */}
+						{/* Sources */}
 						<div>
 							<p className="text-[10px] text-neutral-600 uppercase tracking-widest mb-3">
-								Project
+								Sources
 							</p>
 							<div className="space-y-2 text-sm text-neutral-500">
-								<p>MIT License</p>
-								<p>Unicode 18.0 · U+20C3</p>
 								<a
-									href="https://www.centralbank.ae/en/our-operations/currency-and-coins/"
+									href={SOURCES.unicode18}
 									target="_blank"
 									rel="noreferrer noopener"
 									className="block hover:text-white transition-colors"
 								>
-									Central Bank of UAE
+									Unicode 18.0
 								</a>
+								<a
+									href={SOURCES.chart}
+									target="_blank"
+									rel="noreferrer noopener"
+									className="block hover:text-white transition-colors"
+								>
+									Unicode chart U+20A0–U+20CF (PDF)
+								</a>
+								<a
+									href={SOURCES.cbuaePressRelease}
+									target="_blank"
+									rel="noreferrer noopener"
+									className="block hover:text-white transition-colors"
+								>
+									CBUAE press release (PDF)
+								</a>
+								<a
+									href={SOURCES.cbuaeGuidelines}
+									target="_blank"
+									rel="noreferrer noopener"
+									className="block hover:text-white transition-colors"
+								>
+									CBUAE symbol guidelines (PDF)
+								</a>
+								<p>
+									Facts last verified{" "}
+									<time dateTime={LAST_VERIFIED.iso}>
+										{LAST_VERIFIED.label}
+									</time>
+								</p>
 							</div>
 						</div>
 					</div>

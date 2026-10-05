@@ -27,7 +27,7 @@
  *
  * Or with Tailwind:
  * ```tsx
- * <span className={`${dirhamFont.className} text-2xl`}>ৃ</span>
+ * <span className={`${dirhamFont.className} text-2xl`}>&#x20C3;</span>
  * ```
  */
 

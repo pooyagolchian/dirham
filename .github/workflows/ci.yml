@@ -33,8 +33,14 @@ jobs:
             - name: Install dependencies
               run: pnpm install --frozen-lockfile
 
+            - name: Check README and LICENSE are in sync
+              run: node scripts/sync-readme.mjs --check
+
             - name: Build
               run: pnpm build
+
+            - name: Check docs against facts and real output
+              run: node scripts/check-docs.mjs
 
             - name: Lint
               run: pnpm lint
