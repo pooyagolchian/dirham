@@ -108,6 +108,8 @@ export function DirhamPriceCard({
 					height={64}
 					viewBox="0 0 1000 870"
 					style={{ flexShrink: 0 }}
+					role="img"
+					aria-label="UAE Dirham"
 				>
 					<path d={DIRHAM_SVG_PATH} fill={accentColor} />
 				</svg>

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { generatePriceCardSVG, type PriceCardSVGOptions } from "../generatePriceCardSVG";
+import { generatePriceCardSVG } from "../generatePriceCardSVG";
 
 describe("generatePriceCardSVG", () => {
 	it("returns a valid SVG string with default options", () => {
@@ -21,7 +21,10 @@ describe("generatePriceCardSVG", () => {
 	});
 
 	it("renders subtitle when provided", () => {
-		const svg = generatePriceCardSVG({ amount: 50, subtitle: "Due by Dec 2026" });
+		const svg = generatePriceCardSVG({
+			amount: 50,
+			subtitle: "Due by Dec 2026",
+		});
 		expect(svg).toContain("Due by Dec 2026");
 	});
 
@@ -83,7 +86,10 @@ describe("generatePriceCardSVG", () => {
 	});
 
 	it("escapes HTML in title", () => {
-		const svg = generatePriceCardSVG({ amount: 1, title: '<script>alert("xss")</script>' });
+		const svg = generatePriceCardSVG({
+			amount: 1,
+			title: '<script>alert("xss")</script>',
+		});
 		expect(svg).not.toContain("<script>");
 		expect(svg).toContain("&lt;script&gt;");
 	});
