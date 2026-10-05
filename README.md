@@ -122,6 +122,8 @@ body {
 }
 ```
 
+Keep the Dirham family before any generic family such as `sans-serif`, `serif`, `monospace` or `system-ui`. Chrome resolves a generic family to a system font and draws that font's missing-glyph box for U+20C3 instead of trying the families listed after it.
+
 ```html
 <p>Total: &#x20C3;&nbsp;1,234.50</p>
 ```
@@ -607,7 +609,7 @@ More answers (keyboards, Excel and Word, React): https://dirham.js.org/#faq
 
 MIT. See [LICENSE](https://github.com/pooyagolchian/dirham/blob/main/LICENSE).
 
-The symbol artwork comes from the Central Bank of the UAE: [`dirham.svg`](https://github.com/pooyagolchian/dirham/blob/main/dirham.svg) in this repository is the official CBUAE SVG, and the font and component outlines are traced from it. dirham is an independent open-source project and is not affiliated with the CBUAE. Maintained by [Pooya Golchian](https://pooyagolchian.com/).
+The symbol artwork comes from the Central Bank of the UAE: [`dirham.svg`](https://github.com/pooyagolchian/dirham/blob/main/dirham.svg) in this repository is the official CBUAE SVG, and the font and component outlines are traced from it. dirham is an independent open-source project and is not affiliated with the CBUAE. Maintained by [Pooya Golchian](https://pooyagolchian.com/) · See also [AIDLC, the AI Development Life Cycle](https://pooyagolchian.com/aidlc/).
 
 Sources: [CBUAE announcement, 27 March 2025](https://centralbank.ae/media/ckkp3s3f/cbuae-unveils-new-dirham-symbol-en.pdf) · [CBUAE Dirham Currency Symbol Guidelines v1.0](https://centralbank.ae/media/e4ebcgtb/the_guidelines_for_the_national_currency_symbol_uae_dirham_english.pdf) · [Unicode 18.0.0](https://www.unicode.org/versions/Unicode18.0.0/) · [Currency Symbols chart, U+20A0–U+20CF](https://www.unicode.org/charts/PDF/U20A0.pdf) · [UTC #184 minutes, decision 184-C17](https://www.unicode.org/L2/L2025/25181.htm#184-C17)
 <!-- sync:package-readme:end -->

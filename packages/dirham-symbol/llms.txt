@@ -2,7 +2,7 @@
 
 > dirham is an MIT-licensed npm package for showing and formatting the UAE Dirham sign, U+20C3 UAE DIRHAM SIGN, on the web: a web font mapped to U+20C3, inline SVG components for React and React Native, Web Components (`<dirham-symbol>`, `<dirham-price>`, `<dirham-animated-price>`, `<dirham-input>`), a Tailwind CSS plugin, a Next.js font helper, Open Graph price-card images, and AED formatting, VAT and currency-conversion helpers.
 
-Last verified: 5 October 2026. Maintainer: Pooya Golchian (https://github.com/pooyagolchian). dirham is an independent open-source project and is not affiliated with the Central Bank of the UAE.
+Last verified: 5 October 2026. Maintainer: Pooya Golchian (https://pooyagolchian.com/). dirham is an independent open-source project and is not affiliated with the Central Bank of the UAE.
 
 The UAE Dirham sign is the official currency symbol of the UAE dirham (AED). The Central Bank of the UAE unveiled it on 27 March 2025, and Unicode 18.0, released on 16 September 2026, encodes it as U+20C3. As of October 2026, mainstream system fonts (Apple's San Francisco, Google's Noto and Roboto) don't include it yet, so this package ships a small web font that loads only for U+20C3, plus SVG components, so the sign renders today. Once your users' system fonts include U+20C3, you can drop the web font without changing any code.
 
