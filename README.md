@@ -306,22 +306,18 @@ pnpm format
 
 ## Publishing
 
-Publish from the package directory, not the monorepo root.
+Releases are published from GitHub Actions using [npm trusted publishing](https://docs.npmjs.com/trusted-publishers) (OIDC), so no npm token is needed. Each release also gets a provenance attestation.
 
 ```bash
-# 1. Build
-cd packages/dirham-symbol
-pnpm build
+# 1. Describe your change (pick the bump type when prompted)
+pnpm changeset
 
-# 2. Set your npm auth token
-npm config set //registry.npmjs.org/:_authToken <your-token>
-
-# 3. Dry run
-npm pack --dry-run
-
-# 4. Publish
-npm publish --access public
+# 2. Commit the generated .changeset/*.md file and merge to main
 ```
+
+The [Publish workflow](./.github/workflows/publish.yml) then opens a `chore: version packages` PR, and merging it publishes the new version to npm. If no changesets are pending, any version in `packages/dirham-symbol/package.json` that isn't on npm yet is published as `latest`.
+
+Opening that PR requires **Allow GitHub Actions to create and approve pull requests** under the repo's Settings → Actions → General.
 
 The monorepo root `package.json` is marked `private: true` to prevent accidental publishing.
 
