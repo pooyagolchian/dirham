@@ -4,15 +4,15 @@ import { type FormatDirhamOptions, formatDirham } from "./format";
  * Copy a formatted Dirham amount to the clipboard.
  *
  * Combines `formatDirham()` with the Clipboard API so users can
- * paste a fully formatted price (e.g. "ৃ 1,234.50") into documents.
+ * paste a fully formatted price (e.g. "\u{20C3}\u{A0}1,234.50") into documents.
  *
  * @example
  * ```ts
  * import { copyDirhamAmount } from "dirham";
  *
- * await copyDirhamAmount(1234.5);                      // copies "ৃ 1,234.50"
- * await copyDirhamAmount(1234.5, { useCode: true });   // copies "AED 1,234.50"
- * await copyDirhamAmount(500, { locale: "ar-AE" });    // copies "500.00 ৃ"
+ * await copyDirhamAmount(1234.5);                      // copies "\u{20C3}\u{A0}1,234.50"
+ * await copyDirhamAmount(1234.5, { useCode: true });   // copies "AED\u{A0}1,234.50"
+ * await copyDirhamAmount(500, { locale: "ar-AE" });    // copies "500.00\u{A0}\u{20C3}"
  * ```
  *
  * @returns A promise that resolves when the text is on the clipboard.

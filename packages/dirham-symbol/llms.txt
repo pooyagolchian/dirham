@@ -1,19 +1,26 @@
 # dirham
 
-> UAE Dirham (د.إ) currency symbol as a web font, CSS, React component, and Web Component for Vue, Angular, Svelte & vanilla JS — built on the official Unicode 18.0 codepoint U+20C3.
+> dirham is an MIT-licensed npm package for showing and formatting the UAE Dirham sign, U+20C3 UAE DIRHAM SIGN, on the web: a web font mapped to U+20C3, inline SVG components for React and React Native, Web Components (`<dirham-symbol>`, `<dirham-price>`, `<dirham-animated-price>`, `<dirham-input>`), a Tailwind CSS plugin, a Next.js font helper, Open Graph price-card images, and AED formatting, VAT and currency-conversion helpers.
 
-## Overview
+Last verified: 5 October 2026. Maintainer: Pooya Golchian (https://github.com/pooyagolchian). dirham is an independent open-source project and is not affiliated with the Central Bank of the UAE.
 
-The `dirham` npm package provides the UAE Dirham currency symbol (U+20C3) for use in web applications. It ships a custom web font, CSS, SCSS, React components, framework-agnostic Web Components (`<dirham-symbol>` and `<dirham-price>`), and JavaScript/TypeScript utilities for formatting and parsing Dirham amounts. The Web Components work natively in Vue, Angular, Svelte, and any JavaScript framework — no wrappers needed.
+The UAE Dirham sign is the official currency symbol of the UAE dirham (AED). The Central Bank of the UAE unveiled it on 27 March 2025, and Unicode 18.0, released on 16 September 2026, encodes it as U+20C3. As of October 2026, mainstream system fonts (Apple's San Francisco, Google's Noto and Roboto) don't include it yet, so this package ships a small web font that loads only for U+20C3, plus SVG components, so the sign renders today. Once your users' system fonts include U+20C3, you can drop the web font without changing any code.
 
-The glyph is sourced from the Central Bank of UAE and mapped to the official Unicode 18.0 codepoint U+20C3 (UAE DIRHAM SIGN), approved by the Unicode Technical Committee on 2025-Jul-22. When OS/browser fonts adopt Unicode 18.0 (expected September 2026), the web font gracefully becomes unnecessary with zero migration needed.
+Accepted by the Unicode Technical Committee on 22 July 2025 (UTC #184, decision 184-C17) and published in Unicode 18.0 on 16 September 2026. The symbol artwork comes from the Central Bank of the UAE: dirham.svg in the GitHub repository is the official CBUAE SVG, and the font and component outlines are traced from it.
+
+Naming: the UAE Dirham sign is the Unicode character U+20C3. د.إ is the Arabic abbreviation of درهم إماراتي (Emirati dirham), and AED is the ISO 4217 code (numeric 784, 2 decimal places); neither is the sign.
 
 ## Links
 
-- Live Demo: https://dirham.js.org/
-- npm: https://www.npmjs.com/package/dirham
-- GitHub: https://github.com/pooyagolchian/dirham
-- License: MIT
+- [Live demo and docs](https://dirham.js.org/)
+- [npm](https://www.npmjs.com/package/dirham)
+- [GitHub](https://github.com/pooyagolchian/dirham)
+- [Unicode 18.0.0](https://www.unicode.org/versions/Unicode18.0.0/)
+- [Unicode Currency Symbols chart, U+20A0–U+20CF](https://www.unicode.org/charts/PDF/U20A0.pdf)
+- [UTC #184 minutes, decision 184-C17](https://www.unicode.org/L2/L2025/25181.htm#184-C17)
+- [CBUAE announcement, 27 March 2025](https://centralbank.ae/media/ckkp3s3f/cbuae-unveils-new-dirham-symbol-en.pdf)
+- [CBUAE Dirham Currency Symbol Guidelines v1.0](https://centralbank.ae/media/e4ebcgtb/the_guidelines_for_the_national_currency_symbol_uae_dirham_english.pdf)
+- [License (MIT)](https://github.com/pooyagolchian/dirham/blob/main/LICENSE)
 
 ## Installation
 
@@ -33,6 +40,7 @@ yarn add dirham
 | `dirham/web-component` | Framework-agnostic `<dirham-symbol>`, `<dirham-price>`, `<dirham-animated-price>`, `<dirham-input>` custom elements |
 | `dirham/tailwind` | Tailwind CSS plugin with utility classes (dirham-bold, dirham-sm, etc.) |
 | `dirham/next` | Next.js font optimization (dirhamFont, dirhamFontConfig) |
+| `dirham/og` | Open Graph / social price cards (DirhamPriceCard for next/og, generatePriceCardSVG) |
 | `dirham/css` | CSS with @font-face for the Dirham web font |
 | `dirham/scss` | SCSS with @font-face for the Dirham web font |
 | `dirham/font/woff2` | WOFF2 font file |
@@ -62,6 +70,8 @@ Props:
 
 Weight values: thin, extralight, light, regular, medium, semibold, bold, extrabold, black
 
+`dirham/react` also exports components that use React hooks, so with React Server Components (for example the Next.js App Router), import it in a Client Component (a file that starts with `"use client"`).
+
 ### DirhamPrice
 
 All-in-one price display component. Renders the SVG symbol inline with a formatted amount.
@@ -75,11 +85,11 @@ import { DirhamPrice } from "dirham/react";
 
 Props:
 - `amount`: number (required) — the numeric value to display
-- `locale`: string (default: "en-AE") — locale for number formatting
+- `locale`: string (default: "en-AE") — locale for number formatting; `ar-*` locales put the symbol after the amount and set `dir="rtl"`
 - `decimals`: number (default: 2) — decimal places
 - `useCode`: boolean (default: false) — show "AED" text instead of symbol
 - `notation`: "standard" | "compact" (default: "standard") — compact shows K/M/B
-- `symbolSize`: number | string (default: "0.75em") — size of the inline symbol
+- `symbolSize`: number | string (default: "1em") — size of the inline symbol
 - `weight`: DirhamWeight (default: "regular") — symbol weight
 
 ### AnimatedDirhamPrice
@@ -111,7 +121,7 @@ import { DirhamInput } from "dirham/react";
 Props:
 - `value`: number | undefined — controlled value
 - `defaultValue`: number — initial value (uncontrolled mode)
-- `onChange`: (value: number | null) => void — called on value change
+- `onChange`: (value: number | undefined) => void — called on value change; `undefined` when the input is cleared
 - `locale`: string (default: "en-AE") — locale for formatting
 - `decimals`: number (default: 2) — max decimal places
 - `min` / `max`: number — value clamping on blur
@@ -132,8 +142,8 @@ Returns:
 - `rate`: number | undefined — current exchange rate
 - `loading`: boolean — fetch in progress
 - `error`: string | undefined — error message
-- `convert(amount)`: number — convert AED to target currency
-- `convertBack(amount)`: number — convert target currency to AED
+- `convert(amount)`: number | undefined — convert AED to target currency (undefined until the rate has loaded)
+- `convertBack(amount)`: number | undefined — convert target currency to AED
 - `refetch()`: void — clear cache and re-fetch
 
 ### DirhamIcon
@@ -159,44 +169,48 @@ Props:
 
 ```ts
 import {
-  DIRHAM_UNICODE,        // "\u20C3" — the Unicode character
+  DIRHAM_UNICODE,        // "\u20C3" — the U+20C3 character
   DIRHAM_CODEPOINT,      // 0x20C3 — numeric codepoint
-  DIRHAM_HTML_ENTITY,    // "&#x20C3;" — HTML entity
+  DIRHAM_HTML_ENTITY,    // "&#x20C3;" — HTML numeric character reference
   DIRHAM_CSS_CONTENT,    // "\\20C3" — for CSS pseudo-elements
   DIRHAM_CURRENCY_CODE,  // "AED" — ISO 4217 code
-  DIRHAM_SYMBOL_TEXT,    // "د.إ" — Arabic text representation
-  DIRHAM_FONT_FAMILY,    // Font family name for the web font
+  DIRHAM_SYMBOL_TEXT,    // "د.إ" — the Arabic abbreviation (not the U+20C3 sign)
+  DIRHAM_FONT_FAMILY,    // "Dirham" — font family name for the web font
 } from "dirham";
 ```
 
 ### formatDirham(amount, options?)
 
-Format a number as a Dirham currency string.
+Format a number as a Dirham currency string. `Intl.NumberFormat` prints `AED` or `د.إ.` for AED and never U+20C3, so `formatDirham` inserts the sign itself, followed by a no-break space. The outputs below are JavaScript strings: `\u{20C3}` is the sign and `\u{A0}` is the no-break space.
 
 ```ts
-formatDirham(1234.5);                          // "د.إ 1,234.50"
-formatDirham(1234.5, { locale: "ar-AE" });     // "١٬٢٣٤٫٥٠ د.إ"
-formatDirham(100, { useCode: true });          // "AED 100.00"
-formatDirham(100, { decimals: 0 });            // "د.إ 100"
-formatDirham(100, { symbolFirst: false });     // "100.00 د.إ"
-formatDirham(5000000, { notation: "compact" }); // "د.إ 5M"
+formatDirham(1234.5);                            // "\u{20C3}\u{A0}1,234.50"
+formatDirham(1234.5, { locale: "ar-AE" });       // "1,234.50\u{A0}\u{20C3}" (Latin digits)
+formatDirham(1234.5, { locale: "ar-AE-u-nu-arab" }); // "١٬٢٣٤٫٥٠\u{A0}\u{20C3}" (Arabic-Indic digits)
+formatDirham(100, { useCode: true });            // "AED\u{A0}100.00"
+formatDirham(100, { decimals: 0 });              // "\u{20C3}\u{A0}100"
+formatDirham(100, { symbolFirst: false });       // "100.00\u{A0}\u{20C3}"
+formatDirham(5000000, { notation: "compact" });  // "\u{20C3}\u{A0}5M"
 ```
 
 Options:
 - `locale`: string (default: "en-AE") — locale for number formatting
 - `decimals`: number (default: 2) — decimal places
-- `symbolFirst`: boolean — symbol placement (auto-detected from locale if omitted)
+- `symbolFirst`: boolean — symbol placement (default: after the amount for `ar-*` locales, before it otherwise)
 - `useCode`: boolean (default: false) — use "AED" instead of symbol
-- `separator`: string (default: non-breaking space) — between symbol and amount
+- `separator`: string (default: no-break space, U+00A0) — between symbol and amount
 - `notation`: "standard" | "compact" (default: "standard") — compact uses K/M/B abbreviations
+
+Placement: the CBUAE guidelines put the sign before the amount, separated by a space, and say to use either the sign or AED, never both. Arabic locales put the sign after the number in logical order; inside a `dir="rtl"` container it displays to the left of the amount.
 
 ### parseDirham(formatted)
 
 Parse a formatted Dirham string back to a number.
 
 ```ts
-parseDirham("د.إ 1,234.50");  // 1234.5
-parseDirham("AED 100.00");    // 100
+parseDirham("\u{20C3}\u{A0}1,234.50"); // 1234.5
+parseDirham("AED 100.00");             // 100
+parseDirham("د.إ 1,234.50");           // 1234.5 (also accepts the Arabic abbreviation)
 ```
 
 ### copyDirhamSymbol(format?)
@@ -208,19 +222,19 @@ import { copyDirhamSymbol } from "dirham";
 await copyDirhamSymbol();          // copies "\u20C3" (unicode)
 await copyDirhamSymbol("html");    // copies "&#x20C3;"
 await copyDirhamSymbol("css");     // copies "\\20C3"
-await copyDirhamSymbol("arabic");  // copies "د.إ"
+await copyDirhamSymbol("arabic");  // copies "د.إ" (the Arabic abbreviation, not the sign)
 ```
 
 Formats: `"unicode"` (default), `"html"`, `"css"`, `"arabic"`
 
 ### copyDirhamAmount(amount, options?)
 
-Copy a formatted Dirham amount to the clipboard.
+Copy a formatted Dirham amount to the clipboard. It copies exactly what `formatDirham` returns.
 
 ```ts
 import { copyDirhamAmount } from "dirham";
-await copyDirhamAmount(1234.5);                    // copies "د.إ 1,234.50"
-await copyDirhamAmount(1234.5, { useCode: true }); // copies "AED 1,234.50"
+await copyDirhamAmount(1234.5);                    // copies "\u{20C3}\u{A0}1,234.50"
+await copyDirhamAmount(1234.5, { useCode: true }); // copies "AED\u{A0}1,234.50"
 ```
 
 ### VAT Helpers
@@ -246,7 +260,7 @@ Convert between AED and other currencies. Rates fetched from open.er-api.com (no
 import { convertFromAED, convertToAED, fetchExchangeRates, clearRateCache } from "dirham";
 const usd = await convertFromAED(100, "USD");
 const aed = await convertToAED(27.23, "USD");
-const manual = await convertFromAED(100, "USD", { rate: 0.2723 }); // skip fetch
+const manual = await convertFromAED(100, "USD", { rate: 0.2723 }); // 27.23, no network request
 const rates = await fetchExchangeRates(); // { USD: 0.2723, EUR: 0.2511, ... }
 clearRateCache(); // force re-fetch on next call
 ```
@@ -270,7 +284,9 @@ Framework-agnostic custom elements, usable in any HTML page or framework (Vue, A
 `<dirham-symbol>` attributes: `size`, `color`, `weight`, `aria-label`
 `<dirham-price>` attributes: `amount`, `locale`, `decimals`, `notation`, `use-code`, `symbol-size`, `weight`, `currency`
 `<dirham-animated-price>` attributes: `amount`, `duration`, `easing`, `locale`, `decimals`, `notation`, `use-code`, `symbol-size`, `weight`
-`<dirham-input>` attributes: `value`, `locale`, `decimals`, `min`, `max`, `placeholder`, `disabled`, `readonly`, `show-symbol`, `use-code`, `symbol-size`, `weight` — fires `dirham-change` event
+`<dirham-input>` attributes: `value`, `locale`, `decimals`, `min`, `max`, `placeholder`, `disabled`, `readonly`, `show-symbol`, `use-code`, `symbol-size`, `weight` — fires `dirham-change` with `{ detail: { value: number | null } }`
+
+Importing `dirham/web-component` in server-side code is safe: where `HTMLElement` and `customElements` don't exist (as in Node), the import doesn't throw and registers nothing.
 
 ## React Native
 
@@ -284,7 +300,7 @@ import { DirhamSymbol, DirhamPrice } from "dirham/react-native";
 ```
 
 DirhamSymbol props: `size` (default: 24), `color` (default: "#000"), `weight`, `accessibilityLabel`
-DirhamPrice props: `amount`, `locale`, `decimals`, `useCode`, `notation`, `symbolSize`, `weight`, `color`, `fontSize`
+DirhamPrice props: `amount`, `locale`, `decimals`, `useCode`, `notation`, `symbolSize`, `weight`, `color`, `fontSize`, `accessibilityLabel`
 
 ## Tailwind CSS Plugin
 
@@ -297,10 +313,10 @@ export default { plugins: [dirhamPlugin] };
 ```
 
 Utilities:
-- `.dirham` — base class, sets font-family
-- `.dirham-thin` through `.dirham-black` — weight variants
-- `.dirham-xs` through `.dirham-4xl` — size utilities
-- `.dirham-before` / `.dirham-after` — pseudo-elements with `\20C3` content
+- `.dirham` — base class, sets `font-family: Dirham, sans-serif`
+- `.dirham-thin` through `.dirham-black` — font weights 100 to 900
+- `.dirham-xs` through `.dirham-4xl` — font sizes 0.75rem to 2.25rem
+- `.dirham-before` / `.dirham-after` — pseudo-elements that add the sign and a no-break space before or after the content
 - `.dirham-price` — component class (nowrap + tabular-nums)
 
 ## Next.js Font Optimization
@@ -309,11 +325,70 @@ Pre-configured `next/font/local` instance.
 
 ```tsx
 import { dirhamFont } from "dirham/next";
-<html className={dirhamFont.className}>...</html>
-// CSS variable: var(--font-dirham)
+<html className={dirhamFont.variable}>...</html> // defines the --font-dirham CSS variable
+<span style={{ fontFamily: "var(--font-dirham)" }}>&#x20C3;</span>
 ```
 
 For manual setup: `import { dirhamFontConfig } from "dirham/next";`
+
+## Open Graph Price Cards (dirham/og)
+
+Generate shareable price card images for Open Graph and Twitter Cards.
+
+### Server-side SVG (zero dependencies)
+
+```ts
+import { generatePriceCardSVG } from "dirham/og";
+
+const svg = generatePriceCardSVG({
+  amount: 12500,
+  title: "Monthly Rent",
+  subtitle: "Dubai Marina, Studio",
+  accentColor: "#22c55e",
+});
+// Returns a self-contained <svg> string (1200×630 by default)
+```
+
+### Next.js OG Image Route (`@vercel/og`)
+
+```tsx
+// app/api/og/route.tsx
+import { ImageResponse } from "next/og";
+import { DirhamPriceCard } from "dirham/og";
+
+export const runtime = "edge";
+
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url);
+  const amount = Number(searchParams.get("amount") ?? "0");
+  const title = searchParams.get("title") ?? undefined;
+
+  return new ImageResponse(
+    <DirhamPriceCard amount={amount} title={title} />,
+    { width: 1200, height: 630 },
+  );
+}
+```
+
+Then in your page `<head>`:
+
+```html
+<meta property="og:image" content="/api/og?amount=12500&title=Monthly+Rent" />
+```
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `amount` | `number` | — | Price amount (required) |
+| `title` | `string` | — | Header text above the price |
+| `subtitle` | `string` | — | Footer text below the price |
+| `locale` | `string` | `"en-AE"` | Intl locale (RTL auto-detected) |
+| `decimals` | `number` | `2` | Decimal places |
+| `notation` | `"standard" \| "compact"` | `"standard"` | Number notation |
+| `width` | `number` | `1200` | Image width in px |
+| `height` | `number` | `630` | Image height in px |
+| `background` | `string` | `"#0a0a0a"` | Background color |
+| `textColor` | `string` | `"#ffffff"` | Text color |
+| `accentColor` | `string` | `"#22c55e"` | Dirham symbol & badge color |
 
 ## CDN Usage (No Install)
 
@@ -334,49 +409,49 @@ Use via jsDelivr or unpkg without npm install:
 
 ```bash
 npx dirham          # prints symbol info table
-npx dirham copy     # copies Unicode symbol to clipboard
-npx dirham copy html # copies HTML entity
+npx dirham copy     # copies the U+20C3 character to the clipboard
+npx dirham copy html # copies &#x20C3;
 ```
 
 Formats: `unicode`, `html`, `css`, `js`, `arabic`, `code`
 
 ## CSS / Web Font Usage
 
-```html
-<!-- Import CSS -->
-<link rel="stylesheet" href="node_modules/dirham/dist/css/dirham.css" />
-
-<!-- Use the icon class -->
-<i class="dirham-symbol" aria-label="UAE Dirham"></i>
-```
-
-Or import in JS:
 ```ts
 import "dirham/css";
 ```
 
+```html
+<i class="dirham-symbol" aria-label="UAE Dirham"></i>
+```
+
+To render U+20C3 inside your own text, add a Dirham family as a fallback font. Its `unicode-range` is `U+20C3`, so the browser downloads and uses it only for that character:
+
+```css
+body {
+  font-family: Inter, "Dirham-Sans", sans-serif; /* or "Dirham", "Dirham-Serif", "Dirham-Mono", "Dirham-Arabic" */
+}
+```
+
 ## Font Variants
 
-The package includes 5 font variants to match different typeface styles:
-- **Default** — balanced design for general use
-- **Sans** — clean sans-serif variant
-- **Serif** — serif variant for editorial contexts
-- **Mono** — monospace variant for code/data
-- **Arabic** — Arabic calligraphic variant
+The CSS registers five font families: Dirham (default), Dirham-Sans, Dirham-Serif, Dirham-Mono and Dirham-Arabic. All five draw the same outline of the sign; Serif, Mono and Arabic only adjust its padding and proportions slightly, and Sans is identical to the default. Each WOFF2 file is about 1 KB.
 
 ## Unicode
 
-Codepoint: U+20C3 (UAE DIRHAM SIGN)
-Unicode version: 18.0
-Status: Accepted by UTC on 2025-Jul-22, expected to ship September 2026
-Migration: Zero — when native support arrives, the web font becomes optional automatically
+- Codepoint: U+20C3 UAE DIRHAM SIGN (Currency Symbols block, General Category Sc, UTF-8 E2 83 83, decimal 8387)
+- Unicode version: 18.0, released on 16 September 2026 (accepted by the Unicode Technical Committee on 22 July 2025, UTC #184, decision 184-C17)
+- Native font support (as of October 2026): Apple's system fonts (checked on macOS 26.6) and Google's Noto and Roboto don't include U+20C3 yet; Windows: not yet announced
+- Migration: when your users' system fonts include U+20C3, remove the web font import; text and components stay the same
+- Escapes: HTML `&#x20C3;` or `&#8387;` (numeric character reference; there is no named entity) · CSS `content: "\20C3"` · JavaScript/JSON `"\u20C3"` · URL `%E2%83%83`
+- Not an emoji: U+20C3 is a currency symbol (General Category Sc)
 
 ## Technical Details
 
 - Tree-shakeable ESM and CJS builds
 - TypeScript types included
 - React 17+ compatible (react is an optional peer dependency)
-- SSR-safe (SVG component requires no font loading)
+- SSR-safe: the SVG components need no font loading, and `dirham/web-component` can be imported on the server
 - Zero runtime dependencies for the core module
 - Web Component (custom element) for framework-agnostic usage
 - CLI tool (`npx dirham`) for quick access

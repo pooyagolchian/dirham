@@ -63,7 +63,7 @@ export interface FormatDirhamOptions {
 
 	/**
 	 * Separator between symbol and amount.
-	 * @default " " (non-breaking space)
+	 * @default "\u{A0}" (no-break space)
 	 */
 	separator?: string;
 
@@ -81,11 +81,11 @@ export interface FormatDirhamOptions {
  *
  * @example
  * ```ts
- * formatDirham(100);          // "\u20C3 100.00"
- * formatDirham(1234.5);       // "\u20C3 1,234.50"
- * formatDirham(100, { locale: "ar-AE" }); // "100.00 \u20C3"
- * formatDirham(100, { useCode: true });   // "AED 100.00"
- * formatDirham(1500000, { notation: "compact" }); // "\u20C3 1.5M"
+ * formatDirham(100);          // "\u{20C3}\u{A0}100.00"
+ * formatDirham(1234.5);       // "\u{20C3}\u{A0}1,234.50"
+ * formatDirham(100, { locale: "ar-AE" }); // "100.00\u{A0}\u{20C3}"
+ * formatDirham(100, { useCode: true });   // "AED\u{A0}100.00"
+ * formatDirham(1500000, { notation: "compact" }); // "\u{20C3}\u{A0}1.5M"
  * ```
  */
 export function formatDirham(

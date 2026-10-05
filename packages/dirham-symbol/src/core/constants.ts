@@ -1,16 +1,19 @@
 /**
  * UAE Dirham currency symbol constants.
  *
- * This package maps the Dirham glyph to the official Unicode codepoint U+20C3
- * (UAE DIRHAM SIGN) via a custom web font. The codepoint was accepted by the
- * Unicode Technical Committee for Unicode 18.0 (expected September 2026).
+ * This package maps the Dirham glyph to U+20C3 UAE DIRHAM SIGN via a custom
+ * web font. Unicode 18.0, released on 16 September 2026, encodes the UAE Dirham
+ * sign as U+20C3 (accepted by the Unicode Technical Committee on 22 July 2025,
+ * decision 184-C17).
  *
- * Until system fonts ship native U+20C3 glyphs, the bundled web font provides
- * the rendering. When OS/font support lands, the web font becomes optional;
- * zero migration required.
+ * Whether U+20C3 displays natively depends on each device's fonts; as of
+ * October 2026, mainstream system fonts do not include it yet, so the bundled
+ * web font provides the rendering. Once your users' system fonts include
+ * U+20C3, you can drop the web font without changing any code.
  *
  * @module dirham
- * @see https://www.unicode.org/alloc/Pipeline.html
+ * @see https://www.unicode.org/charts/PDF/U20A0.pdf (Currency Symbols chart)
+ * @see https://www.unicode.org/versions/Unicode18.0.0/
  */
 
 /** Unicode character for the Dirham symbol (U+20C3, requires Dirham web font until system fonts support it) */
@@ -25,7 +28,7 @@ export const DIRHAM_CSS_CONTENT = "\\20C3";
 /** ISO 4217 currency code for UAE Dirham */
 export const DIRHAM_CURRENCY_CODE = "AED";
 
-/** Arabic text representation of the Dirham symbol (د.إ) */
+/** Arabic abbreviation of the UAE dirham (د.إ). It is not the U+20C3 sign. */
 export const DIRHAM_SYMBOL_TEXT = "د.إ";
 
 /** The font family name used for the Dirham web font */
@@ -42,8 +45,8 @@ export const DIRHAM_CODEPOINT = 0x20c3;
 /**
  * Supported visual weights for the Dirham symbol SVG component.
  *
- * Because the Dirham symbol is not yet in standard fonts (until Unicode 18.0),
- * weight simulation is applied via SVG stroke to match surrounding text weight,
+ * Because system fonts do not include U+20C3 yet (October 2026), weight
+ * simulation is applied via SVG stroke to match surrounding text weight,
  * similar to how $, €, £ adapt to their font's weight.
  */
 export type DirhamWeight =
