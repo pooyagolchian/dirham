@@ -77,9 +77,9 @@ function fontFaceCSS(name, path) {
 
 function generateCSS() {
 	return `/* dirham - UAE Dirham currency symbol font
- * Provides category-specific variants so U+20C3 adapts to surrounding typography.
- * Use font-family: "YourFont", "Dirham-Sans" (or -Serif / -Mono / -Arabic);
- * The browser falls back to the matching Dirham variant for U+20C3.
+ * Provides variants with spacing tuned for sans, serif, mono and Arabic text.
+ * Use font-family: "Dirham-Sans", "YourFont", sans-serif; (or -Serif / -Mono / -Arabic)
+ * Each face covers only U+20C3 (unicode-range), so your font still draws everything else.
  */
 
 /* ── Default (standalone use) ────────────────────────────────────────────── */

@@ -185,6 +185,11 @@ function structuredData(page: {
 				"https://www.npmjs.com/~pooya",
 				"https://linkedin.com/in/pooyagolchian",
 				"https://orcid.org/0000-0003-0176-2536",
+				"https://x.com/pooyagolchian",
+				"https://bsky.app/profile/pooyagolchian.bsky.social",
+				"https://dev.to/pooyagolchian",
+				"https://stackoverflow.com/users/2257357/pooya-golchian",
+				"https://www.youtube.com/@pooyagolchian",
 			],
 		},
 	];

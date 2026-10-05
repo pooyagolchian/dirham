@@ -2,7 +2,7 @@
 
 > dirham is an MIT-licensed npm package for showing and formatting the UAE Dirham sign, U+20C3 UAE DIRHAM SIGN, on the web. Unicode 18.0, released on 16 September 2026, encodes the sign as U+20C3. As of October 2026, mainstream system fonts (Apple's San Francisco, Google's Noto and Roboto) don't include it yet, so the bare character shows as an empty box. The package bundles a small web font mapped to U+20C3, inline SVG components for React and React Native, Web Components, a Tailwind plugin and AED formatting helpers, so the sign renders today while the text stays standard Unicode.
 
-Last verified: 5 October 2026 (dirham 1.5.3 was the latest npm release on that date). Maintainer: Pooya Golchian (https://github.com/pooyagolchian). dirham is an independent open-source project and is not affiliated with the Central Bank of the UAE or the Unicode Consortium.
+Last verified: 5 October 2026 (dirham 1.5.3 was the latest npm release on that date). Maintainer: Pooya Golchian (https://pooyagolchian.com/). dirham is an independent open-source project and is not affiliated with the Central Bank of the UAE or the Unicode Consortium.
 
 Key facts about the UAE Dirham sign:
 

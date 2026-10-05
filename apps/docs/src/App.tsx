@@ -139,15 +139,15 @@ const CATEGORY_TO_DIRHAM_FONT: Record<string, string> = {
 };
 
 /**
- * Build a font-family stack: <typeface>, <category-matched Dirham variant>, <generic>.
- * The Dirham variant goes before the generic family: when the typeface is unavailable,
- * the generic system font would otherwise draw U+20C3 as an empty box.
+ * Build a font-family stack: <category-matched Dirham variant>, <typeface>.
+ * The Dirham variant goes first. Its @font-face covers only U+20C3 (unicode-range), so the
+ * typeface still draws every other character. Any family listed before it could claim U+20C3
+ * and draw a box: generic families resolve to a system font's missing glyph, and some
+ * typefaces (JetBrains Mono) map U+20C3 to a placeholder glyph.
  */
 function dirhamFontStack(font: (typeof FONT_FAMILIES)[number]) {
 	const dirham = CATEGORY_TO_DIRHAM_FONT[font.category] || '"Dirham"';
-	const families = font.family.split(", ");
-	const generic = families.pop();
-	return [...families, dirham, generic].join(", ");
+	return `${dirham}, ${font.family}`;
 }
 
 /** Demo-only typefaces, fetched when a [data-demo-fonts] section nears the viewport. */
@@ -1644,8 +1644,8 @@ export function App() {
   href="https://cdn.jsdelivr.net/npm/dirham/dist/css/dirham.css" />
 
 <!-- Write the character reference in text whose
-     font stack includes Dirham -->
-<p style="font-family: Inter, Dirham, sans-serif">
+     font stack starts with Dirham -->
+<p style="font-family: Dirham, Inter, sans-serif">
   Total: ${DIRHAM_HTML_ENTITY}&nbsp;1,234.50
 </p>
 
@@ -2978,6 +2978,22 @@ npx dirham --help`}
 								</a>
 								. Not affiliated with the Central Bank of the UAE or the Unicode
 								Consortium.
+							</p>
+							<p className="mt-3 text-xs text-neutral-500 leading-relaxed">
+								More from the maintainer:{" "}
+								<a
+									href={MAINTAINER.url}
+									className="text-neutral-400 hover:text-white transition-colors"
+								>
+									pooyagolchian.com
+								</a>{" "}
+								·{" "}
+								<a
+									href={MAINTAINER.aidlcUrl}
+									className="text-neutral-400 hover:text-white transition-colors"
+								>
+									AIDLC: the AI Development Life Cycle
+								</a>
 							</p>
 						</div>
 

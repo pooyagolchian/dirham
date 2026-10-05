@@ -44,7 +44,7 @@
 	{
 		"id": "dirham-sign-on-a-website-or-in-react",
 		"question": "How do I show the dirham symbol on a website or in React?",
-		"answer": "Write the real character U+20C3 in your text and name a web font that covers it in your font stack: import \"dirham/css\", then font-family: Inter, Dirham, sans-serif. The font downloads only for U+20C3 (unicode-range), and you can drop it once system fonts include the glyph. In React, <DirhamSymbol /> from \"dirham/react\" renders inline SVG.",
+		"answer": "Write the real character U+20C3 in your text and put a web font that covers it first in your font stack: import \"dirham/css\", then font-family: Dirham, Inter, sans-serif. The font downloads only for U+20C3 (unicode-range), and you can drop it once system fonts include the glyph. In React, <DirhamSymbol /> from \"dirham/react\" renders inline SVG.",
 		"detail": "Intl.NumberFormat prints AED or د.إ. for AED and never U+20C3 (checked October 2026), so formatDirham inserts the sign itself: formatDirham(1234.5) returns \"\\u20C3\\u00A01,234.50\", the sign, a no-break space and the amount. Browsers don't need an update to show U+20C3; they need a font that has it."
 	},
 	{

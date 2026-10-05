@@ -12,6 +12,7 @@ export const LAST_VERIFIED = { iso: "2026-10-05", label: "5 October 2026" };
 export const MAINTAINER = {
 	name: "Pooya Golchian",
 	url: "https://pooyagolchian.com/",
+	aidlcUrl: "https://pooyagolchian.com/aidlc/",
 };
 
 /** Primary sources that crawlers can fetch (the CBUAE web pages return 403 to bots). */
