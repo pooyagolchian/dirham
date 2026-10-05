@@ -1,0 +1,74 @@
+[
+	{
+		"id": "what-is-the-dirham-sign",
+		"question": "What is the new UAE dirham symbol?",
+		"answer": "The UAE dirham symbol is the official currency sign of the UAE dirham (AED), unveiled by the Central Bank of the UAE on 27 March 2025. It is the Latin letter D, from the English name 'Dirham', crossed by two horizontal lines inspired by the UAE flag. Unicode encodes it as U+20C3 UAE DIRHAM SIGN.",
+		"detail": "The Unicode Standard says the two lines 'embody the financial and monetary stability of the UAE Dirham'. It is not the Arabic letter dal. U+20C3 is only for the UAE dirham: as of Unicode 18.0, the Moroccan dirham (ISO 4217 MAD) has no sign of its own. The coloured Digital Dirham mark is a logo and has no code point."
+	},
+	{
+		"id": "how-to-copy-the-dirham-sign",
+		"question": "How do I copy and paste the dirham symbol?",
+		"answer": "Click the Symbol row in the Copy table on dirham.js.org. It copies the real character U+20C3 UAE DIRHAM SIGN, not an image or a look-alike, so the pasted text stays correct. It displays only where the font in use includes the glyph; as of October 2026, most apps show an empty box or placeholder instead.",
+		"detail": "Need it for code? Copy the HTML, CSS or JavaScript row instead. Some other dirham fonts map the glyph to a private-use code point or to the letter ê; text typed with them turns into the wrong character wherever that font is missing."
+	},
+	{
+		"id": "dirham-sign-unicode",
+		"question": "What is the Unicode code point for the dirham symbol?",
+		"answer": "The dirham symbol is U+20C3 UAE DIRHAM SIGN. Unicode 18.0, released on 16 September 2026, added it to the Currency Symbols block (U+20A0–U+20CF) with General Category Sc (Symbol, Currency). It is decimal 8387, UTF-8 E2 83 83 and UTF-16 20C3. The Unicode Technical Committee accepted it on 22 July 2025.",
+		"detail": "UTC #184, decision 184-C17. Unicode 18.0 added three currency signs: the Maldivian rufiyaa (U+20C2), the UAE dirham (U+20C3) and the Omani rial (U+20C4). The Saudi riyal sign (U+20C1) arrived a version earlier, in Unicode 17.0 (September 2025)."
+	},
+	{
+		"id": "why-the-dirham-sign-shows-as-a-box",
+		"question": "Why does the dirham symbol show as a box?",
+		"answer": "Because the font on your screen doesn't include it yet. U+20C3 has been part of the Unicode Standard since version 18.0 (16 September 2026), but as of October 2026 Apple's system fonts and Google's Noto and Roboto don't draw it. The character itself is correct and will display once your fonts add it.",
+		"detail": "Apple's fonts were checked on macOS 26.6, where they already include the Saudi riyal sign (U+20C1). A Noto maintainer said in September 2026 that the glyph will be commissioned. Windows: not yet announced (October 2026). Websites can show the sign now with a web font that covers U+20C3, which is what the dirham package does."
+	},
+	{
+		"id": "how-to-type-the-dirham-sign",
+		"question": "How do I type the dirham symbol on a keyboard?",
+		"answer": "The CBUAE guidelines assign the dirham sign to the 6 key at the Shift level, but as of October 2026 we know of no Apple, Google or Microsoft keyboard update that adds it. Until then, enter it by code: in Word for Windows, type 20C3 and press Alt+X. It shows as a box until your fonts include it.",
+		"detail": "On single-language keycaps the sign replaces the caret (^). On a Mac, iPhone or Android phone, paste the character or save it as a text replacement, or write AED, which every keyboard can type. Use the sign or AED, never both together."
+	},
+	{
+		"id": "dirham-sign-in-excel-and-word",
+		"question": "How do I add the dirham symbol in Excel or Word?",
+		"answer": "In Excel, =UNICHAR(8387) returns the dirham sign; in Word for Windows, type 20C3 and press Alt+X. Both insert the real character U+20C3, but it shows as a box unless the text uses a font that has the glyph, such as the free 'dirham' font (dirham.ttf) in the dirham npm package.",
+		"detail": "Download https://cdn.jsdelivr.net/npm/dirham/dist/fonts/dirham.ttf and install it; anyone else who opens the file needs the same font. PowerPoint can't convert codes with Alt+X, so paste the character there, or insert the CBUAE's SVG artwork, linked from its symbol guidelines, as a picture."
+	},
+	{
+		"id": "dirham-sign-in-html-css-javascript",
+		"question": "How do I write the dirham symbol in HTML, CSS and JavaScript?",
+		"answer": "HTML: &#x20C3; or &#8387; (a numeric character reference; there is no named entity). CSS: content: \"\\20C3\". JavaScript and JSON: \"\\u20C3\". URL encoding: %E2%83%83. All of these produce U+20C3, but browsers draw it only with a font that has the glyph, so load a web font that covers it, such as the Dirham font in the dirham npm package.",
+		"detail": "In CSS, add a space after \\20C3 (or write \\0020C3) when a hex digit or a space follows it. In code samples and comments, write the escape rather than pasting the glyph, so the copied text is ASCII and unambiguous."
+	},
+	{
+		"id": "dirham-sign-on-a-website-or-in-react",
+		"question": "How do I show the dirham symbol on a website or in React?",
+		"answer": "Write the real character U+20C3 in your text and name a web font that covers it in your font stack: import \"dirham/css\", then font-family: Inter, Dirham, sans-serif. The font downloads only for U+20C3 (unicode-range), and you can drop it once system fonts include the glyph. In React, <DirhamSymbol /> from \"dirham/react\" renders inline SVG.",
+		"detail": "Intl.NumberFormat prints AED or د.إ. for AED and never U+20C3 (checked October 2026), so formatDirham inserts the sign itself: formatDirham(1234.5) returns \"\\u20C3\\u00A01,234.50\", the sign, a no-break space and the amount. Browsers don't need an update to show U+20C3; they need a font that has it."
+	},
+	{
+		"id": "dirham-sign-before-or-after-the-amount",
+		"question": "Does the dirham symbol go before or after the amount?",
+		"answer": "Before the amount, separated by a space, at the same height and weight as the digits: U+20C3, a no-break space, then 1,234.50. The CBUAE guidelines say digital interfaces must show it to the left of the number, and that you should use either the symbol or the code AED, never both. Don't set it in superscript or subscript.",
+		"detail": "In right-to-left Arabic text, the amount comes first and the sign second in logical order, which still displays the sign on the left. formatDirham(1234.5, { locale: \"ar-AE\" }) returns \"1,234.50\\u00A0\\u20C3\" with Latin digits, so render it inside a dir=\"rtl\" element; for Arabic-Indic digits use the locale \"ar-AE-u-nu-arab\". Amounts written in words use \"Dirhams\"."
+	},
+	{
+		"id": "aed-vs-arabic-abbreviation-vs-dirham-sign",
+		"question": "What is the difference between AED, د.إ and the dirham symbol?",
+		"answer": "AED is the ISO 4217 code for the UAE dirham (numeric 784, two decimal places). د.إ is the Arabic abbreviation of درهم إماراتي (Emirati dirham), which Intl.NumberFormat prints for Arabic locales. U+20C3 is the official dirham sign the CBUAE unveiled in March 2025. Next to an amount, use either the sign or AED, never both.",
+		"detail": "All three refer to the same currency; only U+20C3 is the new sign. The Moroccan dirham is a different currency with its own code, MAD."
+	},
+	{
+		"id": "is-there-a-dirham-emoji",
+		"question": "Is there a dirham emoji?",
+		"answer": "No. U+20C3 is a currency symbol (General Category Sc), not an emoji: Unicode 18.0's emoji data lists nothing in the U+20C0–U+20CF range, so there is no colour emoji version. Copy the character itself, or use the official CBUAE artwork (SVG or PNG) where you need a picture.",
+		"detail": "The CBUAE guidelines also say the sign should not be used as a logo, lock-up or brand identifier."
+	},
+	{
+		"id": "when-was-the-dirham-sign-introduced",
+		"question": "When was the dirham symbol introduced, and when did it enter Unicode?",
+		"answer": "The Central Bank of the UAE unveiled the symbol on 27 March 2025 and submitted the Unicode proposal itself (L2/25-159, June 2025). It arrived after Unicode 17.0 had entered beta, so the Unicode Technical Committee accepted it on 22 July 2025 for Unicode 18.0, which was published on 16 September 2026.",
+		"detail": "UTC #184, decision 184-C17. Unicode cautions that standardizing a new currency sign and getting vendor support typically takes at least a year, and often longer."
+	}
+]

@@ -1,8 +1,9 @@
 @import "tailwindcss";
 
 @theme {
-	--font-sans: "Geist", "Inter", system-ui, -apple-system, sans-serif;
-	--font-mono: "Geist Mono", "JetBrains Mono", ui-monospace, monospace;
+	/* Self-hosted via @fontsource-variable (imported in main.tsx) */
+	--font-sans: "Geist Variable", system-ui, -apple-system, sans-serif;
+	--font-mono: "Geist Mono Variable", ui-monospace, monospace;
 	--color-neutral-950: #0a0a0a;
 	--color-neutral-900: #111111;
 	--color-neutral-850: #171717;
@@ -18,8 +19,15 @@
 }
 
 /* Base */
-html {
-	scroll-behavior: smooth;
+@media (prefers-reduced-motion: no-preference) {
+	html {
+		scroll-behavior: smooth;
+	}
+}
+
+/* Keep in-page anchor targets clear of the 64px sticky nav */
+[id] {
+	scroll-margin-top: 80px;
 }
 
 body {
@@ -74,16 +82,18 @@ body {
 	animation: symbolGlow 4s ease-in-out infinite;
 }
 
-/* Section scroll animations */
-.main-content > section:not([data-hero]) {
-	opacity: 0;
-	transform: translateY(20px);
-	transition:
-		opacity 0.7s ease-out,
-		transform 0.7s ease-out;
-}
+/* Section scroll animations. Sections start hidden only when JavaScript can
+   reveal them and the visitor has not asked for reduced motion, so the
+   prerendered page stays readable without JavaScript. */
+@media (scripting: enabled) and (prefers-reduced-motion: no-preference) {
+	.main-content > section:not([data-hero]) {
+		opacity: 0;
+		transform: translateY(20px);
+		transition: opacity 0.7s ease-out, transform 0.7s ease-out;
+	}
 
-.main-content > section:not([data-hero]).is-visible {
-	opacity: 1;
-	transform: translateY(0);
+	.main-content > section:not([data-hero]).is-visible {
+		opacity: 1;
+		transform: translateY(0);
+	}
 }
