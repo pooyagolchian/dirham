@@ -1,5 +1,16 @@
 # dirham
 
+## 1.5.4
+
+### Patch Changes
+
+- [#3](https://github.com/pooyagolchian/dirham/pull/3) [`0ba4d02`](https://github.com/pooyagolchian/dirham/commit/0ba4d02b3c866bb98a0e10ad6f38fedeeb983362) Thanks [@pooyagolchian](https://github.com/pooyagolchian)! - **SSR-safe Web Components and Unicode 18.0 docs** — `dirham/web-component` can now be imported during server-side rendering, and the docs reflect the Unicode 18.0 release.
+
+  - **Web Components:** importing `dirham/web-component` in Node no longer throws `HTMLElement is not defined`. Where `HTMLElement` and `customElements` don't exist, the import registers nothing.
+  - **JSDoc:** examples in the type definitions write the sign as `\u{20C3}` or `&#x20C3;` instead of a look-alike character (U+09C3 BENGALI VOWEL SIGN VOCALIC R), and show the exact strings `formatDirham` returns, including the no-break space. `DIRHAM_SYMBOL_TEXT` is now described as the Arabic abbreviation د.إ, not the sign.
+  - **README and llms.txt:** updated for Unicode 18.0 (released 16 September 2026) with corrected `formatDirham` and `copyDirhamAmount` outputs, a quick reference, a dated Unicode status table with sources, usage rules and an FAQ. The README shows the sign as an image, so it no longer appears as an empty box on npm and GitHub.
+  - **Package metadata:** new description and keywords, `repository.directory`, and the LICENSE file now ships in the package.
+
 ## 1.5.3
 
 ### Patch Changes
@@ -39,7 +50,10 @@
   import { DirhamPriceCard } from "dirham/og";
   export async function GET(req: Request) {
     const amount = Number(new URL(req.url).searchParams.get("amount") ?? "0");
-    return new ImageResponse(<DirhamPriceCard amount={amount} />, { width: 1200, height: 630 });
+    return new ImageResponse(<DirhamPriceCard amount={amount} />, {
+      width: 1200,
+      height: 630,
+    });
   }
   ```
 
@@ -51,18 +65,22 @@
 
   ```tsx
   import { AnimatedDirhamPrice } from "dirham/react";
-  <AnimatedDirhamPrice amount={1250} duration={600} easing="easeOut" />
+  <AnimatedDirhamPrice amount={1250} duration={600} easing="easeOut" />;
   ```
 
   ```html
-  <dirham-animated-price amount="1250" duration="600" easing="easeOut"></dirham-animated-price>
+  <dirham-animated-price
+    amount="1250"
+    duration="600"
+    easing="easeOut"
+  ></dirham-animated-price>
   ```
 
 - **React Native support** — new `dirham/react-native` entry with `DirhamSymbol` and `DirhamPrice` components using `react-native-svg`. Same SVG path data as the web version.
 
   ```tsx
   import { DirhamSymbol, DirhamPrice } from "dirham/react-native";
-  <DirhamPrice amount={100} />
+  <DirhamPrice amount={100} />;
   ```
 
 - **Tailwind CSS plugin** — new `dirham/tailwind` entry with utility classes for font weight (`.dirham-thin` … `.dirham-black`), size (`.dirham-xs` … `.dirham-4xl`), pseudo-elements (`.dirham-before`, `.dirham-after`), and a `.dirham-price` component class.
@@ -77,7 +95,7 @@
 
   ```tsx
   import { dirhamFont } from "dirham/next";
-  <div className={dirhamFont.className}>...</div>
+  <div className={dirhamFont.className}>...</div>;
   ```
 
 - **Currency conversion utilities** — new `convertFromAED()`, `convertToAED()`, and `fetchExchangeRates()` in the core entry, plus `useDirhamRate()` React hook for live exchange rates.
@@ -96,9 +114,9 @@
 
   ```ts
   import { addVAT, removeVAT, getVAT } from "dirham";
-  addVAT(100);     // 105
-  removeVAT(105);  // 100
-  getVAT(100);     // 5
+  addVAT(100); // 105
+  removeVAT(105); // 100
+  getVAT(100); // 5
   ```
 
 - **Copy formatted amount** — `copyDirhamAmount()` combines `formatDirham()` with the Clipboard API.
@@ -118,7 +136,7 @@
 
   ```tsx
   import { DirhamInput } from "dirham/react";
-  <DirhamInput value={100} onChange={(v) => setAmount(v)} />
+  <DirhamInput value={100} onChange={(v) => setAmount(v)} />;
   ```
 
 - **RTL fix** — `<DirhamPrice>` and `<dirham-price>` now set `dir="rtl"` on the wrapper element for Arabic locales, ensuring correct bidirectional layout.
