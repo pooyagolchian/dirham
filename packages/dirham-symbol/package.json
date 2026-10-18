@@ -143,6 +143,7 @@
 		"@types/node": "^25.5.2",
 		"@types/react": "^19.0.0",
 		"@types/react-dom": "^19.0.0",
+		"jsdom": "^26.1.0",
 		"react": "^19.0.0",
 		"react-dom": "^19.0.0",
 		"svgtofont": "^6.0.0",

@@ -1,19 +1,7 @@
-import { DIRHAM_STROKE_MAP, type DirhamWeight } from "../core/constants";
 import { formatDirham } from "../core/format";
-import { DIRHAM_SVG_PATH, DIRHAM_SVG_VIEWBOX } from "../core/svg";
+import { isArabicLocale } from "../core/locale";
 import { BaseElement } from "./base";
-
-const VALID_WEIGHTS = new Set<string>([
-	"thin",
-	"extralight",
-	"light",
-	"regular",
-	"medium",
-	"semibold",
-	"bold",
-	"extrabold",
-	"black",
-]);
+import { escapeHTML, parseWeight, symbolSVG } from "./shared";
 
 /**
  * `<dirham-price>` — framework-agnostic Web Component for displaying formatted prices.
@@ -69,13 +57,12 @@ export class DirhamPriceElement extends BaseElement {
 			this.getAttribute("notation") === "compact" ? "compact" : "standard";
 		const useCode = this.hasAttribute("use-code");
 		const symbolSize = this.getAttribute("symbol-size") || "1em";
-		const weightAttr = this.getAttribute("weight") || "regular";
-		const weight: DirhamWeight = VALID_WEIGHTS.has(weightAttr)
-			? (weightAttr as DirhamWeight)
-			: "regular";
+		const weight = parseWeight(this.getAttribute("weight"));
 		const currency = this.getAttribute("currency") || undefined;
 
-		const symbolFirst = !locale.startsWith("ar");
+		const isRTL = isArabicLocale(locale);
+		const symbolFirst = !isRTL;
+		const dirAttr = isRTL ? ' dir="rtl"' : "";
 
 		// Format the numeric part (strip AED code — we render the SVG instead)
 		let formatted: string;
@@ -97,34 +84,17 @@ export class DirhamPriceElement extends BaseElement {
 			const text = symbolFirst
 				? `${code}\u00A0${formatted}`
 				: `${formatted}\u00A0${code}`;
-			const dirAttr = locale.startsWith("ar") ? ' dir="rtl"' : "";
-			this.#shadow.innerHTML = `<span style="white-space:nowrap"${dirAttr}>${this.#escape(text)}</span>`;
+			this.#shadow.innerHTML = `<span style="white-space:nowrap"${dirAttr}>${escapeHTML(text)}</span>`;
 			return;
 		}
 
-		const strokeWidth = DIRHAM_STROKE_MAP[weight];
-		const strokeAttrs =
-			strokeWidth > 0
-				? ` stroke="currentColor" stroke-width="${strokeWidth}" stroke-linejoin="round" paint-order="stroke"`
-				: "";
-
-		const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${DIRHAM_SVG_VIEWBOX}" width="${this.#escape(String(symbolSize))}" height="${this.#escape(String(symbolSize))}" fill="currentColor" role="img" aria-label="UAE Dirham" style="display:inline-block;vertical-align:middle"><path d="${DIRHAM_SVG_PATH}"${strokeAttrs}/></svg>`;
-
-		const dirAttr = locale.startsWith("ar") ? ' dir="rtl"' : "";
+		const svg = symbolSVG({ size: symbolSize, weight, label: "UAE Dirham" });
 
 		const parts = symbolFirst
-			? `${svg}\u00A0${this.#escape(formatted)}`
-			: `${this.#escape(formatted)}\u00A0${svg}`;
+			? `${svg}\u00A0${escapeHTML(formatted)}`
+			: `${escapeHTML(formatted)}\u00A0${svg}`;
 
 		this.#shadow.innerHTML = `<span style="white-space:nowrap"${dirAttr}>${parts}</span>`;
-	}
-
-	#escape(str: string): string {
-		return str
-			.replace(/&/g, "&amp;")
-			.replace(/</g, "&lt;")
-			.replace(/>/g, "&gt;")
-			.replace(/"/g, "&quot;");
 	}
 }
 

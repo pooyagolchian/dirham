@@ -1,55 +1,20 @@
-import { DIRHAM_STROKE_MAP, type DirhamWeight } from "../core/constants";
-import { DIRHAM_SVG_PATH, DIRHAM_SVG_VIEWBOX } from "../core/svg";
+import {
+	cleanPaste,
+	formatEntry,
+	isValidEntry,
+	parseEntry,
+	plainEntry,
+	stripFormatting,
+} from "../core/input";
+import { isArabicLocale } from "../core/locale";
 import { BaseElement } from "./base";
+import { escapeHTML, parseWeight, symbolSVG } from "./shared";
 
-const VALID_WEIGHTS = new Set<string>([
-	"thin",
-	"extralight",
-	"light",
-	"regular",
-	"medium",
-	"semibold",
-	"bold",
-	"extrabold",
-	"black",
-]);
-
-const _fmtCache = new Map<string, Intl.NumberFormat>();
-
-function getInputFormatter(
-	locale: string,
-	decimals: number,
-): Intl.NumberFormat {
-	const key = `wc-input:${locale}:${decimals}`;
-	let fmt = _fmtCache.get(key);
-	if (!fmt) {
-		fmt = new Intl.NumberFormat(locale, {
-			minimumFractionDigits: 0,
-			maximumFractionDigits: decimals,
-		});
-		_fmtCache.set(key, fmt);
-	}
-	return fmt;
-}
-
-function stripFormatting(raw: string): string {
-	let cleaned = raw.replace(/[\u0660-\u0669]/g, (d) =>
-		String(d.charCodeAt(0) - 0x0660),
-	);
-	cleaned = cleaned.replace(/\u066B/g, ".");
-	cleaned = cleaned.replace(/[,\s\u00A0\u066C]/g, "");
-	cleaned = cleaned.replace(/[\u20C3]/g, "");
-	cleaned = cleaned.replace(/AED/gi, "");
-	cleaned = cleaned.replace(/د\.إ/g, "");
-	return cleaned.trim();
-}
-
-function escapeHTML(str: string): string {
-	return str
-		.replace(/&/g, "&amp;")
-		.replace(/</g, "&lt;")
-		.replace(/>/g, "&gt;")
-		.replace(/"/g, "&quot;");
+/** A number from the `value` attribute, or null when absent or not numeric. */
+function parseValueAttribute(attr: string | null): number | null {
+	if (attr === null || attr.trim() === "") return null;
+	const parsed = Number(attr);
+	return Number.isFinite(parsed) ? parsed : null;
 }
 
 /**
@@ -67,7 +32,12 @@ function escapeHTML(str: string): string {
  * <dirham-input locale="ar-AE" decimals="2"></dirham-input>
  * ```
  *
- * Events: `dirham-change` — fires with `{ detail: { value: number | null } }`
+ * While the field is focused it holds the plain number being typed; on blur the
+ * value is rounded to `decimals`, clamped to `min`/`max` and formatted.
+ *
+ * Events: `dirham-change` — fires on blur when the committed value changed, with
+ * `{ detail: { value: number | null } }` (`null` when the field was cleared).
+ * Setting the `value` attribute afterwards replaces whatever the user entered.
  */
 export class DirhamInputElement extends BaseElement {
 	static get observedAttributes() {
@@ -90,60 +60,53 @@ export class DirhamInputElement extends BaseElement {
 	#shadow: ShadowRoot;
 	#input: HTMLInputElement | null = null;
 	#numericValue: number | null = null;
+	#valueAtFocus: number | null = null;
 	#isFocused = false;
+	/** The last text the field was allowed to hold, restored when a keystroke is rejected. */
+	#acceptedText = "";
 
 	constructor() {
 		super();
 		this.#shadow = this.attachShadow({ mode: "open" });
 		this.#render();
-		this.#attachListeners();
 	}
 
+	/** The committed value: updated on blur, not while typing. */
 	get numericValue(): number | null {
 		return this.#numericValue;
 	}
 
-	attributeChangedCallback() {
+	attributeChangedCallback(name: string) {
+		if (name === "value") {
+			this.#numericValue = parseValueAttribute(this.getAttribute("value"));
+		}
 		if (!this.#isFocused) {
 			this.#render();
-			this.#attachListeners();
+		} else if (name === "value" && this.#input) {
+			// Re-rendering now would drop the caret and the text being typed.
+			this.#acceptedText = plainEntry(this.#numericValue);
+			this.#input.value = this.#acceptedText;
 		}
 	}
 
 	#getConfig() {
 		const locale = this.getAttribute("locale") || "en-AE";
-		const decimals = Number(this.getAttribute("decimals") ?? "2");
-		const min = this.hasAttribute("min")
-			? Number(this.getAttribute("min"))
-			: undefined;
-		const max = this.hasAttribute("max")
-			? Number(this.getAttribute("max"))
-			: undefined;
-		const showSymbol =
-			!this.hasAttribute("show-symbol") ||
-			this.getAttribute("show-symbol") !== "false";
-		const useCode = this.hasAttribute("use-code");
-		const symbolSize = this.getAttribute("symbol-size") || "1em";
-		const weightAttr = this.getAttribute("weight") || "regular";
-		const weight: DirhamWeight = VALID_WEIGHTS.has(weightAttr)
-			? (weightAttr as DirhamWeight)
-			: "regular";
-		const disabled = this.hasAttribute("disabled");
-		const readonly = this.hasAttribute("readonly");
-		const isRTL = locale.startsWith("ar");
-
 		return {
 			locale,
-			decimals,
-			min,
-			max,
-			showSymbol,
-			useCode,
-			symbolSize,
-			weight,
-			disabled,
-			readonly,
-			isRTL,
+			decimals: Number(this.getAttribute("decimals") ?? "2"),
+			min: this.hasAttribute("min")
+				? Number(this.getAttribute("min"))
+				: undefined,
+			max: this.hasAttribute("max")
+				? Number(this.getAttribute("max"))
+				: undefined,
+			showSymbol: this.getAttribute("show-symbol") !== "false",
+			useCode: this.hasAttribute("use-code"),
+			symbolSize: this.getAttribute("symbol-size") || "1em",
+			weight: parseWeight(this.getAttribute("weight")),
+			disabled: this.hasAttribute("disabled"),
+			readonly: this.hasAttribute("readonly"),
+			isRTL: isArabicLocale(locale),
 		};
 	}
 
@@ -155,92 +118,92 @@ export class DirhamInputElement extends BaseElement {
 		return result;
 	}
 
-	#formatDisplay(value: number | null): string {
-		if (value === null || !Number.isFinite(value)) return "";
-		const { locale, decimals } = this.#getConfig();
-		return getInputFormatter(locale, decimals).format(value);
-	}
-
 	#render() {
 		const config = this.#getConfig();
-		const valAttr = this.getAttribute("value");
-		if (valAttr !== null && !this.#isFocused) {
-			const parsed = Number(valAttr);
-			this.#numericValue = Number.isFinite(parsed) ? parsed : null;
+		const direction = config.isRTL ? "rtl" : "ltr";
+		const gap = `margin-${config.isRTL ? "left" : "right"}:0.5em`;
+
+		let symbolHTML = "";
+		if (config.showSymbol) {
+			symbolHTML = config.useCode
+				? `<span style="user-select:none;flex-shrink:0;${gap}" aria-hidden="true">AED</span>`
+				: symbolSVG({
+						size: config.symbolSize,
+						weight: config.weight,
+						style: `display:inline-block;vertical-align:middle;flex-shrink:0;${gap}`,
+					});
 		}
-
-		const displayVal = this.#isFocused
-			? undefined // keep current input value
-			: this.#formatDisplay(this.#numericValue);
-
-		const strokeWidth = DIRHAM_STROKE_MAP[config.weight];
-		const strokeAttrs =
-			strokeWidth > 0
-				? ` stroke="currentColor" stroke-width="${strokeWidth}" stroke-linejoin="round" paint-order="stroke"`
-				: "";
-
-		const symbolHTML = config.showSymbol
-			? config.useCode
-				? `<span style="user-select:none;flex-shrink:0;${config.isRTL ? "margin-left" : "margin-right"}:0.5em" aria-hidden="true">AED</span>`
-				: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${DIRHAM_SVG_VIEWBOX}" width="${escapeHTML(String(config.symbolSize))}" height="${escapeHTML(String(config.symbolSize))}" fill="currentColor" role="img" aria-hidden="true" style="display:inline-block;vertical-align:middle;flex-shrink:0;${config.isRTL ? "margin-left" : "margin-right"}:0.5em"><path d="${DIRHAM_SVG_PATH}"${strokeAttrs}/></svg>`
-			: "";
 
 		const placeholder =
 			this.getAttribute("placeholder") ||
-			getInputFormatter(config.locale, config.decimals).format(0);
+			formatEntry(0, config.locale, config.decimals);
+		const display = formatEntry(
+			this.#numericValue,
+			config.locale,
+			config.decimals,
+		);
 
-		const html = `
+		this.#shadow.innerHTML = `
 <style>
-:host { display: inline-flex; align-items: center; direction: ${config.isRTL ? "rtl" : "ltr"}; }
-input { min-width: 0; flex: 1; border: none; background: transparent; font: inherit; color: inherit; outline: none; padding: 0; direction: ${config.isRTL ? "rtl" : "ltr"}; }
+:host { display: inline-flex; align-items: center; direction: ${direction}; }
+input { min-width: 0; flex: 1; border: none; background: transparent; font: inherit; color: inherit; outline: none; padding: 0; direction: ${direction}; }
 </style>
 ${config.isRTL ? "" : symbolHTML}
-<input type="text" inputmode="decimal" aria-label="Amount in AED" placeholder="${escapeHTML(placeholder)}"${config.disabled ? " disabled" : ""}${config.readonly ? " readonly" : ""}${displayVal !== undefined ? ` value="${escapeHTML(displayVal)}"` : ""}/>
+<input type="text" inputmode="decimal" aria-label="Amount in AED" placeholder="${escapeHTML(placeholder)}" value="${escapeHTML(display)}"${config.disabled ? " disabled" : ""}${config.readonly ? " readonly" : ""}/>
 ${config.isRTL ? symbolHTML : ""}`;
 
-		// Preserve input value during focus
-		if (!this.#isFocused) {
-			this.#shadow.innerHTML = html;
-			this.#input = this.#shadow.querySelector("input");
-		}
+		// Every render replaces the input, so its listeners are attached right here.
+		this.#input = this.#shadow.querySelector("input");
+		if (this.#input) this.#bind(this.#input);
 	}
 
-	#attachListeners() {
-		const input = this.#shadow.querySelector("input");
-		if (!input || input === this.#input) return;
-		this.#input = input;
+	#bind(input: HTMLInputElement) {
+		input.addEventListener("focus", () => this.#onFocus(input));
+		input.addEventListener("blur", () => this.#onBlur(input));
+		input.addEventListener("input", () => this.#onInput(input));
+		input.addEventListener("paste", (event) => this.#onPaste(event, input));
+	}
 
-		input.addEventListener("focus", () => {
-			this.#isFocused = true;
-			const plain =
-				this.#numericValue !== null && Number.isFinite(this.#numericValue)
-					? this.#numericValue.toString()
-					: "";
-			input.value = plain;
-			setTimeout(() => input.select(), 0);
-		});
+	#onFocus(input: HTMLInputElement) {
+		this.#isFocused = true;
+		this.#valueAtFocus = this.#numericValue;
+		this.#acceptedText = plainEntry(this.#numericValue);
+		input.value = this.#acceptedText;
+		setTimeout(() => input.select(), 0);
+	}
 
-		input.addEventListener("blur", () => {
-			this.#isFocused = false;
-			const stripped = stripFormatting(input.value);
-			const { decimals } = this.#getConfig();
+	#onInput(input: HTMLInputElement) {
+		const cleaned = stripFormatting(input.value);
+		if (!isValidEntry(cleaned, this.#getConfig().decimals)) {
+			input.value = this.#acceptedText; // reject this keystroke, keep the rest
+			return;
+		}
+		this.#acceptedText = cleaned;
+		input.value = cleaned;
+	}
 
-			if (stripped === "" || stripped === "." || stripped === "-") {
-				this.#numericValue = null;
-			} else {
-				let parsed = Number.parseFloat(stripped);
-				if (Number.isNaN(parsed)) {
-					this.#numericValue = null;
-				} else {
-					const factor = 10 ** decimals;
-					parsed = Math.round(parsed * factor) / factor;
-					parsed = this.#clamp(parsed);
-					this.#numericValue = parsed;
-				}
-			}
+	#onPaste(event: Event, input: HTMLInputElement) {
+		event.preventDefault();
+		if (input.readOnly || input.disabled) return;
+		const pasted = (event as ClipboardEvent).clipboardData?.getData(
+			"text/plain",
+		);
+		const cleaned = cleanPaste(pasted ?? "", this.#getConfig().decimals);
+		if (cleaned === undefined) return;
+		this.#acceptedText = cleaned;
+		input.value = cleaned;
+	}
 
-			this.#render();
-			this.#attachListeners();
+	#onBlur(input: HTMLInputElement) {
+		this.#isFocused = false;
+		const parsed = parseEntry(
+			stripFormatting(input.value),
+			this.#getConfig().decimals,
+		);
+		this.#numericValue = parsed === undefined ? null : this.#clamp(parsed);
+		this.#render();
+
+		if (this.#numericValue !== this.#valueAtFocus) {
 			this.dispatchEvent(
 				new CustomEvent("dirham-change", {
 					detail: { value: this.#numericValue },
@@ -248,49 +211,7 @@ ${config.isRTL ? symbolHTML : ""}`;
 					composed: true,
 				}),
 			);
-		});
-
-		input.addEventListener("input", () => {
-			const cleaned = stripFormatting(input.value);
-			if (cleaned !== "" && !/^-?\d*\.?\d*$/.test(cleaned)) {
-				// Reject by reverting
-				const prev =
-					this.#numericValue !== null ? this.#numericValue.toString() : "";
-				input.value = prev;
-				return;
-			}
-			const { decimals } = this.#getConfig();
-			const dotIndex = cleaned.indexOf(".");
-			if (dotIndex !== -1 && cleaned.slice(dotIndex + 1).length > decimals) {
-				const prev =
-					this.#numericValue !== null ? this.#numericValue.toString() : "";
-				input.value = prev;
-				return;
-			}
-			input.value = cleaned;
-		});
-
-		input.addEventListener("paste", (e: ClipboardEvent) => {
-			e.preventDefault();
-			const pasted = e.clipboardData?.getData("text/plain") ?? "";
-			const stripped = stripFormatting(pasted);
-			if (stripped === "") return;
-			const { decimals } = this.#getConfig();
-
-			let final = stripped;
-			const dotIndex = stripped.indexOf(".");
-			if (dotIndex !== -1) {
-				final = `${stripped.slice(0, dotIndex)}.${stripped.slice(dotIndex + 1, dotIndex + 1 + decimals)}`;
-			}
-			if (!/^-?\d*\.?\d*$/.test(final)) return;
-
-			input.value = final;
-			const parsed = Number.parseFloat(final);
-			if (!Number.isNaN(parsed)) {
-				const factor = 10 ** decimals;
-				this.#numericValue = this.#clamp(Math.round(parsed * factor) / factor);
-			}
-		});
+		}
 	}
 }
 
