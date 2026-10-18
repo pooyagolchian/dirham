@@ -96,9 +96,13 @@ function DirhamPriceBase({
 		[amount, locale, decimals, notation],
 	);
 
+	// formatDirham throws for a value that is not finite; the visible text already
+	// falls back to a dash, so the label must too or the whole screen crashes.
 	const label =
 		accessibilityLabel ??
-		formatDirham(amount, { locale, decimals, useCode: true, notation });
+		(Number.isFinite(amount)
+			? formatDirham(amount, { locale, decimals, useCode: true, notation })
+			: formatted);
 
 	const symbol = useCode ? (
 		<Text style={{ color, fontSize }}>AED</Text>
