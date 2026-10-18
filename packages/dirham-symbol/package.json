@@ -94,6 +94,11 @@
 			"types": "./dist/og/index.d.ts",
 			"import": "./dist/og/index.js",
 			"require": "./dist/og/index.cjs"
+		},
+		"./og/react": {
+			"types": "./dist/og/react.d.ts",
+			"import": "./dist/og/react.js",
+			"require": "./dist/og/react.cjs"
 		}
 	},
 	"bin": {
