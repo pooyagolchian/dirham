@@ -1,4 +1,4 @@
-import { formatDirham } from "../core/format";
+import { formatAmountText, formatDirham } from "../core/format";
 import { isArabicLocale } from "../core/locale";
 import { BaseElement } from "./base";
 import { escapeHTML, parseWeight, symbolSVG } from "./shared";
@@ -147,10 +147,7 @@ export class AnimatedDirhamPriceElement extends BaseElement {
 
 	/** The number part only; the symbol is drawn separately. */
 	#format(amount: number): string {
-		if (!Number.isFinite(amount)) return "—";
-		return formatDirham(amount, { ...this.#numberOptions(), useCode: true })
-			.replace("AED", "")
-			.trim();
+		return formatAmountText(amount, this.#numberOptions());
 	}
 
 	/** What a screen reader hears: the final amount, with the currency code. */

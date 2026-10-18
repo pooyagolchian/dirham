@@ -1,4 +1,5 @@
-import { formatDirham } from "../core/format";
+import { formatAmountText } from "../core/format";
+import { isArabicLocale } from "../core/locale";
 import { DIRHAM_SVG_PATH, DIRHAM_SVG_VIEWBOX } from "../core/svg";
 
 export interface PriceCardSVGOptions {
@@ -50,13 +51,9 @@ export function generatePriceCardSVG(options: PriceCardSVGOptions): string {
 		borderRadius = 0,
 	} = options;
 
-	const formatted = Number.isFinite(amount)
-		? formatDirham(amount, { locale, decimals, notation, useCode: true })
-				.replace("AED", "")
-				.trim()
-		: "—";
+	const formatted = formatAmountText(amount, { locale, decimals, notation });
 
-	const isRTL = locale.startsWith("ar");
+	const isRTL = isArabicLocale(locale);
 	const cx = width / 2;
 
 	// Scale elements proportionally to card size

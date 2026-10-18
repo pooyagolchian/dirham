@@ -1,4 +1,4 @@
-import { formatDirham } from "../core/format";
+import { formatAmountText } from "../core/format";
 import { isArabicLocale } from "../core/locale";
 import { BaseElement } from "./base";
 import { escapeHTML, parseWeight, symbolSVG } from "./shared";
@@ -64,20 +64,8 @@ export class DirhamPriceElement extends BaseElement {
 		const symbolFirst = !isRTL;
 		const dirAttr = isRTL ? ' dir="rtl"' : "";
 
-		// Format the numeric part (strip AED code — we render the SVG instead)
-		let formatted: string;
-		if (!Number.isFinite(amount)) {
-			formatted = "—";
-		} else {
-			formatted = formatDirham(amount, {
-				locale,
-				decimals,
-				useCode: true,
-				notation,
-			})
-				.replace("AED", "")
-				.trim();
-		}
+		// Only the number: the sign is drawn separately
+		const formatted = formatAmountText(amount, { locale, decimals, notation });
 
 		if (useCode) {
 			const code = currency || "AED";

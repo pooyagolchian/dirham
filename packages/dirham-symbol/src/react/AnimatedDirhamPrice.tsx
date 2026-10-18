@@ -1,7 +1,7 @@
 import type React from "react";
 import { forwardRef, memo, useEffect, useRef, useState } from "react";
 import type { DirhamWeight } from "../core/constants";
-import { formatDirham } from "../core/format";
+import { formatAmountText, formatDirham } from "../core/format";
 import { isArabicLocale } from "../core/locale";
 import { DirhamSymbol } from "./DirhamSymbol";
 
@@ -187,16 +187,11 @@ const AnimatedDirhamPriceBase = forwardRef<
 		const isRTL = isArabicLocale(locale);
 		const symbolFirst = !isRTL;
 
-		const formatted = Number.isFinite(displayAmount)
-			? formatDirham(displayAmount, {
-					locale,
-					decimals,
-					useCode: true,
-					notation,
-				})
-					.replace("AED", "")
-					.trim()
-			: "—";
+		const formatted = formatAmountText(displayAmount, {
+			locale,
+			decimals,
+			notation,
+		});
 
 		const announcement = Number.isFinite(amount)
 			? formatDirham(amount, { locale, decimals, useCode: true, notation })

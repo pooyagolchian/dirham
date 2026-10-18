@@ -1,7 +1,8 @@
 import type React from "react";
 import { forwardRef, memo, useMemo } from "react";
 import type { DirhamWeight } from "../core/constants";
-import { formatDirham } from "../core/format";
+import { formatAmountText } from "../core/format";
+import { isArabicLocale } from "../core/locale";
 import { DirhamSymbol } from "./DirhamSymbol";
 
 export interface DirhamPriceProps
@@ -82,19 +83,13 @@ const DirhamPriceBase = forwardRef<HTMLSpanElement, DirhamPriceProps>(
 		},
 		ref,
 	) => {
-		const symbolFirst = !locale.startsWith("ar");
+		const isRTL = isArabicLocale(locale);
+		const symbolFirst = !isRTL;
 
-		const formatted = useMemo(() => {
-			if (!Number.isFinite(amount)) return "—";
-			return formatDirham(amount, {
-				locale,
-				decimals,
-				useCode: true, // Always use code so we can strip it and render SVG instead
-				notation,
-			})
-				.replace("AED", "")
-				.trim();
-		}, [amount, locale, decimals, notation]);
+		const formatted = useMemo(
+			() => formatAmountText(amount, { locale, decimals, notation }),
+			[amount, locale, decimals, notation],
+		);
 
 		const symbol = useCode ? (
 			<span>AED</span>
@@ -110,7 +105,7 @@ const DirhamPriceBase = forwardRef<HTMLSpanElement, DirhamPriceProps>(
 			<span
 				ref={ref}
 				className={className}
-				dir={locale.startsWith("ar") ? "rtl" : undefined}
+				dir={isRTL ? "rtl" : undefined}
 				style={{ whiteSpace: "nowrap", ...style }}
 				{...props}
 			>

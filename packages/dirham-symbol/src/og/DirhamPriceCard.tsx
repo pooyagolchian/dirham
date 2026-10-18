@@ -1,5 +1,6 @@
 import type React from "react";
-import { formatDirham } from "../core/format";
+import { formatAmountText } from "../core/format";
+import { isArabicLocale } from "../core/locale";
 import { DIRHAM_SVG_PATH, DIRHAM_SVG_VIEWBOX } from "../core/svg";
 
 export interface DirhamPriceCardProps {
@@ -56,11 +57,7 @@ export function DirhamPriceCard({
 	textColor = "#ffffff",
 	accentColor = "#22c55e",
 }: DirhamPriceCardProps): React.JSX.Element {
-	const formatted = Number.isFinite(amount)
-		? formatDirham(amount, { locale, decimals, notation, useCode: true })
-				.replace("AED", "")
-				.trim()
-		: "—";
+	const formatted = formatAmountText(amount, { locale, decimals, notation });
 
 	return (
 		<div
@@ -97,7 +94,7 @@ export function DirhamPriceCard({
 					display: "flex",
 					alignItems: "center",
 					gap: 16,
-					flexDirection: locale.startsWith("ar") ? "row-reverse" : "row",
+					flexDirection: isArabicLocale(locale) ? "row-reverse" : "row",
 				}}
 			>
 				{/* Dirham symbol */}

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatDirham, parseDirham } from "../format";
+import { formatAmountText, formatDirham, parseDirham } from "../format";
 
 const SYM = "\u20C3"; // U+20C3 — UAE DIRHAM SIGN
 
@@ -237,5 +237,39 @@ describe("parseDirham with a locale", () => {
 
 	it("keeps the default English reading when no locale is given", () => {
 		expect(parseDirham(`${SYM} 1,234.50`)).toBe(1234.5);
+	});
+});
+
+describe("formatAmountText", () => {
+	it("is the number part of formatDirham, with no string surgery", () => {
+		const locales = ["en-AE", "ar-AE", "ar-EG", "de-DE", "fr-FR", "en-IN"];
+		const amounts = [0, 0.5, 1234.5, 1500000, -42.25, 1e9];
+		const mismatches: string[] = [];
+		for (const locale of locales) {
+			for (const notation of ["standard", "compact"] as const) {
+				for (const decimals of [0, 2]) {
+					for (const amount of amounts) {
+						const o = { locale, decimals, notation };
+						const old = formatDirham(amount, { ...o, useCode: true })
+							.replace("AED", "")
+							.trim();
+						if (formatAmountText(amount, o) !== old) {
+							mismatches.push(`${JSON.stringify(o)} ${amount}`);
+						}
+					}
+				}
+			}
+		}
+		expect(mismatches).toEqual([]);
+	});
+
+	it("shows a dash instead of throwing for a value that is not finite", () => {
+		for (const bad of [Number.NaN, Number.POSITIVE_INFINITY]) {
+			expect(formatAmountText(bad)).toBe("\u2014");
+		}
+	});
+
+	it("defaults to en-AE, two decimals, standard notation", () => {
+		expect(formatAmountText(1234.5)).toBe("1,234.50");
 	});
 });

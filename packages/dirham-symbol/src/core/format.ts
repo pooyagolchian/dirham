@@ -125,6 +125,22 @@ export function formatDirham(
 }
 
 /**
+ * The number part of a price, without the sign, for components that draw the
+ * sign themselves. Shows "\u2014" for a value that is not finite, so a bad prop
+ * renders a dash instead of throwing from inside a render.
+ *
+ * Internal: not exported from the package entry points.
+ */
+export function formatAmountText(
+	amount: number,
+	options: Pick<FormatDirhamOptions, "locale" | "decimals" | "notation"> = {},
+): string {
+	if (!Number.isFinite(amount)) return "\u2014";
+	const { locale = "en-AE", decimals = 2, notation = "standard" } = options;
+	return getFormatter(locale, decimals, notation).format(amount);
+}
+
+/**
  * Options for parsing a Dirham-formatted string.
  */
 export interface ParseDirhamOptions {
