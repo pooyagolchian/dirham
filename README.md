@@ -150,7 +150,10 @@ formatDirham(100, { decimals: 0 }); // "\u{20C3}\u{A0}100"
 formatDirham(100, { useCode: true }); // "AED\u{A0}100.00"
 formatDirham(1500000, { notation: "compact" }); // "\u{20C3}\u{A0}1.5M"
 parseDirham("\u{20C3}\u{A0}1,234.50"); // 1234.5
+parseDirham("\u{20C3}\u{A0}1.234,50", { locale: "de-DE" }); // 1234.5
 ```
+
+`parseDirham` reads the English format (`,` between digit groups, `.` before the decimals) unless you pass the `locale` the text was formatted with, as in the last line. The text must be an amount and nothing else: `"12abc"`, `"1e3"`, and `"1.234,50"` with no `locale` throw instead of returning a wrong number.
 
 Arabic locales put the sign after the number in logical order; see [Using the symbol correctly](#using-the-symbol-correctly) for right-to-left display.
 
@@ -190,6 +193,8 @@ import { AnimatedDirhamPrice } from "dirham/react";
 | `notation` | `"standard"` | `"standard"` or `"compact"`                  |
 | `weight`   | `"regular"`  | Symbol weight                                |
 
+A new `amount` while one is still counting continues from the number on screen. The animated digits are hidden from screen readers and the final amount is announced once. The amount changes at once, without animating, when the user prefers reduced motion or `duration` is `0` or less.
+
 ### React — Currency input
 
 Masked currency input with auto-formatting, paste handling, and Arabic numeral support:
@@ -214,6 +219,8 @@ import { DirhamInput } from "dirham/react";
 | `useCode`       | `false`   | Show AED text instead of symbol                                  |
 | `selectOnFocus` | `true`    | Select all text on focus                                         |
 
+Pass `value` to control the input. Once a number has been passed, `undefined` means the field was cleared, so `useState<number | undefined>()` works as you would expect; an input that is never given a `value` manages its own state. While typing, `onChange` receives the number as typed; `min` and `max` apply on blur. Pasting is ignored when the input is `readOnly` or `disabled`.
+
 ### React — Exchange rate hook
 
 Fetch live exchange rates and convert AED amounts:
@@ -230,6 +237,8 @@ function PriceInUSD({ amount }: { amount: number }) {
   return <span>${convert(amount)} USD (rate: {rate})</span>;
 }
 ```
+
+`rate` is units of the currency per 1 AED: `convert` multiplies by it and `convertBack` divides.
 
 ### Web Component
 
@@ -282,6 +291,8 @@ Animated count-up/count-down price display:
 
 Attributes: `amount`, `duration`, `easing`, `locale`, `decimals`, `notation`, `use-code`, `symbol-size`, `weight`
 
+Changing `amount` while it is counting continues from the number on screen, and the final amount is announced once to screen readers. The amount changes at once, without animating, for `prefers-reduced-motion`, a `duration` of `0` or less, and while the element is not in the document yet.
+
 #### `<dirham-input>`
 
 Masked currency input with auto-formatting:
@@ -293,7 +304,7 @@ Masked currency input with auto-formatting:
 
 Attributes: `value`, `locale`, `decimals`, `min`, `max`, `placeholder`, `disabled`, `readonly`, `show-symbol`, `use-code`, `symbol-size`, `weight`
 
-Fires `dirham-change` event with `{ detail: { value: number | null } }`.
+Fires `dirham-change` on blur when the committed value changed, with `{ detail: { value: number | null } }` (`null` when the field was cleared). The `numericValue` property holds the committed value. While the field is focused it shows the plain number; on blur the value is rounded to `decimals`, clamped to `min` and `max`, and formatted. Setting the `value` attribute again replaces whatever the user entered.
 
 #### Vue
 
@@ -382,9 +393,11 @@ addVAT(100, { rate: 0.1 });         // 110 (custom 10% rate)
 addVAT(99.99, { decimals: 4 });     // 104.9895
 ```
 
+Results are rounded to `decimals` places (default 2), half away from zero, so a refund mirrors its invoice. The rounding is exact for amounts written in decimals: `getVAT(0.7)` is `0.04`, because 5% of 0.70 is 0.035.
+
 ### Currency conversion
 
-Convert amounts between AED and other currencies. Rates are fetched from a free exchange rate API and cached for 1 hour:
+Convert amounts between AED and other currencies. Rates are fetched from [open.er-api.com](https://open.er-api.com/) (free, no API key) and cached for 1 hour:
 
 ```ts
 import { convertFromAED, convertToAED, fetchExchangeRates } from "dirham";
@@ -395,6 +408,8 @@ const manual = await convertFromAED(100, "USD", { rate: 0.2723 }); // 27.23, no 
 
 const rates = await fetchExchangeRates(); // { USD: 0.2723, EUR: 0.2511, ... }
 ```
+
+`rate` is units of the target currency per 1 AED, the same direction as `fetchExchangeRates()`: `0.2723` for USD, not `3.6725`. It must be a positive, finite number; zero, negative and `NaN` throw a `RangeError`. Results are rounded to `decimals` places (default 2), half away from zero.
 
 ### React Native
 
@@ -455,14 +470,20 @@ import { dirhamFont } from "dirham/next";
 <span style={{ fontFamily: "var(--font-dirham)" }}>&#x20C3;</span>
 ```
 
-For manual configuration, use the raw config:
+`next/font/local` only accepts an object literal written in your own file, so options can't be passed through a variable. To customize loading (for example `display: "optional"`), call it yourself and point `src` at the font in `node_modules`:
 
 ```ts
-import { dirhamFontConfig } from "dirham/next";
+// app/fonts.ts
 import localFont from "next/font/local";
 
-const myDirham = localFont(dirhamFontConfig);
+export const myDirham = localFont({
+  src: "../node_modules/dirham/dist/fonts/dirham.woff2",
+  display: "optional",
+  variable: "--font-dirham",
+});
 ```
+
+`dirhamFontConfig` is still exported but is deprecated: passing it to `localFont()` fails the build with "Font loader values must be explicitly written literals".
 
 ### CLI
 
@@ -471,6 +492,8 @@ npx dirham              # Print symbol info
 npx dirham copy         # Copy the character U+20C3 to the clipboard
 npx dirham copy html    # Copy &#x20C3; (also: css, js, arabic, code)
 ```
+
+The formats are `unicode` (the default), `html`, `css`, `js`, `arabic` and `code`. An unknown format prints an error and exits with code 1.
 
 ### OG / Social Media Price Cards
 
@@ -490,12 +513,14 @@ const svg = generatePriceCardSVG({
 // Returns a self-contained <svg> string (1200×630 by default)
 ```
 
+`width`, `height` and `borderRadius` take numbers or numeric strings (a query string provides strings); anything else falls back to the default.
+
 #### Next.js OG Image Route (`@vercel/og`)
 
 ```tsx
 // app/api/og/route.tsx
 import { ImageResponse } from "next/og";
-import { DirhamPriceCard } from "dirham/og";
+import { DirhamPriceCard } from "dirham/og/react";
 
 export const runtime = "edge";
 
@@ -510,6 +535,8 @@ export async function GET(request: Request) {
   );
 }
 ```
+
+`DirhamPriceCard` lives in its own entry, `dirham/og/react`, so that `dirham/og` stays free of React.
 
 Then in your page `<head>`:
 
@@ -540,8 +567,9 @@ Then in your page `<head>`:
 | `dirham/react-native`      | `DirhamSymbol`, `DirhamPrice` (requires `react-native-svg`)                         |
 | `dirham/web-component`     | `<dirham-symbol>`, `<dirham-price>`, `<dirham-animated-price>`, `<dirham-input>`    |
 | `dirham/tailwind`          | Tailwind CSS plugin with Dirham utility classes                                     |
-| `dirham/next`              | Next.js `next/font/local` wrapper (`dirhamFont`, `dirhamFontConfig`)                |
-| `dirham/og`                | OG image generation (`DirhamPriceCard`, `generatePriceCardSVG`)                     |
+| `dirham/next`              | Next.js `next/font/local` instance (`dirhamFont`)                                   |
+| `dirham/og`                | Server-side OG price card SVG (`generatePriceCardSVG`), no React needed             |
+| `dirham/og/react`          | `DirhamPriceCard` for `next/og`'s `ImageResponse` (requires `react`)                |
 | `dirham/css`               | CSS with `@font-face`                                                               |
 | `dirham/scss`              | SCSS with `@font-face`                                                              |
 | `dirham/font/woff2`        | WOFF2 font file (default)                                                           |
@@ -662,6 +690,8 @@ pnpm lint          # Lint
 pnpm format        # Format
 pnpm readme:sync   # Copy the package README and LICENSE into place
 ```
+
+`pnpm test` runs [Vitest](https://vitest.dev/). Tests that need a browser DOM (the Web Components, `DirhamInput`, the animated price) opt in to [jsdom](https://github.com/jsdom/jsdom) with a `// @vitest-environment jsdom` comment at the top of the file, so the rest, including the server-rendering tests, run without a DOM. A few tests inspect the build output (the `exports` map, the CLI, `dirham/next`) and run only after `pnpm build`, which CI does first. `node scripts/check-docs.mjs` runs after the build too and checks the documented `formatDirham` and `parseDirham` outputs against the built package.
 
 ### Publishing
 

@@ -92,6 +92,8 @@ cd packages/dirham-symbol
 pnpm vitest
 ```
 
+Anything that needs a browser DOM (Web Components, interactive React behaviour) goes in a test file that starts with `// @vitest-environment jsdom`; server-rendering tests must stay DOM-free. Tests that check the build output (the `exports` map, the CLI, `dirham/next`) only run after `pnpm build`.
+
 ### 4. Lint & Format
 
 We use [Biome](https://biomejs.dev/) for linting and formatting — no Prettier or ESLint needed:
