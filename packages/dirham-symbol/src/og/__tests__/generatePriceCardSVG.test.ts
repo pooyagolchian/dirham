@@ -104,3 +104,39 @@ describe("generatePriceCardSVG", () => {
 		expect(svg).toContain(">42<");
 	});
 });
+
+describe("generatePriceCardSVG numeric options", () => {
+	// Options are typed as numbers, but an OG route typically passes query-string
+	// values straight through, and these go into the SVG unescaped.
+	const hostile = '1200" onload="alert(1)' as unknown as number;
+
+	it("does not let a string width, height or borderRadius inject markup", () => {
+		const svg = generatePriceCardSVG({
+			amount: 1,
+			width: hostile,
+			height: hostile,
+			borderRadius: hostile,
+		});
+		expect(svg).not.toContain("onload");
+		expect(svg).toContain('width="1200"');
+		expect(svg).toContain('height="630"');
+	});
+
+	it("accepts numeric strings, as a query string provides", () => {
+		const svg = generatePriceCardSVG({
+			amount: 1,
+			width: "800" as unknown as number,
+			height: "400" as unknown as number,
+		});
+		expect(svg).toContain('width="800"');
+		expect(svg).toContain('height="400"');
+	});
+
+	it("falls back to the defaults for zero, negative or non-finite sizes", () => {
+		for (const bad of [0, -5, Number.NaN, Number.POSITIVE_INFINITY]) {
+			const svg = generatePriceCardSVG({ amount: 1, width: bad, height: bad });
+			expect(svg).toContain('width="1200"');
+			expect(svg).toContain('height="630"');
+		}
+	});
+});

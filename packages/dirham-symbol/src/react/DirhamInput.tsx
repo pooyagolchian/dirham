@@ -1,52 +1,16 @@
 import type React from "react";
 import { forwardRef, memo, useCallback, useRef, useState } from "react";
 import type { DirhamWeight } from "../core/constants";
+import {
+	cleanPaste,
+	formatEntry,
+	isValidEntry,
+	parseEntry,
+	plainEntry,
+	stripFormatting,
+} from "../core/input";
+import { isArabicLocale } from "../core/locale";
 import { DirhamSymbol } from "./DirhamSymbol";
-
-// ─── Formatting helper (scoped to this module) ──────────────────────────────
-
-const _fmtCache = new Map<string, Intl.NumberFormat>();
-
-function getInputFormatter(
-	locale: string,
-	decimals: number,
-): Intl.NumberFormat {
-	const key = `input:${locale}:${decimals}`;
-	let fmt = _fmtCache.get(key);
-	if (!fmt) {
-		fmt = new Intl.NumberFormat(locale, {
-			minimumFractionDigits: 0,
-			maximumFractionDigits: decimals,
-		});
-		_fmtCache.set(key, fmt);
-	}
-	return fmt;
-}
-
-function formatInputValue(
-	value: number | undefined,
-	locale: string,
-	decimals: number,
-): string {
-	if (value === undefined || !Number.isFinite(value)) return "";
-	return getInputFormatter(locale, decimals).format(value);
-}
-
-function stripFormatting(raw: string): string {
-	// Normalize Arabic-Indic digits to ASCII
-	let cleaned = raw.replace(/[\u0660-\u0669]/g, (d) =>
-		String(d.charCodeAt(0) - 0x0660),
-	);
-	// Arabic decimal separator → dot
-	cleaned = cleaned.replace(/\u066B/g, ".");
-	// Remove thousands separators (comma, NBSP, Arabic thousands sep, space)
-	cleaned = cleaned.replace(/[,\s\u00A0\u066C]/g, "");
-	// Remove any currency symbols/text
-	cleaned = cleaned.replace(/[\u20C3]/g, "");
-	cleaned = cleaned.replace(/AED/gi, "");
-	cleaned = cleaned.replace(/د\.إ/g, "");
-	return cleaned.trim();
-}
 
 // ─── Component Props ────────────────────────────────────────────────────────
 
@@ -219,7 +183,13 @@ const DirhamInputBase = forwardRef<HTMLInputElement, DirhamInputProps>(
 		},
 		ref,
 	) => {
-		const isControlled = controlledValue !== undefined;
+		// `value` going from a number to `undefined` means the parent cleared it, not
+		// that the input became uncontrolled. Once controlled, stay controlled, or the
+		// stale internal state from before would reappear. An input that is never
+		// given a value (or always `undefined`) stays uncontrolled.
+		const wasControlled = useRef(false);
+		if (controlledValue !== undefined) wasControlled.current = true;
+		const isControlled = wasControlled.current;
 		const [internalValue, setInternalValue] = useState<number | undefined>(
 			defaultValue,
 		);
@@ -243,7 +213,7 @@ const DirhamInputBase = forwardRef<HTMLInputElement, DirhamInputProps>(
 			[ref],
 		);
 
-		const isRTL = locale.startsWith("ar");
+		const isRTL = isArabicLocale(locale);
 
 		// Clamp value within min/max
 		const clamp = useCallback(
@@ -259,18 +229,13 @@ const DirhamInputBase = forwardRef<HTMLInputElement, DirhamInputProps>(
 		// The display text when not focused
 		const displayText = isFocused
 			? rawText
-			: formatInputValue(numericValue, locale, decimals);
+			: formatEntry(numericValue, locale, decimals);
 
 		// When entering focus, show the raw numeric value
 		const handleFocus = useCallback(
 			(e: React.FocusEvent<HTMLInputElement>) => {
 				setIsFocused(true);
-				// Show plain number for editing
-				const plain =
-					numericValue !== undefined && Number.isFinite(numericValue)
-						? numericValue.toString()
-						: "";
-				setRawText(plain);
+				setRawText(plainEntry(numericValue));
 
 				if (selectOnFocus) {
 					// setTimeout so the value is set before selection
@@ -281,104 +246,56 @@ const DirhamInputBase = forwardRef<HTMLInputElement, DirhamInputProps>(
 			[numericValue, selectOnFocus, onFocus],
 		);
 
+		// Publish a new value from every path that changes it
+		const commit = useCallback(
+			(next: number | undefined) => {
+				if (!isControlled) setInternalValue(next);
+				onChange?.(next);
+			},
+			[isControlled, onChange],
+		);
+
 		// On blur, parse+clamp+format
 		const handleBlur = useCallback(
 			(e: React.FocusEvent<HTMLInputElement>) => {
 				setIsFocused(false);
-
-				const stripped = stripFormatting(rawText);
-				if (stripped === "" || stripped === "." || stripped === "-") {
-					if (!isControlled) setInternalValue(undefined);
-					onChange?.(undefined);
-				} else {
-					let parsed = Number.parseFloat(stripped);
-					if (Number.isNaN(parsed)) {
-						if (!isControlled) setInternalValue(undefined);
-						onChange?.(undefined);
-					} else {
-						// Enforce decimal precision
-						const factor = 10 ** decimals;
-						parsed = Math.round(parsed * factor) / factor;
-						parsed = clamp(parsed);
-						if (!isControlled) setInternalValue(parsed);
-						onChange?.(parsed);
-					}
-				}
-
+				const parsed = parseEntry(stripFormatting(rawText), decimals);
+				commit(parsed === undefined ? undefined : clamp(parsed));
 				onBlur?.(e);
 			},
-			[rawText, decimals, clamp, isControlled, onChange, onBlur],
+			[rawText, decimals, clamp, commit, onBlur],
 		);
 
-		// Handle typing
+		// Handle typing: only digits, one dot, optional leading minus, at most
+		// `decimals` places. Anything else is rejected and the field keeps its text.
 		const handleChange = useCallback(
 			(e: React.ChangeEvent<HTMLInputElement>) => {
-				const text = e.target.value;
-
-				// Allow only digits, one decimal point, optional leading minus
-				const cleaned = stripFormatting(text);
-
-				// Validate: optional minus, digits, optional single dot + digits
-				if (cleaned !== "" && !/^-?\d*\.?\d*$/.test(cleaned)) {
-					return; // reject invalid input
-				}
-
-				// Enforce max decimal places while typing
-				const dotIndex = cleaned.indexOf(".");
-				if (dotIndex !== -1) {
-					const decimalPart = cleaned.slice(dotIndex + 1);
-					if (decimalPart.length > decimals) {
-						return; // too many decimal places
-					}
-				}
+				const cleaned = stripFormatting(e.target.value);
+				if (!isValidEntry(cleaned, decimals)) return;
 
 				setRawText(cleaned);
-
-				// Emit intermediate value for controlled components
-				if (cleaned === "" || cleaned === "." || cleaned === "-") {
-					if (!isControlled) setInternalValue(undefined);
-					onChange?.(undefined);
-				} else {
-					const parsed = Number.parseFloat(cleaned);
-					if (!Number.isNaN(parsed)) {
-						if (!isControlled) setInternalValue(parsed);
-						onChange?.(parsed);
-					}
-				}
+				// Intermediate values are emitted unclamped; blur clamps.
+				commit(parseEntry(cleaned, decimals));
 			},
-			[decimals, isControlled, onChange],
+			[decimals, commit],
 		);
 
 		// Handle paste — support formatted and Arabic numeral values
 		const handlePaste = useCallback(
 			(e: React.ClipboardEvent<HTMLInputElement>) => {
 				e.preventDefault();
-				const pasted = e.clipboardData.getData("text/plain");
-				const stripped = stripFormatting(pasted);
+				if (readOnly || disabled) return;
+				const cleaned = cleanPaste(
+					e.clipboardData.getData("text/plain"),
+					decimals,
+				);
+				if (cleaned === undefined) return;
 
-				if (stripped === "") return;
-
-				// Enforce decimal places
-				const dotIndex = stripped.indexOf(".");
-				let final = stripped;
-				if (dotIndex !== -1) {
-					final = `${stripped.slice(0, dotIndex)}.${stripped.slice(dotIndex + 1, dotIndex + 1 + decimals)}`;
-				}
-
-				if (!/^-?\d*\.?\d*$/.test(final)) return;
-
-				setRawText(final);
-
-				const parsed = Number.parseFloat(final);
-				if (!Number.isNaN(parsed)) {
-					const clamped = clamp(
-						Math.round(parsed * 10 ** decimals) / 10 ** decimals,
-					);
-					if (!isControlled) setInternalValue(clamped);
-					onChange?.(clamped);
-				}
+				setRawText(cleaned);
+				const parsed = parseEntry(cleaned, decimals);
+				commit(parsed === undefined ? undefined : clamp(parsed));
 			},
-			[decimals, clamp, isControlled, onChange],
+			[readOnly, disabled, decimals, clamp, commit],
 		);
 
 		const symbolElement = showSymbol ? (
@@ -431,7 +348,7 @@ const DirhamInputBase = forwardRef<HTMLInputElement, DirhamInputProps>(
 						...inputStyle,
 					}}
 					value={displayText}
-					placeholder={placeholder ?? formatInputValue(0, locale, decimals)}
+					placeholder={placeholder ?? formatEntry(0, locale, decimals)}
 					disabled={disabled}
 					readOnly={readOnly}
 					onChange={handleChange}

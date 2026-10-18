@@ -1,3 +1,6 @@
+import { roundTo } from "./round";
+import { assertFiniteAmount } from "./validate";
+
 /**
  * Common exchange rates cache entry.
  */
@@ -17,24 +20,25 @@ const CACHE_TTL = 60 * 60 * 1000;
 export interface ConvertOptions {
 	/**
 	 * Number of decimal places for the result.
+	 * Rounds half away from zero.
 	 * @default 2
 	 */
 	decimals?: number;
 
 	/**
-	 * Custom exchange rate (AED per 1 unit of target currency).
-	 * When provided, skips network fetch.
+	 * Custom exchange rate: units of the target currency per 1 AED, the same
+	 * direction the rates from {@link fetchExchangeRates} use (about `0.2723` for
+	 * USD, not `3.6725`). When provided, skips the network fetch.
+	 * Must be a positive, finite number.
 	 */
 	rate?: number;
 }
 
 /**
- * Fetch exchange rates from the Central Bank of UAE open API.
+ * Fetch AED exchange rates from the free open.er-api.com API (no API key).
  * Results are cached in memory for 1 hour.
  *
- * Uses the free, no-auth-required exchangerate.host API as a fallback-safe source.
- *
- * @returns Map of currency codes to their AED exchange rates.
+ * @returns Map of currency code to units of that currency per 1 AED.
  */
 export async function fetchExchangeRates(): Promise<Record<string, number>> {
 	if (_cache && Date.now() - _cache.timestamp < CACHE_TTL) {
@@ -68,13 +72,40 @@ export function clearRateCache(): void {
 }
 
 /**
+ * The rate to convert with: the caller's own, or the current one from the API.
+ * Either way it must be a positive, finite number, because a zero, negative or
+ * NaN rate would silently produce a wrong amount.
+ */
+async function resolveRate(
+	code: string,
+	custom: number | undefined,
+): Promise<number> {
+	let rate = custom;
+	if (rate === undefined) {
+		rate = (await fetchExchangeRates())[code];
+		if (rate === undefined) {
+			throw new Error(`Unknown currency code: ${code}`);
+		}
+	}
+	if (rate === 0) {
+		throw new RangeError(`Exchange rate for ${code} is zero`);
+	}
+	if (!Number.isFinite(rate) || rate < 0) {
+		throw new RangeError(
+			`Exchange rate for ${code} must be a positive, finite number, got ${rate}`,
+		);
+	}
+	return rate;
+}
+
+/**
  * Convert an AED amount to another currency.
  *
  * @example
  * ```ts
  * const usd = await convertFromAED(100, "USD");
  * const eur = await convertFromAED(100, "EUR", { decimals: 4 });
- * const manual = await convertFromAED(100, "USD", { rate: 0.2723 });
+ * const manual = await convertFromAED(100, "USD", { rate: 0.2723 }); // 27.23
  * ```
  */
 export async function convertFromAED(
@@ -82,28 +113,10 @@ export async function convertFromAED(
 	currency: string,
 	options: ConvertOptions = {},
 ): Promise<number> {
-	if (!Number.isFinite(amount)) {
-		throw new RangeError(
-			`convertFromAED: amount must be a finite number, got ${amount}`,
-		);
-	}
+	assertFiniteAmount("convertFromAED", amount);
 	const { decimals = 2 } = options;
-	const code = currency.toUpperCase();
-
-	let rate: number;
-	if (options.rate !== undefined) {
-		rate = options.rate;
-	} else {
-		const rates = await fetchExchangeRates();
-		const r = rates[code];
-		if (r === undefined) {
-			throw new Error(`Unknown currency code: ${code}`);
-		}
-		rate = r;
-	}
-
-	const factor = 10 ** decimals;
-	return Math.round(amount * rate * factor) / factor;
+	const rate = await resolveRate(currency.toUpperCase(), options.rate);
+	return roundTo(amount * rate, decimals);
 }
 
 /**
@@ -112,6 +125,7 @@ export async function convertFromAED(
  * @example
  * ```ts
  * const aed = await convertToAED(27.23, "USD");
+ * const manual = await convertToAED(27.23, "USD", { rate: 0.2723 }); // 100
  * ```
  */
 export async function convertToAED(
@@ -119,30 +133,8 @@ export async function convertToAED(
 	currency: string,
 	options: ConvertOptions = {},
 ): Promise<number> {
-	if (!Number.isFinite(amount)) {
-		throw new RangeError(
-			`convertToAED: amount must be a finite number, got ${amount}`,
-		);
-	}
+	assertFiniteAmount("convertToAED", amount);
 	const { decimals = 2 } = options;
-	const code = currency.toUpperCase();
-
-	let rate: number;
-	if (options.rate !== undefined) {
-		rate = options.rate;
-	} else {
-		const rates = await fetchExchangeRates();
-		const r = rates[code];
-		if (r === undefined) {
-			throw new Error(`Unknown currency code: ${code}`);
-		}
-		rate = r;
-	}
-
-	if (rate === 0) {
-		throw new Error(`Exchange rate for ${code} is zero`);
-	}
-
-	const factor = 10 ** decimals;
-	return Math.round((amount / rate) * factor) / factor;
+	const rate = await resolveRate(currency.toUpperCase(), options.rate);
+	return roundTo(amount / rate, decimals);
 }

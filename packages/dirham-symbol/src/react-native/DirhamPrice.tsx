@@ -1,7 +1,8 @@
 import { memo, useMemo } from "react";
 import { Text, View } from "react-native";
 import type { DirhamWeight } from "../core/constants";
-import { formatDirham } from "../core/format";
+import { formatAmountText, formatDirham } from "../core/format";
+import { isArabicLocale } from "../core/locale";
 import { DirhamSymbol } from "./DirhamSymbol";
 
 export interface DirhamPriceProps {
@@ -87,24 +88,21 @@ function DirhamPriceBase({
 	fontSize = 16,
 	accessibilityLabel,
 }: DirhamPriceProps) {
-	const symbolFirst = !locale.startsWith("ar");
-	const isRTL = locale.startsWith("ar");
+	const isRTL = isArabicLocale(locale);
+	const symbolFirst = !isRTL;
 
-	const formatted = useMemo(() => {
-		if (!Number.isFinite(amount)) return "—";
-		return formatDirham(amount, {
-			locale,
-			decimals,
-			useCode: true,
-			notation,
-		})
-			.replace("AED", "")
-			.trim();
-	}, [amount, locale, decimals, notation]);
+	const formatted = useMemo(
+		() => formatAmountText(amount, { locale, decimals, notation }),
+		[amount, locale, decimals, notation],
+	);
 
+	// formatDirham throws for a value that is not finite; the visible text already
+	// falls back to a dash, so the label must too or the whole screen crashes.
 	const label =
 		accessibilityLabel ??
-		formatDirham(amount, { locale, decimals, useCode: true, notation });
+		(Number.isFinite(amount)
+			? formatDirham(amount, { locale, decimals, useCode: true, notation })
+			: formatted);
 
 	const symbol = useCode ? (
 		<Text style={{ color, fontSize }}>AED</Text>

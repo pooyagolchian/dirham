@@ -94,6 +94,11 @@
 			"types": "./dist/og/index.d.ts",
 			"import": "./dist/og/index.js",
 			"require": "./dist/og/index.cjs"
+		},
+		"./og/react": {
+			"types": "./dist/og/react.d.ts",
+			"import": "./dist/og/react.js",
+			"require": "./dist/og/react.cjs"
 		}
 	},
 	"bin": {
@@ -143,6 +148,7 @@
 		"@types/node": "^25.5.2",
 		"@types/react": "^19.0.0",
 		"@types/react-dom": "^19.0.0",
+		"jsdom": "^26.1.0",
 		"react": "^19.0.0",
 		"react-dom": "^19.0.0",
 		"svgtofont": "^6.0.0",

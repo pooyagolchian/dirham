@@ -82,10 +82,15 @@ export default defineConfig([
 		splitting: false,
 		treeshake: true,
 		external: ["next", "next/font/local"],
+		// Not bundled: esbuild rewrites a bundle's top-level `const` to `var`, and
+		// next/font only accepts `const x = localFont(...)` ("Font loader calls must
+		// be assigned to a const"). This entry has no local imports to bundle.
+		bundle: false,
 	},
-	// OG / Social image entry
+	// OG / Social image entries. og/index is plain TypeScript with no React;
+	// og/react holds the JSX card, so only it needs react/jsx-runtime.
 	{
-		entry: { "og/index": "src/og/index.ts" },
+		entry: { "og/index": "src/og/index.ts", "og/react": "src/og/react.ts" },
 		format: ["esm", "cjs"],
 		target: "es2021",
 		dts: true,

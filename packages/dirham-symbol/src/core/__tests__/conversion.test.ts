@@ -166,3 +166,38 @@ describe("clearRateCache", () => {
 		expect(fetchMock).toHaveBeenCalledTimes(2);
 	});
 });
+
+describe("custom rate validation", () => {
+	// `rate` is units of the target currency per 1 AED, the same direction as the
+	// rates open.er-api.com returns for AED, so 100 AED at 0.2723 is 27.23 USD.
+	const bad = [
+		["zero", 0],
+		["negative", -1],
+		["NaN", Number.NaN],
+		["Infinity", Number.POSITIVE_INFINITY],
+	] as const;
+
+	for (const [label, rate] of bad) {
+		it(`convertFromAED rejects a ${label} rate`, async () => {
+			await expect(convertFromAED(100, "USD", { rate })).rejects.toThrow(
+				RangeError,
+			);
+		});
+
+		it(`convertToAED rejects a ${label} rate`, async () => {
+			await expect(convertToAED(100, "USD", { rate })).rejects.toThrow(
+				RangeError,
+			);
+		});
+	}
+
+	it("converts in the documented direction and round-trips", async () => {
+		expect(await convertFromAED(100, "USD", { rate: 0.2723 })).toBe(27.23);
+		expect(await convertToAED(27.23, "USD", { rate: 0.2723 })).toBe(100);
+	});
+
+	it("rounds half-cent results up, not down by float noise", async () => {
+		// 1.15 * 0.1 * 100 = 11.499999999999998 in binary floating point
+		expect(await convertFromAED(1.15, "USD", { rate: 0.1 })).toBe(0.12);
+	});
+});

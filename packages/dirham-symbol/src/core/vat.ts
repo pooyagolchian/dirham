@@ -1,3 +1,6 @@
+import { roundTo } from "./round";
+import { assertFiniteAmount } from "./validate";
+
 /**
  * UAE VAT rate (5%).
  * @see https://tax.gov.ae/en/taxes/vat.aspx
@@ -16,6 +19,7 @@ export interface VATOptions {
 
 	/**
 	 * Number of decimal places to round the result to.
+	 * Rounds half away from zero, so a refund mirrors its invoice.
 	 * @default 2
 	 */
 	decimals?: number;
@@ -32,14 +36,9 @@ export interface VATOptions {
  * ```
  */
 export function addVAT(amount: number, options: VATOptions = {}): number {
-	if (!Number.isFinite(amount)) {
-		throw new RangeError(
-			`addVAT: amount must be a finite number, got ${amount}`,
-		);
-	}
+	assertFiniteAmount("addVAT", amount);
 	const { rate = UAE_VAT_RATE, decimals = 2 } = options;
-	const factor = 10 ** decimals;
-	return Math.round(amount * (1 + rate) * factor) / factor;
+	return roundTo(amount * (1 + rate), decimals);
 }
 
 /**
@@ -53,14 +52,9 @@ export function addVAT(amount: number, options: VATOptions = {}): number {
  * ```
  */
 export function removeVAT(amount: number, options: VATOptions = {}): number {
-	if (!Number.isFinite(amount)) {
-		throw new RangeError(
-			`removeVAT: amount must be a finite number, got ${amount}`,
-		);
-	}
+	assertFiniteAmount("removeVAT", amount);
 	const { rate = UAE_VAT_RATE, decimals = 2 } = options;
-	const factor = 10 ** decimals;
-	return Math.round((amount / (1 + rate)) * factor) / factor;
+	return roundTo(amount / (1 + rate), decimals);
 }
 
 /**
@@ -73,12 +67,7 @@ export function removeVAT(amount: number, options: VATOptions = {}): number {
  * ```
  */
 export function getVAT(amount: number, options: VATOptions = {}): number {
-	if (!Number.isFinite(amount)) {
-		throw new RangeError(
-			`getVAT: amount must be a finite number, got ${amount}`,
-		);
-	}
+	assertFiniteAmount("getVAT", amount);
 	const { rate = UAE_VAT_RATE, decimals = 2 } = options;
-	const factor = 10 ** decimals;
-	return Math.round(amount * rate * factor) / factor;
+	return roundTo(amount * rate, decimals);
 }

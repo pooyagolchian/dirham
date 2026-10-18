@@ -1089,7 +1089,7 @@ const svg = generatePriceCardSVG({
 							lang="tsx"
 							code={`// Next.js OG image route (app/api/og/route.tsx)
 import { ImageResponse } from "next/og";
-import { DirhamPriceCard } from "dirham/og";
+import { DirhamPriceCard } from "dirham/og/react";
 
 export async function GET(req: Request) {
   const amount = Number(

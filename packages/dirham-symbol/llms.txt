@@ -39,8 +39,9 @@ yarn add dirham
 | `dirham/react-native` | React Native components (DirhamSymbol, DirhamPrice) — requires react-native-svg |
 | `dirham/web-component` | Framework-agnostic `<dirham-symbol>`, `<dirham-price>`, `<dirham-animated-price>`, `<dirham-input>` custom elements |
 | `dirham/tailwind` | Tailwind CSS plugin with utility classes (dirham-bold, dirham-sm, etc.) |
-| `dirham/next` | Next.js font optimization (dirhamFont, dirhamFontConfig) |
-| `dirham/og` | Open Graph / social price cards (DirhamPriceCard for next/og, generatePriceCardSVG) |
+| `dirham/next` | Next.js font optimization (dirhamFont) |
+| `dirham/og` | Server-side Open Graph price card SVG (generatePriceCardSVG), no React needed |
+| `dirham/og/react` | DirhamPriceCard for next/og's ImageResponse (requires react) |
 | `dirham/css` | CSS with @font-face for the Dirham web font |
 | `dirham/scss` | SCSS with @font-face for the Dirham web font |
 | `dirham/font/woff2` | WOFF2 font file |
@@ -211,7 +212,10 @@ Parse a formatted Dirham string back to a number.
 parseDirham("\u{20C3}\u{A0}1,234.50"); // 1234.5
 parseDirham("AED 100.00");             // 100
 parseDirham("د.إ 1,234.50");           // 1234.5 (also accepts the Arabic abbreviation)
+parseDirham("\u{20C3}\u{A0}1.234,50", { locale: "de-DE" }); // 1234.5 (pass the locale the text was formatted with)
 ```
+
+The text must be an amount and nothing else: `"12abc"`, `"1e3"` and `"1.234,50"` without a `locale` throw instead of returning a wrong number.
 
 ### copyDirhamSymbol(format?)
 
@@ -265,7 +269,7 @@ const rates = await fetchExchangeRates(); // { USD: 0.2723, EUR: 0.2511, ... }
 clearRateCache(); // force re-fetch on next call
 ```
 
-Options: `decimals` (default: 2), `rate` (override, skips network fetch)
+Options: `decimals` (default: 2), `rate` (override, skips network fetch). `rate` is units of the target currency per 1 AED (0.2723 for USD, not 3.6725) and must be positive and finite, otherwise a RangeError is thrown. Results round half away from zero.
 
 ## Web Component
 
@@ -284,7 +288,7 @@ Framework-agnostic custom elements, usable in any HTML page or framework (Vue, A
 `<dirham-symbol>` attributes: `size`, `color`, `weight`, `aria-label`
 `<dirham-price>` attributes: `amount`, `locale`, `decimals`, `notation`, `use-code`, `symbol-size`, `weight`, `currency`
 `<dirham-animated-price>` attributes: `amount`, `duration`, `easing`, `locale`, `decimals`, `notation`, `use-code`, `symbol-size`, `weight`
-`<dirham-input>` attributes: `value`, `locale`, `decimals`, `min`, `max`, `placeholder`, `disabled`, `readonly`, `show-symbol`, `use-code`, `symbol-size`, `weight` — fires `dirham-change` with `{ detail: { value: number | null } }`
+`<dirham-input>` attributes: `value`, `locale`, `decimals`, `min`, `max`, `placeholder`, `disabled`, `readonly`, `show-symbol`, `use-code`, `symbol-size`, `weight` — fires `dirham-change` on blur when the committed value changed, with `{ detail: { value: number | null } }`
 
 Importing `dirham/web-component` in server-side code is safe: where `HTMLElement` and `customElements` don't exist (as in Node), the import doesn't throw and registers nothing.
 
@@ -329,7 +333,7 @@ import { dirhamFont } from "dirham/next";
 <span style={{ fontFamily: "var(--font-dirham)" }}>&#x20C3;</span>
 ```
 
-For manual setup: `import { dirhamFontConfig } from "dirham/next";`
+To customize loading, call `localFont` yourself with an object literal (Next requires literals) and `src: "../node_modules/dirham/dist/fonts/dirham.woff2"`. `dirhamFontConfig` is deprecated: passing it to `localFont()` fails the build.
 
 ## Open Graph Price Cards (dirham/og)
 
@@ -354,7 +358,7 @@ const svg = generatePriceCardSVG({
 ```tsx
 // app/api/og/route.tsx
 import { ImageResponse } from "next/og";
-import { DirhamPriceCard } from "dirham/og";
+import { DirhamPriceCard } from "dirham/og/react";
 
 export const runtime = "edge";
 

@@ -38,11 +38,14 @@ import localFont from "next/font/local";
  *
  * Uses `next/font/local` for automatic preloading, self-hosting,
  * and zero layout shift (no FOIT/FOUT).
+ *
+ * The font `path` is relative to this file in the published package
+ * (`dist/next/index.js`), so it points at `dist/fonts/dirham.woff2`.
  */
 export const dirhamFont = localFont({
 	src: [
 		{
-			path: "../dist/fonts/dirham.woff2",
+			path: "../fonts/dirham.woff2",
 			weight: "400",
 			style: "normal",
 		},
@@ -53,24 +56,30 @@ export const dirhamFont = localFont({
 });
 
 /**
- * Font configuration for manual setup with `next/font/local`.
- * Use this if you need to customize the font loading behavior.
+ * The options `dirhamFont` is built with, for reference.
+ *
+ * @deprecated `next/font/local` only accepts an object literal written in your own
+ * file, so this cannot be passed (or spread) into `localFont()`: a real Next.js
+ * build fails with "Font loader values must be explicitly written literals". To
+ * customize loading, write the call yourself, with `src` pointing at the font in
+ * `node_modules`:
  *
  * @example
  * ```tsx
+ * // app/fonts.ts
  * import localFont from "next/font/local";
- * import { dirhamFontConfig } from "dirham/next";
  *
- * const myDirham = localFont({
- *   ...dirhamFontConfig,
+ * export const myDirham = localFont({
+ *   src: "../node_modules/dirham/dist/fonts/dirham.woff2",
  *   display: "optional",
+ *   variable: "--font-dirham",
  * });
  * ```
  */
 export const dirhamFontConfig = {
 	src: [
 		{
-			path: "../dist/fonts/dirham.woff2",
+			path: "../fonts/dirham.woff2",
 			weight: "400" as const,
 			style: "normal" as const,
 		},
