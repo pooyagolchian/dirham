@@ -2,6 +2,7 @@ import type React from "react";
 import { forwardRef, memo, useEffect, useRef, useState } from "react";
 import type { DirhamWeight } from "../core/constants";
 import { formatDirham } from "../core/format";
+import { isArabicLocale } from "../core/locale";
 import { DirhamSymbol } from "./DirhamSymbol";
 
 export interface AnimatedDirhamPriceProps
@@ -78,11 +79,38 @@ const EASING_FNS: Record<string, (t: number) => number> = {
 	easeInOut: (t: number) => (t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t),
 };
 
+/** Keeps text available to screen readers while taking no space on screen. */
+const VISUALLY_HIDDEN: React.CSSProperties = {
+	position: "absolute",
+	width: 1,
+	height: 1,
+	margin: -1,
+	padding: 0,
+	overflow: "hidden",
+	clip: "rect(0 0 0 0)",
+	whiteSpace: "nowrap",
+	border: 0,
+};
+
+function prefersReducedMotion(): boolean {
+	return (
+		typeof window !== "undefined" &&
+		typeof window.matchMedia === "function" &&
+		window.matchMedia("(prefers-reduced-motion: reduce)").matches
+	);
+}
+
 /**
  * Animated Dirham price display with count-up/count-down transitions.
  *
  * Uses `requestAnimationFrame` for smooth 60fps animations.
  * No external dependencies.
+ *
+ * A new `amount` while one is still counting continues from the value on screen.
+ * The counting digits are hidden from assistive technology and the final amount is
+ * announced once, so a screen reader does not read every intermediate frame. With
+ * `prefers-reduced-motion: reduce`, or a `duration` of 0 or less, the amount
+ * changes without animating.
  *
  * @example
  * ```tsx
@@ -115,43 +143,49 @@ const AnimatedDirhamPriceBase = forwardRef<
 		ref,
 	) => {
 		const [displayAmount, setDisplayAmount] = useState(amount);
-		const prevAmountRef = useRef(amount);
-		const frameRef = useRef<number>(0);
+		// What is on screen right now. A retarget or a change of duration or easing
+		// restarts from here; the previous *target* may not have been reached yet.
+		const displayRef = useRef(amount);
+		const frameRef = useRef(0);
 
 		useEffect(() => {
-			const from = prevAmountRef.current;
+			const from = displayRef.current;
 			const to = amount;
-			prevAmountRef.current = to;
-
 			if (from === to) return;
+
+			const show = (value: number) => {
+				displayRef.current = value;
+				setDisplayAmount(value);
+			};
+
+			// `!(duration > 0)` also catches NaN; a negative duration would otherwise
+			// never reach progress 1 and loop forever.
+			if (
+				prefersReducedMotion() ||
+				!(duration > 0) ||
+				!Number.isFinite(from) ||
+				!Number.isFinite(to)
+			) {
+				show(to);
+				return;
+			}
 
 			const easeFn = EASING_FNS[easing] ?? EASING_FNS.easeOut;
 			const start = performance.now();
 
 			const animate = (now: number) => {
-				const elapsed = now - start;
-				const progress = Math.min(elapsed / duration, 1);
-				const eased = easeFn(progress);
-				const current = from + (to - from) * eased;
-
-				setDisplayAmount(current);
-
-				if (progress < 1) {
-					frameRef.current = requestAnimationFrame(animate);
-				} else {
-					setDisplayAmount(to); // ensure we land exactly on target
-				}
+				const progress = Math.min((now - start) / duration, 1);
+				show(progress < 1 ? from + (to - from) * easeFn(progress) : to);
+				if (progress < 1) frameRef.current = requestAnimationFrame(animate);
 			};
 
 			frameRef.current = requestAnimationFrame(animate);
 
-			return () => {
-				if (frameRef.current) cancelAnimationFrame(frameRef.current);
-			};
+			return () => cancelAnimationFrame(frameRef.current);
 		}, [amount, duration, easing]);
 
-		const symbolFirst = !locale.startsWith("ar");
-		const isRTL = locale.startsWith("ar");
+		const isRTL = isArabicLocale(locale);
+		const symbolFirst = !isRTL;
 
 		const formatted = Number.isFinite(displayAmount)
 			? formatDirham(displayAmount, {
@@ -162,6 +196,10 @@ const AnimatedDirhamPriceBase = forwardRef<
 				})
 					.replace("AED", "")
 					.trim()
+			: "—";
+
+		const announcement = Number.isFinite(amount)
+			? formatDirham(amount, { locale, decimals, useCode: true, notation })
 			: "—";
 
 		const symbol = useCode ? (
@@ -180,23 +218,26 @@ const AnimatedDirhamPriceBase = forwardRef<
 				className={className}
 				dir={isRTL ? "rtl" : undefined}
 				style={{ whiteSpace: "nowrap", ...style }}
-				aria-live="polite"
-				aria-atomic="true"
 				{...props}
 			>
-				{symbolFirst ? (
-					<>
-						{symbol}
-						{"\u00A0"}
-						{formatted}
-					</>
-				) : (
-					<>
-						{formatted}
-						{"\u00A0"}
-						{symbol}
-					</>
-				)}
+				<span aria-hidden="true">
+					{symbolFirst ? (
+						<>
+							{symbol}
+							{"\u00A0"}
+							{formatted}
+						</>
+					) : (
+						<>
+							{formatted}
+							{"\u00A0"}
+							{symbol}
+						</>
+					)}
+				</span>
+				<span style={VISUALLY_HIDDEN} aria-live="polite" aria-atomic="true">
+					{announcement}
+				</span>
 			</span>
 		);
 	},
