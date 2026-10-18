@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { clearRateCache, fetchExchangeRates } from "../core/conversion";
+import { roundTo } from "../core/round";
 
 export interface UseDirhamRateResult {
 	/** The exchange rate (AED → target currency). `undefined` while loading. */
@@ -79,8 +80,7 @@ export function useDirhamRate(currency: string): UseDirhamRateResult {
 	const convert = useCallback(
 		(amount: number): number | undefined => {
 			if (rate === undefined) return undefined;
-			const factor = 100;
-			return Math.round(amount * rate * factor) / factor;
+			return roundTo(amount * rate, 2);
 		},
 		[rate],
 	);
@@ -88,8 +88,7 @@ export function useDirhamRate(currency: string): UseDirhamRateResult {
 	const convertBack = useCallback(
 		(amount: number): number | undefined => {
 			if (rate === undefined || rate === 0) return undefined;
-			const factor = 100;
-			return Math.round((amount / rate) * factor) / factor;
+			return roundTo(amount / rate, 2);
 		},
 		[rate],
 	);
