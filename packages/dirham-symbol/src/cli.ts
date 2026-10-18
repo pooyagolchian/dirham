@@ -1,3 +1,5 @@
+import { execSync } from "node:child_process";
+
 const SYMBOL = "\u20C3";
 const CODEPOINT = "U+20C3";
 const HTML_ENTITY = "&#x20C3;";
@@ -5,6 +7,20 @@ const CSS_CONTENT = "\\20C3";
 const JS_ESCAPE = "\\u20C3";
 const ARABIC = "د.إ";
 const CURRENCY_CODE = "AED";
+
+const FORMATS = {
+	unicode: SYMBOL,
+	html: HTML_ENTITY,
+	css: CSS_CONTENT,
+	js: JS_ESCAPE,
+	arabic: ARABIC,
+	code: CURRENCY_CODE,
+};
+type Format = keyof typeof FORMATS;
+
+// Own keys only: "constructor" or "toString" must not look like formats.
+const isFormat = (value: string): value is Format =>
+	Object.prototype.hasOwnProperty.call(FORMATS, value);
 
 const HELP = `
   dirham — UAE Dirham currency symbol (${SYMBOL}) CLI
@@ -15,6 +31,8 @@ const HELP = `
     npx dirham copy html    Copy HTML entity
     npx dirham copy css     Copy CSS content value
     npx dirham --help       Show this help
+
+  Formats for copy: ${Object.keys(FORMATS).join(", ")} (default: unicode)
 
   Unicode: ${CODEPOINT} (Unicode 18.0 — UAE DIRHAM SIGN)
   npm:     https://www.npmjs.com/package/dirham
@@ -48,19 +66,17 @@ function main() {
 	}
 
 	if (args[0] === "copy") {
-		const format = (args[1] || "unicode") as keyof typeof values;
-		const values = {
-			unicode: SYMBOL,
-			html: HTML_ENTITY,
-			css: CSS_CONTENT,
-			js: JS_ESCAPE,
-			arabic: ARABIC,
-			code: CURRENCY_CODE,
-		};
-		const text = values[format] || values.unicode;
+		const format = args[1] ?? "unicode";
+		if (!isFormat(format)) {
+			console.error(
+				`Unknown format "${format}". Choose one of: ${Object.keys(FORMATS).join(", ")}`,
+			);
+			process.exitCode = 1;
+			return;
+		}
+		const text = FORMATS[format];
 
 		// Use pbcopy (macOS) or xclip/xsel (Linux) — no external deps
-		const { execSync } = require("node:child_process");
 		try {
 			const platform = process.platform;
 			if (platform === "darwin") {
