@@ -26,4 +26,12 @@ describe.skipIf(!built)("dirham/next font path", () => {
 	it.each(paths)("%s exists when resolved from dist/next", (path) => {
 		expect(existsSync(resolve(root, "dist/next", path))).toBe(true);
 	});
+
+	it("is built with `const dirhamFont = localFont(`, which next/font requires", () => {
+		// Bundling turns a top-level `const` into `var`, and Next then fails the build
+		// with "Font loader calls must be assigned to a const".
+		const output = readFileSync(resolve(root, "dist/next/index.js"), "utf8");
+		expect(output).toMatch(/\bconst dirhamFont = localFont\(/);
+		expect(output).not.toMatch(/\bvar dirhamFont\b/);
+	});
 });

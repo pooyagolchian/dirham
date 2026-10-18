@@ -82,6 +82,10 @@ export default defineConfig([
 		splitting: false,
 		treeshake: true,
 		external: ["next", "next/font/local"],
+		// Not bundled: esbuild rewrites a bundle's top-level `const` to `var`, and
+		// next/font only accepts `const x = localFont(...)` ("Font loader calls must
+		// be assigned to a const"). This entry has no local imports to bundle.
+		bundle: false,
 	},
 	// OG / Social image entry
 	{
