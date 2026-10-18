@@ -2,6 +2,19 @@ import { formatAmountText } from "../core/format";
 import { isArabicLocale } from "../core/locale";
 import { DIRHAM_SVG_PATH, DIRHAM_SVG_VIEWBOX } from "../core/svg";
 
+/**
+ * A finite number at least `min` from option input, else `fallback`. Options are
+ * typed as numbers, but an OG route often passes query-string values straight
+ * through and these end up unescaped in SVG attributes. Numeric strings still work.
+ */
+function number(value: unknown, fallback: number, min: number): number {
+	const n =
+		typeof value === "string" && value.trim() === ""
+			? Number.NaN
+			: Number(value);
+	return Number.isFinite(n) && n >= min ? n : fallback;
+}
+
 export interface PriceCardSVGOptions {
 	amount: number;
 	title?: string;
@@ -43,13 +56,17 @@ export function generatePriceCardSVG(options: PriceCardSVGOptions): string {
 		locale = "en-AE",
 		decimals = 2,
 		notation = "standard",
-		width = 1200,
-		height = 630,
+		width: rawWidth = 1200,
+		height: rawHeight = 630,
 		background = "#0a0a0a",
 		textColor = "#ffffff",
 		accentColor = "#22c55e",
-		borderRadius = 0,
+		borderRadius: rawBorderRadius = 0,
 	} = options;
+
+	const width = number(rawWidth, 1200, 1);
+	const height = number(rawHeight, 630, 1);
+	const borderRadius = number(rawBorderRadius, 0, 0);
 
 	const formatted = formatAmountText(amount, { locale, decimals, notation });
 
