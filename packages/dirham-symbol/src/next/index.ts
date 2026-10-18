@@ -38,11 +38,14 @@ import localFont from "next/font/local";
  *
  * Uses `next/font/local` for automatic preloading, self-hosting,
  * and zero layout shift (no FOIT/FOUT).
+ *
+ * The font `path` is relative to this file in the published package
+ * (`dist/next/index.js`), so it points at `dist/fonts/dirham.woff2`.
  */
 export const dirhamFont = localFont({
 	src: [
 		{
-			path: "../dist/fonts/dirham.woff2",
+			path: "../fonts/dirham.woff2",
 			weight: "400",
 			style: "normal",
 		},
@@ -55,6 +58,11 @@ export const dirhamFont = localFont({
 /**
  * Font configuration for manual setup with `next/font/local`.
  * Use this if you need to customize the font loading behavior.
+ *
+ * Note: `next/font/local` resolves `path` relative to the file that calls it. The
+ * path here is relative to this package's `dist/next/`, so when you spread this
+ * into `localFont()` in your own file, override `src` with a path from your file to
+ * `node_modules/dirham/dist/fonts/dirham.woff2`.
  *
  * @example
  * ```tsx
@@ -70,7 +78,7 @@ export const dirhamFont = localFont({
 export const dirhamFontConfig = {
 	src: [
 		{
-			path: "../dist/fonts/dirham.woff2",
+			path: "../fonts/dirham.woff2",
 			weight: "400" as const,
 			style: "normal" as const,
 		},
